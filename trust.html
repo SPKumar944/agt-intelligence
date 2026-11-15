@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Trust &amp; data · AGT Intelligence</title>
+  <meta name="description" content="Data sources, privacy principles and governance at AGT Intelligence: aggregate-only people data, named sources and labelled models." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M2 12 L10 4 L18 12 L10 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M16 12 L24 4 L32 12 L24 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round' opacity='.55'/%3E%3C/svg%3E" />
+  <link href="site/site.css?v=25" rel="stylesheet" />
+</head>
+<body data-page="trust">
+<div id="site-header"></div>
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <div class="crumbs"><a href="home.html">Home</a><span>/</span>Trust &amp; data</div>
+      <div class="page-hero-grid">
+        <div>
+          <p class="eyebrow">Trust &amp; data</p>
+          <h1 class="h1">Aggregated people. Named sources. Labelled models.</h1>
+          <p class="lede">Location intelligence is only as trustworthy as the data behind it and the care taken with it. These are the principles we work to, the sources we use and the things we will not do.</p>
+        </div>
+        <div class="keyfacts">
+          <div><b>0</b><span>individual movement traces handled — ever</span></div>
+          <div><b>Every</b><span>number carries its source, date and licence</span></div>
+          <div><b>Every</b><span>estimate is labelled as modelled</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section first" id="principles">
+    <div class="wrap">
+      <div class="sec-head rv"><p class="eyebrow">Principles</p><h2 class="h2">Four commitments behind every engagement.</h2></div>
+      <div class="principles rv">
+        <div><span class="num">01</span><h4>Aggregate only</h4><p>People enter our models only as counts — by hexagon, time window, age band or household type — never as individuals.</p></div>
+        <div><span class="num">02</span><h4>Named sources</h4><p>Every dataset is catalogued with its origin, date, licence and the transformations applied.</p></div>
+        <div><span class="num">03</span><h4>Labelled models</h4><p>Measured and modelled numbers are always distinguished, with ranges where we estimate.</p></div>
+        <div><span class="num">04</span><h4>Client data isolated</h4><p>Your stores and sales are used only for your engagement, under your agreement.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="sources">
+    <div class="wrap">
+      <div class="sec-head rv"><p class="eyebrow">Data sources</p><h2 class="h2">What we use, and at what level of detail.</h2></div>
+      <div class="table-wrap rv">
+        <table class="table">
+          <thead><tr><th>Category</th><th>What we use</th><th>Granularity</th><th>Provenance</th></tr></thead>
+          <tbody>
+            <tr><td>Mobility</td><td>Visit counts and origin–destination flows</td><td>Aggregated to hexagons and time windows, with minimum-count thresholds</td><td>Licensed providers; aggregated before receipt</td></tr>
+            <tr><td>Population</td><td>Residents by age band, gender and household type; daytime population</td><td>Small-area aggregates reallocated to hexagons</td><td>Public statistical and administrative aggregates</td></tr>
+            <tr><td>Places &amp; brands</td><td>Businesses, categories, brands and anchors</td><td>Individual business locations (not people)</td><td>Overture Maps Foundation; OpenStreetMap</td></tr>
+            <tr><td>Networks</td><td>Roads, footpaths, transit lines and stops</td><td>Street segments and stops</td><td>OpenStreetMap and public transit data</td></tr>
+            <tr><td>Earth observation</td><td>Imagery, land cover, built-up density, terrain</td><td>Raster cells summarised per hexagon</td><td>Open and licensed collections via Google Earth Engine</td></tr>
+            <tr><td>Client data</td><td>Store list, formats, sales</td><td>Per store and period</td><td>Provided by the client under agreement</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="privacy">
+    <div class="wrap split">
+      <div class="sticky-col rv"><p class="eyebrow">Privacy</p><h2 class="h2">What we never handle.</h2>
+        <p class="lede">Location data is sensitive. Our models do not need to know who anyone is, so we make sure they never can.</p></div>
+      <div class="rv">
+        <ul class="ticks">
+          <li><b>No individual movement traces.</b> Mobility data reaches us aggregated to hexagons and time windows; cells below a minimum count are suppressed.</li>
+          <li><b>No names, identifiers or contact details.</b> Population sources are used only as counts by age band, gender and household type. Names, ID numbers, relatives and addresses are never loaded, printed or exported.</li>
+          <li><b>No re-identification.</b> We do not join datasets in ways designed to single out people or households.</li>
+          <li><b>No sensitive inference.</b> We do not model religion, caste, health status or similar characteristics of people.</li>
+        </ul>
+        <div class="callout mt-m"><svg class="ico" data-icon="lock"></svg><span><b>Aggregation happens before analysis.</b> The smallest unit we hold about people is a count in a hexagon or a time window — never a row that describes a person.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="client">
+    <div class="wrap split">
+      <div class="sticky-col rv"><p class="eyebrow">Client data</p><h2 class="h2">Your data stays yours.</h2></div>
+      <div class="rv">
+        <div class="grid-2">
+          <div class="card"><svg class="ico" data-icon="lock"></svg><h4 class="h4">Isolated per client</h4><p>Store and sales data is stored separately for each client and used only for that client's models.</p></div>
+          <div class="card"><svg class="ico" data-icon="user-group"></svg><h4 class="h4">Access by role</h4><p>The platform requires sign-in; access is granted per person and can be withdrawn at any time.</p></div>
+          <div class="card"><svg class="ico" data-icon="download"></svg><h4 class="h4">Portable outputs</h4><p>Everything we produce for you is delivered in open formats you can keep and use without us.</p></div>
+          <div class="card"><svg class="ico" data-icon="calendar"></svg><h4 class="h4">Agreed retention</h4><p>Retention and deletion of client data follow the engagement agreement.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="responsible">
+    <div class="wrap split">
+      <div class="sticky-col rv"><p class="eyebrow">Responsible use</p><h2 class="h2">Estimates are for decisions, not certainty.</h2></div>
+      <div class="prose rv">
+        <p>Our footfall, trade areas and forecasts are <strong>model estimates</strong>. They are designed to rank and compare locations consistently and to make assumptions explicit — not to replace judgement or local knowledge.</p>
+        <p>Every report labels which numbers are measured and which are modelled, states the ranges around forecasts, and lists what should be verified on the ground before a lease is signed — typically pedestrian counts at the shortlisted frontages during the hours that matter.</p>
+        <p>Interactive examples on this website are illustrative: they use synthetic data and do not represent any client.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band"><div class="wrap"><h2 class="h2">Need our data-protection details for procurement?</h2>
+    <div class="actions"><a class="btn btn-primary" href="contact.html">Contact us</a><a class="btn btn-secondary" href="methodology.html">Methodology →</a></div></div></section>
+</main>
+<div id="site-footer"></div>
+<script src="icons.js?v=2"></script>
+<script src="site/config.js?v=1"></script>
+<script src="site/api.js?v=1"></script>
+<script src="site/layout.js?v=6"></script>
+</body>
+</html>

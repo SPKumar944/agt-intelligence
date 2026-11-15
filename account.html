@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>My account · AGT Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M2 12 L10 4 L18 12 L10 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M16 12 L24 4 L32 12 L24 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round' opacity='.55'/%3E%3C/svg%3E" />
+  <link href="site/site.css?v=27" rel="stylesheet" />
+  <style>
+    [hidden] { display: none !important; }
+    .acc-head { display: flex; gap: 20px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .who { display: flex; align-items: center; gap: 16px; }
+    .avatar { width: 56px; height: 56px; border-radius: 50%; background: var(--ink); color: var(--bg); display: grid; place-items: center; font-size: 20px; font-weight: 600; overflow: hidden; flex: none; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .who b { display: block; font-size: 22px; letter-spacing: -.025em; } .who span { color: var(--ink-3); font-size: 14px; }
+    .tabs { display: flex; gap: 4px; background: var(--bg-2); border-radius: 980px; padding: 4px; width: fit-content; max-width: 100%; overflow-x: auto; }
+    .tabs button { border: 0; background: none; padding: 9px 18px; border-radius: 980px; font-size: 14px; color: var(--ink-2); cursor: pointer; font-weight: 500; white-space: nowrap; }
+    .tabs button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+    .stat3 { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 20px; }
+    .stat { padding: 28px; } .stat .k { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+    .stat .v { font-size: 56px; font-weight: 700; letter-spacing: -.05em; line-height: 1; margin: 12px 0 8px; } .stat .v small { font-size: 18px; font-weight: 500; letter-spacing: 0; color: var(--ink-3); margin-left: 6px; }
+    .stat p { margin: 0; color: var(--ink-2); font-size: 14.5px; }
+    .meter { height: 8px; background: var(--bg-3); border-radius: 4px; overflow: hidden; margin: 16px 0 8px; } .meter i { display: block; height: 100%; background: var(--ink); border-radius: 4px; transition: width .6s; }
+    .pill { display: inline-block; border-radius: 980px; padding: 3px 11px; font-size: 12px; font-weight: 600; background: var(--bg-3); color: var(--ink-2); white-space: nowrap; }
+    .pill.submitted { background: #fff3d6; color: #8a5a00; } .pill.approved, .pill.processing { background: #e1ecff; color: #1d4ea0; } .pill.results_ready { background: #e8e1ff; color: #4a2fa0; }
+    .pill.released { background: #dcf3e4; color: #17653a; } .pill.rejected, .pill.failed, .pill.withdrawn, .pill.cancelled { background: #fde3e0; color: #98231a; } .pill.paid { background: #dcf3e4; color: #17653a; } .pill.pending, .pill.open { background: #fff3d6; color: #8a5a00; }
+    :root[data-theme="dark"] .pill.submitted, :root[data-theme="dark"] .pill.pending, :root[data-theme="dark"] .pill.open { background: #3a2f10; color: #f3c969; } :root[data-theme="dark"] .pill.approved, :root[data-theme="dark"] .pill.processing { background: #14233f; color: #8fb4ff; }
+    :root[data-theme="dark"] .pill.results_ready { background: #251a47; color: #c0adff; } :root[data-theme="dark"] .pill.released, :root[data-theme="dark"] .pill.paid { background: #12301f; color: #7fd6a2; } :root[data-theme="dark"] .pill.rejected, :root[data-theme="dark"] .pill.failed, :root[data-theme="dark"] .pill.withdrawn, :root[data-theme="dark"] .pill.cancelled { background: #3a1613; color: #ffa59c; }
+    .rq { display: grid; grid-template-columns: 1fr auto; gap: 8px 20px; padding: 22px 26px; align-items: center; }
+    .rq + .rq { border-top: 1px solid var(--line); } .rq b { font-size: 17px; letter-spacing: -.02em; } .rq .m { color: var(--ink-3); font-size: 13.5px; margin-top: 4px; }
+    .rq .a { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
+    .list { padding: 0; overflow: hidden; }
+    .pane-h { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin: 0 0 18px; } .pane-h h2 { margin: 0; font-size: 28px; letter-spacing: -.03em; }
+    .qty { display: inline-flex; align-items: center; border: 1px solid var(--line-2); border-radius: 980px; overflow: hidden; } .qty button { border: 0; background: var(--bg); width: 42px; height: 42px; font-size: 20px; cursor: pointer; color: var(--ink); } .qty input { width: 64px; text-align: center; border: 0; font: inherit; font-size: 18px; font-weight: 600; background: var(--bg); color: var(--ink); height: 42px; -moz-appearance: textfield; } .qty input::-webkit-outer-spin-button, .qty input::-webkit-inner-spin-button { -webkit-appearance: none; }
+    .buy { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; padding: 30px; }
+    .total { font-size: 38px; font-weight: 700; letter-spacing: -.04em; }
+    .box { background: var(--bg-2); border-radius: 14px; padding: 16px 18px; white-space: pre-wrap; font-size: 14px; color: var(--ink-2); }
+    table.t { width: 100%; border-collapse: collapse; font-size: 14px; } table.t th { text-align: left; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; padding: 0 12px 10px 0; border-bottom: 1px solid var(--line-2); } table.t td { padding: 13px 12px 13px 0; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink-2); } table.t td:first-child { color: var(--ink); }
+    .plans3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; } .plans3 .card { padding: 26px; } .plans3 .p { font-size: 30px; font-weight: 700; letter-spacing: -.04em; margin: 8px 0; } .plans3 .p small { font-size: 13px; font-weight: 500; color: var(--ink-3); letter-spacing: 0; margin-left: 4px; }
+    .plans3 .cur { box-shadow: 0 0 0 2px var(--ink), var(--shadow); }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 11px 18px; border-radius: 980px; font-size: 13.5px; z-index: 80; opacity: 0; transition: opacity .25s; pointer-events: none; } .toast.on { opacity: 1; }
+    .err-banner { display: none; border-radius: 12px; background: #fdecea; color: #8a1c13; padding: 12px 14px; font-size: 14px; margin-bottom: 14px; } .err-banner.on { display: block; }
+    :root[data-theme="dark"] .err-banner { background: #3a1613; color: #ffb4ab; }
+    .gate { text-align: center; max-width: 520px; margin: 40px auto; padding: 44px; }
+    @media (max-width: 960px) { .stat3, .plans3, .buy { grid-template-columns: 1fr; } .rq { grid-template-columns: 1fr; } .rq .a { justify-content: flex-start; } }
+  </style>
+</head>
+<body data-page="account">
+<div id="site-header"></div>
+<main>
+  <section class="page-hero" style="padding:48px 0 40px">
+    <div class="wrap">
+      <div class="acc-head">
+        <div class="who"><div class="avatar" id="avatar">?</div><div><b id="uName">Your account</b><span id="uEmail"></span></div></div>
+        <div class="hero-cta" style="margin:0"><a class="btn btn-primary" href="request-report.html">Request a report</a><button class="btn btn-secondary" id="signOut" type="button">Sign out</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:44px">
+    <div class="wrap">
+      <div class="card gate" id="gate" hidden>
+        <h2 class="h2" style="font-size:32px">Sign in to see your account.</h2>
+        <p class="lede" style="margin:12px auto 24px">Use your Gmail address. New accounts include <b data-p="free">2</b> free credits.</p>
+        <a class="btn btn-primary" href="login.html?next=account.html">Sign in with Gmail</a>
+      </div>
+
+      <div id="app" hidden>
+        <div class="tabs" role="tablist" id="tabs">
+          <button type="button" data-t="overview" aria-pressed="true">Overview</button>
+          <button type="button" data-t="reports" aria-pressed="false">My reports</button>
+          <button type="button" data-t="credits" aria-pressed="false">Credits &amp; plans</button>
+          <button type="button" data-t="history" aria-pressed="false">History</button>
+        </div>
+
+        <!-- ================= OVERVIEW -->
+        <div class="pane" data-pane="overview" style="margin-top:28px">
+          <div class="stat3">
+            <div class="card stat"><div class="k">Credits available</div><div class="v"><span id="cBal">0</span><small>credits</small></div>
+              <div class="meter" id="freeMeter" hidden><i id="freeFill" style="width:0"></i></div>
+              <p id="cNote"></p></div>
+            <div class="card stat"><div class="k">Reports</div><div class="v" id="rCount">0</div><p id="rNote">Requested so far</p></div>
+            <div class="card stat"><div class="k">Plan</div><div class="v" style="font-size:34px;margin-top:22px" id="planName">Free</div><p id="planNote"></p></div>
+          </div>
+          <div class="split even" style="margin-top:44px;gap:32px">
+            <div class="card" style="padding:32px">
+              <p class="eyebrow">What is a credit?</p>
+              <h3 class="h3" style="margin-bottom:12px">One credit pays for one location.</h3>
+              <ul class="ticks">
+                <li>Each Google Plus code in a request uses <b>1 credit</b>.</li>
+                <li>Free accounts get <b><span data-p="free">2</span> credits, once</b> — enough for 2 locations in total.</li>
+                <li>Withdraw a request before our analysis starts, or have it rejected, and the credits come back.</li>
+                <li>Need more? Standard credits are <b data-p="std-price">₹1,000</b> each. Programmes of <span data-p="ent-min">11</span>+ locations or several cities are enterprise (<b data-p="ent-price">₹8,000</b> per location).</li>
+              </ul>
+              <div class="hero-cta" style="margin-top:24px"><button class="btn btn-primary btn-sm" data-go="credits" type="button">Buy credits</button><a class="btn btn-secondary btn-sm" href="pricing.html">See pricing</a></div>
+            </div>
+            <div class="card list" style="padding:0">
+              <div style="padding:22px 26px 6px"><p class="eyebrow" style="margin:0">Recent reports</p></div>
+              <div id="recent"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= REPORTS -->
+        <div class="pane" data-pane="reports" style="margin-top:28px" hidden>
+          <div class="pane-h"><h2>My reports</h2><a class="btn btn-primary btn-sm" href="request-report.html">New request</a></div>
+          <div class="card list" id="reqList"></div>
+        </div>
+
+        <!-- ================= CREDITS & PLANS -->
+        <div class="pane" data-pane="credits" style="margin-top:28px" hidden>
+          <div class="pane-h"><h2>Buy credits</h2><span class="small muted">1 credit = 1 location · <span data-p="std-price">₹1,000</span> each</span></div>
+          <div class="card buy" id="buyCard">
+            <div>
+              <p class="muted" style="margin:0 0 16px">Choose how many locations you want to analyse. We email you payment details; credits are added once your payment is confirmed.</p>
+              <div class="qty"><button type="button" id="qMinus" aria-label="Fewer">−</button><input id="qty" type="number" min="1" max="100" value="3" aria-label="Number of credits" /><button type="button" id="qPlus" aria-label="More">+</button></div>
+              <div style="margin-top:22px"><div class="small muted">Total</div><div class="total" id="qTotal">₹3,000</div></div>
+              <div class="err-banner" id="buyErr" style="margin-top:14px"></div>
+              <button class="btn btn-primary" id="placeOrder" type="button" style="margin-top:18px">Place order</button>
+            </div>
+            <div id="payBox"><div class="box">After you place an order, your payment instructions and order reference appear here and are emailed to you.</div></div>
+          </div>
+
+          <div class="pane-h" style="margin-top:56px"><h2>Plans</h2></div>
+          <div class="plans3" id="plans3">
+            <div class="card"><span class="kicker">Free</span><div class="p"><span data-p="free">2</span><small>credits, once</small></div><ul class="ticks"><li>2 locations in total</li><li>Full interactive dashboard</li></ul></div>
+            <div class="card"><span class="kicker">Standard</span><div class="p"><span data-p="std-price">₹1,000</span><small>per location</small></div><ul class="ticks"><li>Up to <span data-p="std-max">10</span> locations per request</li><li>Buy any number of credits</li></ul></div>
+            <div class="card" id="entCard"><span class="kicker">Enterprise</span><div class="p"><span data-p="ent-price">₹8,000</span><small>per location</small></div><ul class="ticks"><li><span data-p="ent-min">11</span>+ locations, several cities</li><li>Detailed report per location</li></ul></div>
+          </div>
+
+          <div class="pane-h" id="enterprise" style="margin-top:56px"><h2>Enterprise enquiry</h2><span class="small muted">For <span data-p="ent-min">11</span>+ locations or several cities</span></div>
+          <div class="card" style="padding:30px">
+            <form class="form" id="enqForm" novalidate>
+              <div class="err-banner" id="enqErr"></div>
+              <div class="two"><div class="field"><label for="eCompany">Company</label><input id="eCompany" /></div><div class="field"><label for="ePhone">Phone <span class="muted" style="font-weight:400">(optional)</span></label><input id="ePhone" type="tel" /></div></div>
+              <div class="two"><div class="field"><label for="eLocs">How many locations?</label><input id="eLocs" type="number" min="1" placeholder="e.g. 25" /></div><div class="field"><label for="eCities">Which cities?</label><input id="eCities" placeholder="e.g. Bengaluru, Hyderabad, Pune" /></div></div>
+              <div class="field"><label for="eNotes">What are you trying to achieve?</label><textarea id="eNotes" placeholder="Programme, timelines, anything we should know"></textarea></div>
+              <button class="btn btn-primary" type="submit" style="justify-self:start">Send enquiry</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- ================= HISTORY -->
+        <div class="pane" data-pane="history" style="margin-top:28px" hidden>
+          <div class="pane-h"><h2>Credit history</h2></div>
+          <div class="card" style="padding:26px"><table class="t"><thead><tr><th>Date</th><th>What happened</th><th style="text-align:right">Credits</th></tr></thead><tbody id="ledger"></tbody></table></div>
+          <div class="pane-h" style="margin-top:44px"><h2>Orders</h2></div>
+          <div class="card" style="padding:26px"><table class="t"><thead><tr><th>Order</th><th>Credits</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody id="orders"></tbody></table></div>
+          <div class="pane-h" style="margin-top:44px"><h2>Enterprise enquiries</h2></div>
+          <div class="card" style="padding:26px"><table class="t"><thead><tr><th>Enquiry</th><th>Locations</th><th>Cities</th><th>Status</th></tr></thead><tbody id="enqs"></tbody></table></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<div id="site-footer"></div>
+<div class="toast" id="toast" role="status"></div>
+<script src="icons.js?v=2"></script>
+<script src="site/config.js?v=1"></script>
+<script src="site/api.js?v=1"></script>
+<script src="site/layout.js?v=6"></script>
+<script>
+(() => {
+  "use strict";
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const dt = (t) => t ? new Date(t * 1000).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+  let ME = null, REQS = [], P = null;
+  const money = (n) => P.currency + Number(n).toLocaleString("en-IN");
+  const toast = (t) => { const el = $("#toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 2800); };
+
+  function fillPrices() {
+    const map = { "free": P.free_credits, "std-price": money(P.standard_per_location), "std-max": P.standard_max_locations, "ent-price": money(P.enterprise_per_location), "ent-min": P.enterprise_min_locations };
+    $$("[data-p]").forEach((el) => { if (map[el.dataset.p] !== undefined) el.textContent = map[el.dataset.p]; });
+  }
+  function tab(name) {
+    $$("#tabs button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.t === name));
+    $$(".pane").forEach((p) => { p.hidden = p.dataset.pane !== name; });
+    history.replaceState(null, "", "#" + name);
+  }
+  $$("#tabs button").forEach((b) => b.addEventListener("click", () => tab(b.dataset.t)));
+  $$("[data-go]").forEach((b) => b.addEventListener("click", () => tab(b.dataset.go)));
+  $("#signOut").addEventListener("click", async () => { await AGT.logout(); location.href = "home.html"; });
+
+  async function openDashboard(bid) {
+    try { const j = await AGT.api(`/data/${bid}/sites.json`); const id = (j.sites[0] || {}).id; location.href = `index.html#${bid}${id ? "/" + id : ""}`; }
+    catch (e) { toast(e.message); }
+  }
+  function reqRow(r) {
+    return `<div class="rq"><div><b>${esc(r.company)}</b> <span class="pill ${r.status}" style="margin-left:8px">${esc(r.status_label)}</span>
+      <div class="m">${r.ref} · ${r.n_locations} location${r.n_locations === 1 ? "" : "s"} · ${r.credits_used} credit${r.credits_used === 1 ? "" : "s"} · submitted ${dt(r.created_at)}${r.scheduled_for && r.status === "approved" ? " · scheduled " + new Date(r.scheduled_for * 1000).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}</div>
+      ${r.status === "released" && r.release_message ? `<div class="m" style="color:var(--ink-2)">“${esc(r.release_message)}”</div>` : ""}</div>
+      <div class="a">${r.status === "released" ? `<button class="btn btn-primary btn-sm" data-open="${r.business_id}">Open dashboard</button>` : ""}${r.can_withdraw ? `<button class="btn btn-secondary btn-sm" data-wd="${r.ref}">Withdraw</button>` : ""}</div></div>`;
+  }
+  function render() {
+    const u = ME.user, bal = u.credits, free = P.free_credits;
+    $("#avatar").innerHTML = u.picture ? `<img src="${esc(u.picture)}" alt="" referrerpolicy="no-referrer" />` : esc((u.name || u.email)[0].toUpperCase());
+    $("#uName").textContent = u.name || u.email; $("#uEmail").textContent = u.email;
+    $("#cBal").textContent = bal;
+    const paid = u.plan === "paid" || ME.orders.some((o) => o.status === "paid");
+    $("#planName").textContent = paid ? "Standard" : "Free";
+    $("#planNote").textContent = paid ? `${money(P.standard_per_location)} per location. Buy more credits any time.` : `${free} free credits to start. Upgrade when you need more locations.`;
+    const fm = $("#freeMeter"); fm.hidden = paid;
+    if (!paid) { $("#freeFill").style.width = Math.max(0, Math.min(100, bal / free * 100)) + "%"; }
+    $("#cNote").textContent = paid ? "1 credit = 1 location. Credits stay in your account until used." : (bal > 0 ? `${bal} of your ${free} free credits left — 1 credit = 1 location.` : "You have used your free credits. Buy more to request another report.");
+    $("#rCount").textContent = REQS.length;
+    const ready = REQS.filter((r) => r.status === "released").length, prog = REQS.filter((r) => ["submitted", "approved", "processing", "results_ready"].includes(r.status)).length;
+    $("#rNote").textContent = REQS.length ? `${ready} ready · ${prog} in progress` : "No requests yet";
+    $("#recent").innerHTML = REQS.length ? REQS.slice(0, 3).map(reqRow).join("") : `<div style="padding:12px 26px 26px;color:var(--ink-3)">No reports yet. <a href="request-report.html">Request your first report</a> with your free credits.</div>`;
+    $("#reqList").innerHTML = REQS.length ? REQS.map(reqRow).join("") : `<div style="padding:40px 26px;text-align:center;color:var(--ink-3)">No requests yet. <a href="request-report.html">Request a report</a>.</div>`;
+    $$("[data-open]").forEach((b) => b.onclick = () => openDashboard(b.dataset.open));
+    $$("[data-wd]").forEach((b) => b.onclick = async () => {
+      if (!confirm("Withdraw this request? Its credits will be returned to your account.")) return;
+      try { const r = await AGT.api(`/api/me/requests/${b.dataset.wd}/withdraw`, { body: {} }); toast(`Withdrawn — ${r.refunded} credit(s) returned`); await load(); } catch (e) { toast(e.message); }
+    });
+    $("#ledger").innerHTML = ME.ledger.length ? ME.ledger.map((l) => `<tr><td>${dt(l.at)}</td><td>${esc(l.reason)}</td><td style="text-align:right;font-weight:600;color:${l.delta > 0 ? "#17653a" : "var(--ink)"}">${l.delta > 0 ? "+" : ""}${l.delta}</td></tr>`).join("") : `<tr><td colspan="3" class="muted">No activity yet.</td></tr>`;
+    $("#orders").innerHTML = ME.orders.length ? ME.orders.map((o) => `<tr><td>${o.ref}<div class="small muted">${dt(o.created_at)}</div></td><td>${o.qty}</td><td>${money(o.amount)}</td><td><span class="pill ${o.status}">${o.status}</span></td><td>${o.status === "pending" ? `<button class="btn btn-secondary btn-sm" data-oc="${o.ref}">Cancel</button>` : ""}</td></tr>`).join("") : `<tr><td colspan="5" class="muted">No orders yet.</td></tr>`;
+    $$("[data-oc]").forEach((b) => b.onclick = async () => { try { await AGT.api(`/api/me/orders/${b.dataset.oc}/cancel`, { body: {} }); await load(); } catch (e) { toast(e.message); } });
+    $("#enqs").innerHTML = ME.enquiries.length ? ME.enquiries.map((e) => `<tr><td>${e.ref}<div class="small muted">${dt(e.created_at)}</div></td><td>${e.locations}</td><td>${esc(e.cities || "—")}</td><td><span class="pill ${e.status}">${e.status}</span>${e.response ? `<div class="small muted" style="margin-top:6px">${esc(e.response)}</div>` : ""}</td></tr>`).join("") : `<tr><td colspan="4" class="muted">No enquiries yet.</td></tr>`;
+    // pending order box
+    const pend = ME.orders.find((o) => o.status === "pending");
+    if (pend) $("#payBox").innerHTML = `<div class="small muted" style="margin-bottom:8px">Order ${pend.ref} · ${money(pend.amount)}</div><div class="box">${ME.payment_instructions && ME.payment_instructions.trim() ? esc(ME.payment_instructions) + "\n\nQuote reference " + pend.ref + " with your payment." : "We’ll email you the payment details shortly."}</div>`;
+    updTotal();
+  }
+  const qv = () => Math.max(1, Math.min(100, parseInt($("#qty").value || "1", 10) || 1));
+  function updTotal() { $("#qty").value = qv(); $("#qTotal").textContent = money(qv() * P.standard_per_location); }
+  $("#qMinus").onclick = () => { $("#qty").value = qv() - 1; updTotal(); }; $("#qPlus").onclick = () => { $("#qty").value = qv() + 1; updTotal(); }; $("#qty").oninput = updTotal;
+  $("#placeOrder").onclick = async () => {
+    const e = $("#buyErr"); e.classList.remove("on");
+    try { const r = await AGT.api("/api/me/orders", { body: { qty: qv() } }); toast(`Order ${r.ref} placed — instructions emailed`); await load(); }
+    catch (x) { e.textContent = x.message; e.classList.add("on"); }
+  };
+  $("#enqForm").addEventListener("submit", async (ev) => {
+    ev.preventDefault(); const e = $("#enqErr"); e.classList.remove("on");
+    try { const r = await AGT.api("/api/me/enquiries", { body: { company: $("#eCompany").value, phone: $("#ePhone").value, locations: $("#eLocs").value, cities: $("#eCities").value, notes: $("#eNotes").value } });
+      toast(`Enquiry ${r.ref} sent — we'll be in touch`); $("#enqForm").reset(); await load(); }
+    catch (x) { e.textContent = x.message; e.classList.add("on"); }
+  });
+
+  async function load() {
+    [ME, { requests: REQS }] = await Promise.all([AGT.api("/api/me"), AGT.api("/api/me/requests")]);
+    P = ME.pricing; fillPrices(); render();
+  }
+  AGT.session().then(async (s) => {
+    if (s.role === "admin") { location.replace("admin.html"); return; }
+    if (s.role !== "user") { try { P = (await AGT.api("/api/config")).pricing; fillPrices(); } catch (e) {} $("#gate").hidden = false; return; }
+    $("#app").hidden = false;
+    try { await load(); } catch (e) { toast(e.message); }
+    const h = (location.hash || "").slice(1); tab(["overview", "reports", "credits", "history"].includes(h) ? h : h === "enterprise" ? "credits" : "overview");
+    if (h === "enterprise") setTimeout(() => $("#enterprise").scrollIntoView({ behavior: "smooth" }), 100);
+  });
+})();
+</script>
+</body>
+</html>

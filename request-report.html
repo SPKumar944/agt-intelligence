@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Request a report · AGT Intelligence</title>
+  <meta name="description" content="Tell us about your business and the locations you are weighing up. We review your request, run the analysis and send you a private dashboard." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M2 12 L10 4 L18 12 L10 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M16 12 L24 4 L32 12 L24 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round' opacity='.55'/%3E%3C/svg%3E" />
+  <link href="site/site.css?v=27" rel="stylesheet" />
+  <style>
+    .req-grid { display: grid; grid-template-columns: 5fr 7fr; gap: 72px; align-items: start; }
+    .fset { border: 0; padding: 0; margin: 0 0 34px; min-width: 0; }
+    .fset legend { font-size: 17px; font-weight: 600; letter-spacing: -.02em; padding: 0; margin-bottom: 4px; }
+    .fset .hint { font-size: 13.5px; color: var(--ink-3); margin: 0 0 16px; }
+    .field .opt { font-weight: 400; color: var(--ink-3); }
+    .field input[readonly] { background: var(--bg-2); color: var(--ink-2); }
+    .count { font-size: 12.5px; color: var(--ink-3); text-align: right; margin-top: 4px; }
+    .locs { display: grid; gap: 10px; }
+    .loc { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1.1fr) auto; gap: 10px; align-items: start; }
+    .loc .field input, .loc .field select { height: 44px; }
+    .loc .code { position: relative; }
+    .loc .code i { position: absolute; right: 12px; top: 12px; font-style: normal; font-size: 14px; }
+    .loc .code i.ok { color: #1a7f4b; } .loc .code i.bad { color: #b42318; }
+    .loc .rm { width: 44px; height: 44px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--bg); color: var(--ink-2); cursor: pointer; font-size: 18px; line-height: 1; }
+    .loc .rm:hover { border-color: var(--ink-3); color: var(--ink); } .loc .rm[disabled] { opacity: .35; cursor: default; }
+    .loc-actions { display: flex; gap: 14px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+    .linkbtn { border: 0; background: none; padding: 0; color: var(--ink); font-weight: 500; cursor: pointer; text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; font-size: 14px; }
+    .paste { display: none; margin-top: 12px; } .paste.on { display: block; }
+    .paste textarea { min-height: 96px; }
+    .checkrow { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; color: var(--ink-2); }
+    .checkrow input { margin-top: 4px; width: 18px; height: 18px; accent-color: var(--ink); flex: none; }
+    .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+    .err-banner { display: none; border-radius: 12px; background: #fdecea; color: #8a1c13; padding: 12px 14px; font-size: 14px; }
+    :root[data-theme="dark"] .err-banner { background: #3a1613; color: #ffb4ab; }
+    .err-banner.on { display: block; }
+    .field.bad input, .field.bad textarea, .field.bad select { border-color: #b42318; }
+    .done { text-align: left; }
+    .done .big { font-size: 48px; font-weight: 700; letter-spacing: -.04em; line-height: 1.05; }
+    .done .ref { display: inline-block; margin: 18px 0 8px; padding: 8px 16px; border-radius: 980px; background: var(--bg-2); font-weight: 600; letter-spacing: .02em; }
+    @media (max-width: 1000px) { .req-grid { grid-template-columns: 1fr; gap: 40px; } .loc { grid-template-columns: 1fr 1fr; } .loc .code { grid-column: 1 / -1; } .loc .rm { width: 100%; } }
+  </style>
+</head>
+<body data-page="request">
+<div id="site-header"></div>
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <div class="crumbs"><a href="home.html">Home</a><span>/</span>Request a report</div>
+      <p class="eyebrow">Request a report</p>
+      <h1 class="h1">Tell us about your business<br /><span class="dim">and the locations you're weighing up.</span></h1>
+      <p class="lede">Give us a few details, the Google Plus code of each location and a description of how your business works. We'll review your request, run the analysis and send you a private dashboard for your report only.</p>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:72px">
+    <div class="wrap req-grid">
+      <aside>
+        <div class="card" id="creditCard" style="padding:24px;margin-bottom:28px" hidden>
+          <span class="kicker">Your credits</span>
+          <div style="display:flex;align-items:baseline;gap:8px;margin:8px 0 4px"><b id="cBal" style="font-size:44px;letter-spacing:-.045em;line-height:1">–</b><span class="muted">available</span></div>
+          <p class="small muted" style="margin:0 0 14px">1 credit = 1 location. This request uses <b id="cCost" style="color:var(--ink)">0</b>, leaving <b id="cLeft" style="color:var(--ink)">–</b>.</p>
+          <div class="err-banner" id="cWarn" style="margin:0 0 12px"></div>
+          <a class="link-arrow" href="account.html#credits">Buy credits</a> &nbsp;·&nbsp; <a class="link-arrow" href="pricing.html">How credits work</a>
+        </div>
+        <p class="eyebrow">What happens next</p>
+        <div class="steps">
+          <div class="step"><div><h4>You send the request</h4><p>You receive a confirmation email straight away, and so do we.</p></div></div>
+          <div class="step"><div><h4>We review and approve it</h4><p>We check the locations and your description, and confirm by email.</p></div></div>
+          <div class="step"><div><h4>We run the analysis</h4><p>Footfall, trade areas, competition, demographics and expansion scoring for each location.</p></div></div>
+          <div class="step"><div><h4>We check the results</h4><p>A person reviews your report before you see it.</p></div></div>
+          <div class="step"><div><h4>You get your dashboard</h4><p>A private link, by email. You can open only the report you requested.</p></div></div>
+        </div>
+        <div class="callout mt-m"><svg class="ico" data-icon="map-pin-plus"></svg><span><b>How to find a Plus code.</b> In Google Maps, tap or click the place, then copy the short code under its name (for example <b>WHHJ+JM Bengaluru</b>).</span></div>
+      </aside>
+
+      <div>
+        <div class="card" id="gate" style="padding:44px;text-align:center" hidden>
+          <h2 class="h2" style="font-size:32px">Sign in to request a report.</h2>
+          <p class="lede" style="margin:12px auto 26px">Use your Gmail address. It keeps your requests together, holds your credits (new accounts get 2 free), and means only you can open your reports.</p>
+          <a class="btn btn-primary" href="login.html?next=request-report.html">Sign in with Gmail</a>
+        </div>
+        <div class="card" id="formCard" style="padding:36px" hidden>
+          <form id="reqForm" novalidate autocomplete="on">
+            <div class="err-banner" id="banner" role="alert"></div>
+            
+            <fieldset class="fset">
+              <legend>About you</legend>
+              <p class="hint">The person submitting the request. Your email is your Gmail sign-in — we send confirmations and updates there.</p>
+              <div class="form">
+                <div class="two">
+                  <div class="field"><label for="name">Full name</label><input id="name" name="name" autocomplete="name" required /></div>
+                  <div class="field"><label for="email">Email <span class="opt">(your Gmail sign-in)</span></label><input id="email" name="email" type="email" readonly /></div>
+                </div>
+                <div class="two">
+                  <div class="field"><label for="phone">Phone <span class="opt">(optional)</span></label><input id="phone" name="phone" type="tel" autocomplete="tel" /></div>
+                  <div class="field"><label for="role">Your role</label><select id="role" name="role"><option>Founder / owner</option><option>Expansion / real estate</option><option>Strategy / finance</option><option>Franchise development</option><option>Developer / landlord</option><option>Consultant / advisor</option><option>Other</option></select></div>
+                </div>
+              </div>
+            </fieldset>
+
+            <fieldset class="fset">
+              <legend>Your business</legend>
+              <p class="hint">So we can model it properly — what you sell and to whom changes which streets, hours and competitors matter.</p>
+              <div class="form">
+                <div class="two">
+                  <div class="field"><label for="company">Company or brand</label><input id="company" name="company" autocomplete="organization" required /></div>
+                  <div class="field"><label for="website">Website <span class="opt">(optional)</span></label><input id="website" name="website" type="url" placeholder="https://" autocomplete="url" /></div>
+                </div>
+                <div class="two">
+                  <div class="field"><label for="format">Format</label><select id="format" name="format"><option>Food &amp; beverage (QSR, café, restaurant)</option><option>Grocery &amp; convenience</option><option>Apparel &amp; lifestyle</option><option>Pharmacy &amp; health</option><option>Banking &amp; services</option><option>Entertainment &amp; leisure</option><option>Fuel &amp; automotive</option><option>Real estate (developer / landlord)</option><option>Other</option></select></div>
+                  <div class="field"><label for="city">City</label><input id="city" name="city" value="Bengaluru" readonly /></div>
+                </div>
+                <div class="field"><label for="description">Describe your business</label>
+                  <textarea id="description" name="description" style="min-height:190px" required placeholder="What do you sell, and at what price range? When do customers buy (hours, days)? Who are your customers? How many outlets do you have today, and how do they perform? What decision are you trying to make with this report — opening new stores, relocating, or choosing between sites?"></textarea>
+                  <div class="count"><span id="dcount">0</span> characters · the more detail, the better the analysis</div></div>
+              </div>
+            </fieldset>
+
+            <fieldset class="fset">
+              <legend>Locations</legend>
+              <p class="hint">One Google Plus code per location — each one uses 1 credit. Mark whether it is an outlet you already run or a site you want evaluated. Up to 10 per request; more than that is an <a href="pricing.html">enterprise report</a>.</p>
+              <div class="locs" id="locs"></div>
+              <div class="loc-actions">
+                <button type="button" class="btn btn-secondary btn-sm" id="addLoc">Add a location</button>
+                <button type="button" class="linkbtn" id="pasteToggle">Paste a list of codes</button>
+                <span class="small muted" id="locCount"></span>
+              </div>
+              <div class="paste" id="paste">
+                <div class="field"><label for="pasteBox">One code per line <span class="opt">(you can add a name after the code)</span></label>
+                  <textarea id="pasteBox" placeholder="WHHJ+JM Bengaluru&#10;WJ5X+FF Bengaluru"></textarea></div>
+                <button type="button" class="btn btn-secondary btn-sm" id="pasteAdd" style="margin-top:10px">Add these locations</button>
+              </div>
+            </fieldset>
+
+            <div class="form">
+              <label class="checkrow"><input type="checkbox" id="consent" name="consent" /><span>I agree that AGT Intelligence may use these details to review my request and contact me about it. The report stays private to my email address.</span></label>
+              <button class="btn btn-primary" type="submit" id="submitBtn" style="justify-self:start">Submit request</button>
+              <p class="form-note" id="note" role="status"></p>
+            </div>
+          </form>
+        </div>
+
+        <div class="card done" id="done" style="padding:40px;display:none">
+          <svg class="ico" data-icon="mail" style="width:30px;height:30px"></svg>
+          <h2 class="big" style="margin-top:18px">Request received.</h2>
+          <span class="ref" id="refOut"></span>
+          <p class="lede" style="margin-top:6px">We've emailed a confirmation to <b id="emailOut"></b> and told our team. We'll review your request, run the analysis and email you when your dashboard has been checked. You can follow its status, or withdraw it before it starts, from your account.</p>
+          <div class="hero-cta"><a class="btn btn-primary" href="account.html#reports">View my requests</a><a class="btn btn-secondary" href="home.html">Back to the website</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<div id="site-footer"></div>
+<script src="icons.js?v=2"></script>
+<script src="site/config.js?v=1"></script>
+<script src="site/api.js?v=1"></script>
+<script src="site/layout.js?v=6"></script>
+<script src="site/request.js?v=2"></script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Technology · AGT Intelligence</title>
+  <meta name="description" content="The AGT Intelligence engine: GeoParquet and Zarr spatial lake, H3 indexing, Google Earth Engine, PyTorch and Apple MLX models, with human verification in QGIS." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M2 12 L10 4 L18 12 L10 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M16 12 L24 4 L32 12 L24 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round' opacity='.55'/%3E%3C/svg%3E" />
+  <link href="site/site.css?v=25" rel="stylesheet" />
+</head>
+<body data-page="technology">
+<div id="site-header"></div>
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <div class="crumbs"><a href="home.html">Home</a><span>/</span>Technology</div>
+      <div class="page-hero-grid">
+        <div>
+          <p class="eyebrow">Technology</p>
+          <h1 class="h1">An engine built for answers in minutes, not weeks.</h1>
+          <p class="lede">Speed and scale are the real bottlenecks in location intelligence. Our engine keeps spatial data in cloud-native formats, prepares planetary-scale imagery once, joins everything on a single hexagonal grid and develops models where iteration is fastest — with people verifying every release.</p>
+        </div>
+        <div class="keyfacts">
+          <div><b>5</b><span>layers from raw sources to delivered decisions</span></div>
+          <div><b>H3</b><span>one hexagonal grid that every dataset joins on</span></div>
+          <div><b>Open</b><span>formats — GeoParquet, Zarr, GeoJSON — no lock-in</span></div>
+          <div><b>QGIS</b><span>human verification before anything reaches a committee</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section first" id="architecture">
+    <div class="wrap">
+      <div class="sec-head rv"><p class="eyebrow">Architecture</p><h2 class="h2">Explore the platform, component by component.</h2>
+        <p class="lede">Select any component to see what it does, how it works and why it matters; its connections light up. Or trace a workflow to follow a request through the engine step by step.</p></div>
+      <div class="viz rv">
+        <div class="arch-tools">
+          <span class="viz-head title" style="padding:0;border:0">Trace a workflow</span>
+          <div class="seg" role="group" aria-label="Workflows">
+            <button type="button" aria-pressed="false" data-trace="report">Generate a site report</button>
+            <button type="button" aria-pressed="false" data-trace="whitespace">Run a whitespace scan</button>
+            <button type="button" aria-pressed="false" data-trace="retrain">Retrain the forecast model</button>
+          </div>
+        </div>
+        <div class="trace-steps" id="traceBar">
+          <span class="tnum" id="traceNum">Step 1</span><p id="traceText"></p>
+          <button type="button" class="btn btn-secondary" id="tracePrev">Back</button>
+          <button type="button" class="btn btn-secondary" id="traceNext">Next</button>
+          <button type="button" class="btn btn-secondary" id="traceStop">Close</button>
+        </div>
+        <div class="arch-stage" id="archStage">
+          <svg class="arch-svg" id="archSvg" aria-hidden="true"></svg>
+          <div class="arch-grid" id="archGrid"></div>
+          <div class="arch-bands" id="archBands"></div>
+        </div>
+        <div class="arch-detail" id="archDetail" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="storage">
+    <div class="wrap split">
+      <div class="rv"><p class="eyebrow">Cloud-native storage</p><h2 class="h2">Read only what the question needs.</h2>
+        <div class="prose mt-m">
+          <p>Location data is large: years of hourly mobility, imagery, millions of places and road segments. Loading it all for every question is what makes traditional GIS slow.</p>
+          <p><strong>GeoParquet</strong> stores vector data in columns and row groups, each with a bounding box. A query for one catchment skips every row group outside it and every column it does not need.</p>
+          <p><strong>Zarr</strong> stores rasters and time-series as compressed chunks across space and time. A five-kilometre catchment over one week touches a handful of chunks, which can be read in parallel straight from object storage.</p>
+          <p>Move the pointer over the grid: each square is a chunk, the dashed circle is a catchment query, and only the highlighted chunks are read.</p>
+        </div></div>
+      <div class="viz rv">
+        <div class="viz-head"><label class="ctrl"><span>Catchment radius</span><input type="range" id="chunkRad" min="6" max="45" value="18" aria-label="Query radius" /></label><span class="viz-tag">Concept illustration</span></div>
+        <div class="chunks-wrap"><div class="chunks" id="chunks" aria-label="Grid of storage chunks; those intersecting the query circle are highlighted"></div><div class="chunk-ring" id="chunkRing"></div></div>
+        <div class="figure-cap"><span>Chunks read: <b id="chunkHit">0</b> of <span id="chunkTot">0</span></span><span><b id="chunkPct">0%</b> of the archive</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="grid">
+    <div class="wrap split">
+      <div class="sticky-col rv"><p class="eyebrow">The hexagonal grid</p><h2 class="h2">One grid that every dataset joins on.</h2>
+        <div class="prose mt-m"><p>We index everything — people, places, roads, imagery, mobility — to Uber's open-source H3 grid. Hexagons have six equidistant neighbours, so distance-based calculations have no edge or corner bias, and two datasets join on a cell ID instead of an expensive geometric intersection.</p>
+          <p>Each resolution nests inside the coarser one, so a metro-wide scan can run at a coarse level and refine only where it matters.</p></div></div>
+      <div class="rv">
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>H3 resolution</th><th>Edge length</th><th>Area</th><th>Used for</th></tr></thead>
+            <tbody>
+              <tr><td>7</td><td>≈ 1.2 km</td><td>≈ 5.2 km²</td><td>Metro-wide screening</td></tr>
+              <tr><td>8</td><td>≈ 460 m</td><td>≈ 0.74 km²</td><td>Whitespace pockets, market summaries</td></tr>
+              <tr><td>9</td><td>≈ 175 m</td><td>≈ 0.11 km²</td><td>Neighbourhood profiles, coverage</td></tr>
+              <tr><td>10</td><td>≈ 66 m</td><td>≈ 0.015 km²</td><td>Site scoring, trade-area boundaries</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout mt-m"><svg class="ico" data-icon="hexagon"></svg><span><b>Why not squares or postcodes?</b> Square grids have two kinds of neighbour and distort distance; administrative units vary wildly in size and change over time. Hexagons are uniform, stable and comparable across cities.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="models">
+    <div class="wrap split">
+      <div class="sticky-col rv"><p class="eyebrow">Model development</p><h2 class="h2">Iterate locally. Deploy to the cloud.</h2>
+        <div class="prose mt-m"><p>Forecasting models are developed in PyTorch, which lets us build networks around the structure of location data — tabular features alongside the spatial context of a trade area.</p>
+          <p>Prototyping runs on high-memory Apple Silicon with Apple MLX, where unified memory holds large feature sets without shuffling data to a GPU. Once an architecture proves itself, it is trained at scale and deployed to the cloud for inference.</p></div></div>
+      <div class="steps rv">
+        <div class="step"><div><h4>Prepare once</h4><p>Imagery, land cover and terrain are composited and summarised per hexagon in Google Earth Engine, then exported as analysis-ready layers.</p></div></div>
+        <div class="step"><div><h4>Assemble features</h4><p>The feature store joins every layer on H3 with point-in-time correctness, so training never sees the future.</p></div></div>
+        <div class="step"><div><h4>Prototype with MLX</h4><p>Architectures and feature sets are compared quickly on local hardware with large unified memory.</p></div></div>
+        <div class="step"><div><h4>Train and back-test in PyTorch</h4><p>The chosen model is trained with quantile outputs and tested on stores held out of training.</p></div></div>
+        <div class="step"><div><h4>Deploy and version</h4><p>Models are served from the cloud; every forecast records the model version that produced it.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="stack">
+    <div class="wrap">
+      <div class="sec-head rv"><p class="eyebrow">Stack</p><h2 class="h2">The technologies, and why we chose them.</h2></div>
+      <div class="table-wrap rv">
+        <table class="table">
+          <thead><tr><th>Layer</th><th>Technology</th><th>Role</th><th>Why</th></tr></thead>
+          <tbody>
+            <tr><td>Vector storage</td><td>GeoParquet</td><td>Places, roads, trade areas, outputs</td><td>Columnar, compressed, spatially filterable, open standard</td></tr>
+            <tr><td>Array storage</td><td>Zarr</td><td>Rasters, mobility time-series</td><td>Chunked, parallel, cloud-native reads</td></tr>
+            <tr><td>Spatial index</td><td>H3</td><td>Common grid for every layer</td><td>Uniform neighbours, fast joins, multi-resolution</td></tr>
+            <tr><td>Earth observation</td><td>Google Earth Engine</td><td>Imagery, land cover, terrain preprocessing</td><td>Planetary-scale compute, prepared once</td></tr>
+            <tr><td>Forecasting</td><td>PyTorch</td><td>Revenue models with quantile outputs</td><td>Flexible architectures, mature tooling</td></tr>
+            <tr><td>Research</td><td>Apple MLX</td><td>Local prototyping on Apple Silicon</td><td>Large unified memory, fast iteration</td></tr>
+            <tr><td>Spatial models</td><td>Network routing, gravity and Huff</td><td>Isochrones, store choice, cannibalisation</td><td>Established, explainable methods</td></tr>
+            <tr><td>Verification</td><td>QGIS</td><td>Analyst review of every release</td><td>Open, precise, the analyst's standard tool</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="quality">
+    <div class="wrap">
+      <div class="sec-head rv"><p class="eyebrow">Quality</p><h2 class="h2">Automation with accountability.</h2></div>
+      <div class="principles rv">
+        <div><span class="num">01</span><h4>Validated inputs</h4><p>Schema, range and duplicate checks on every source; suspicious records are quarantined, not dropped.</p></div>
+        <div><span class="num">02</span><h4>Reproducible runs</h4><p>Versioned data, features and models mean any number can be regenerated exactly.</p></div>
+        <div><span class="num">03</span><h4>Human review</h4><p>Analysts check trade areas, matches and outliers in QGIS before release.</p></div>
+        <div><span class="num">04</span><h4>Provenance</h4><p>Source, date, licence and model version travel with every output.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band"><div class="wrap"><h2 class="h2">Want the technical deep-dive for your team?</h2>
+    <div class="actions"><a class="btn btn-primary" href="contact.html">Talk to us</a><a class="btn btn-secondary" href="methodology.html">Read the methodology →</a></div></div></section>
+</main>
+<div id="site-footer"></div>
+<script src="icons.js?v=2"></script>
+<script src="site/config.js?v=1"></script>
+<script src="site/api.js?v=1"></script>
+<script src="site/layout.js?v=6"></script>
+<script src="site/arch.js?v=2"></script>
+</body>
+</html>

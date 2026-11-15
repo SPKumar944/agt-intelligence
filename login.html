@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Sign in · AGT Intelligence</title>
+  <meta name="description" content="AGT Intelligence — location intelligence for retail. Sign in to your workspace." />
+  <meta name="theme-color" content="#000000" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M2 12 L10 4 L18 12 L10 20 Z' fill='none' stroke='%23000' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M16 12 L24 4 L32 12 L24 20 Z' fill='none' stroke='%23000' stroke-width='3' stroke-linejoin='round' opacity='.55'/%3E%3C/svg%3E" />
+  <script>
+    // Already signed in → straight to the right place.
+    window.addEventListener("load", () => { if (!window.AGT) return; AGT.session().then((s) => {
+      if (s.role === "none") return;
+      const next = new URLSearchParams(location.search).get("next") || "";
+      location.replace(s.role === "admin" ? "admin.html" : (next || "account.html"));
+    }); });
+  </script>
+  <style>
+    :root {
+      --ink: #1d1d1f;
+      --ink-2: #6e6e73;
+      --ink-3: #86868b;
+      --page: #ffffff;
+      --field: #ffffff;
+      --field-line: #d2d2d7;
+      --field-hover: #a1a1a6;
+      --focus: #0071e3;
+      --link: #0066cc;
+      --error: #e30000;
+      --error-bg: #fff2f4;
+      --hairline: #e8e8ed;
+      --check: #1d1d1f;
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      --ease: cubic-bezier(.28, .11, .32, 1);
+    }
+    
+    :root[data-theme="dark"] {
+      --ink: #f5f5f7; --ink-2: #a1a1a6; --ink-3: #86868b; --page: #000000; --field: #1c1c1e;
+      --field-line: #424245; --field-hover: #6e6e73; --focus: #2997ff; --link: #2997ff;
+      --error: #ff6961; --error-bg: #2c1517; --hairline: #2c2c2e; --check: #f5f5f7;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      background: var(--page); color: var(--ink); font-family: var(--font);
+      -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+      font-size: 17px; line-height: 1.47; letter-spacing: -.022em;
+    }
+    button, input { font: inherit; color: inherit; letter-spacing: inherit; }
+    a { color: var(--link); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    .shell { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(440px, 1fr); min-height: 100%; }
+
+    /* ------------------------------------------------------------ stage (the live street film) */
+    .stage { position: relative; overflow: hidden; background: #000; color: #f5f5f7; isolation: isolate; min-height: 100vh; }
+    .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; z-index: -2; }
+    .stage::after {           /* legibility veil: dark at the copy, open over the city */
+      content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.75) 0%, rgba(0,0,0,0) 20%),
+        linear-gradient(0deg, rgba(0,0,0,.96) 0%, rgba(0,0,0,.82) 34%, rgba(0,0,0,.25) 62%, rgba(0,0,0,0) 74%),
+        linear-gradient(90deg, rgba(0,0,0,.55) 0%, rgba(0,0,0,0) 55%),
+        radial-gradient(110% 85% at 64% 34%, rgba(0,0,0,0) 45%, rgba(0,0,0,.7) 100%);
+    }
+    .stage-inner { position: relative; height: 100%; min-height: inherit; display: flex; flex-direction: column; padding: 40px 56px 48px; }
+
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand svg { width: 34px; height: 20px; flex: none; }
+    .brand-word { font-size: 15px; font-weight: 600; letter-spacing: .02em; }
+    .brand-word span { font-weight: 400; opacity: .72; margin-left: 4px; }
+
+    .stage-copy { margin-top: auto; max-width: 620px; }
+    .eyebrow { font-size: 17px; font-weight: 600; letter-spacing: -.01em; margin: 0 0 10px;
+      background: linear-gradient(90deg, #a78bfa, #f472b6 55%, #fb923c); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    h1 { font-size: clamp(44px, 5.6vw, 80px); line-height: 1.05; font-weight: 700; letter-spacing: -.035em; margin: 0; }
+    h1 .dim { color: #86868b; }
+    .lede { font-size: clamp(17px, 1.45vw, 21px); line-height: 1.38; color: #a1a1a6; font-weight: 500; letter-spacing: -.012em; margin: 22px 0 0; max-width: 520px; }
+    .lede b { color: #f5f5f7; font-weight: 600; }
+
+    .facts { display: flex; gap: 40px; margin: 40px 0 0; padding: 26px 0 0; border-top: 1px solid rgba(255,255,255,.14); list-style: none; }
+    .facts li { display: flex; flex-direction: column; gap: 8px; max-width: 170px; }
+    .facts svg { width: 26px; height: 26px; color: #f5f5f7; }
+    .facts b { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+    .facts span { font-size: 13px; line-height: 1.38; color: #86868b; letter-spacing: -.005em; }
+
+    .clock { position: absolute; top: 36px; right: 40px; display: grid; justify-items: end; gap: 6px; text-align: right; }
+    .clock-time { font-size: 30px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1; }
+    .clock-day { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #a1a1a6; }
+    .clock-phase { font-size: 13px; color: #a1a1a6; letter-spacing: -.005em; min-height: 18px; }
+    .clock-track { width: 168px; height: 2px; border-radius: 2px; background: rgba(255,255,255,.16); overflow: hidden; margin-top: 4px; }
+    .clock-track i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #a78bfa, #f472b6, #fb923c); border-radius: 2px; }
+    .ramp { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #86868b; letter-spacing: .01em; margin-top: 8px; }
+    .ramp i { width: 64px; height: 4px; border-radius: 4px; background: linear-gradient(90deg, #262a6b, #5b5ff0, #a463f2, #f0609e, #ff9a4d, #ffe2b8); }
+    .credit { position: absolute; right: 40px; bottom: 22px; font-size: 11px; color: #6e6e73; letter-spacing: 0; }
+
+    /* ------------------------------------------------------------ sign-in panel */
+    .panel { display: flex; flex-direction: column; background: var(--page); min-height: 100vh; border-left: 1px solid var(--hairline); }
+    .panel-top { display: flex; justify-content: flex-end; padding: 28px 40px 0; font-size: 14px; color: var(--ink-2); letter-spacing: -.01em; }
+    .panel-main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 40px; }
+    .card { width: 100%; max-width: 380px; }
+    .card-mark { width: 50px; height: 30px; color: var(--ink); margin-bottom: 28px; }
+    .card h2 { font-size: 40px; line-height: 1.1; font-weight: 600; letter-spacing: -.03em; margin: 0; }
+    .card .sub { font-size: 17px; color: var(--ink-2); margin: 10px 0 34px; letter-spacing: -.02em; }
+
+    .fields { position: relative; border-radius: 14px; }
+    .field { position: relative; }
+    .field input {
+      display: block; width: 100%; height: 58px; padding: 22px 64px 6px 16px; font-size: 17px;
+      background: var(--field); border: 1px solid var(--field-line); border-radius: 14px; outline: none;
+      transition: border-color .2s var(--ease), box-shadow .2s var(--ease), border-radius .35s var(--ease);
+      -webkit-appearance: none; appearance: none;
+    }
+    .field input:hover { border-color: var(--field-hover); }
+    .field input:focus { border-color: var(--focus); box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus) 22%, transparent); position: relative; z-index: 1; }
+    .field label {
+      position: absolute; left: 17px; top: 18px; font-size: 17px; color: var(--ink-3); pointer-events: none; z-index: 2;
+      transform-origin: 0 0; transition: transform .22s var(--ease), color .22s var(--ease);
+    }
+    .field input:focus + label, .field input:not(:placeholder-shown) + label { transform: translateY(-10px) scale(.72); }
+    .field input:-webkit-autofill + label { transform: translateY(-10px) scale(.72); }
+    .field input:-webkit-autofill { -webkit-box-shadow: 0 0 0 40px var(--field) inset; -webkit-text-fill-color: var(--ink); }
+
+    /* two-step: the password field unfolds beneath the email, Apple-style */
+    .pw-wrap { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .45s var(--ease); }
+    .pw-wrap > div { overflow: hidden; }
+    .step2 .pw-wrap { grid-template-rows: 1fr; }
+    .step2 #email { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+    .step2 #password { border-top-left-radius: 0; border-top-right-radius: 0; margin-top: -1px; }
+    .pw-wrap .field { padding: 0 0 4px; }   /* room for the focus ring inside the overflow box */
+    .pw-wrap > div { padding: 0 4px; margin: 0 -4px; }
+
+    .go {
+      position: absolute; right: 13px; bottom: 13px; width: 32px; height: 32px; z-index: 3;
+      border-radius: 50%; border: 1.5px solid var(--ink-3); background: transparent; color: var(--ink-3);
+      display: grid; place-items: center; cursor: pointer; padding: 0;
+      transition: color .2s, border-color .2s, transform .45s var(--ease), bottom .45s var(--ease), opacity .2s;
+    }
+    .step2 .go { bottom: 17px; }
+    .go.ready { color: var(--ink); border-color: var(--ink); }
+    .go:hover.ready { transform: translateX(2px); }
+    .go:focus-visible { outline: 3px solid color-mix(in srgb, var(--focus) 45%, transparent); outline-offset: 2px; }
+    .go svg { width: 14px; height: 14px; }
+    .go .spin { display: none; width: 18px; height: 18px; }
+    .busy .go { border-color: transparent; cursor: default; }
+    .busy .go .arrow { display: none; }
+    .busy .go .spin { display: block; animation: rot .9s linear infinite; }
+    @keyframes rot { to { transform: rotate(360deg); } }
+    .reveal {
+      position: absolute; right: 54px; top: 17px; width: 28px; height: 24px; padding: 0; border: 0; background: transparent;
+      color: var(--ink-3); cursor: pointer; display: grid; place-items: center; z-index: 3; border-radius: 6px;
+    }
+    .reveal:hover { color: var(--ink); }
+    .reveal svg { width: 20px; height: 20px; }
+
+    .msg { font-size: 14px; line-height: 1.43; letter-spacing: -.01em; margin: 0; overflow: hidden; max-height: 0; opacity: 0;
+      transition: max-height .35s var(--ease), opacity .25s, margin .35s var(--ease); }
+    .msg.show { max-height: 120px; opacity: 1; margin-top: 14px; }
+    .msg.err { color: var(--error); }
+    .msg.ok { color: var(--ink-2); }
+    .shake { animation: shake .42s var(--ease); }
+    @keyframes shake { 15%, 55% { transform: translateX(-8px); } 35%, 75% { transform: translateX(7px); } }
+
+    .row { display: flex; justify-content: space-between; align-items: center; margin-top: 22px; font-size: 14px; letter-spacing: -.01em; }
+    .check { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; color: var(--ink); user-select: none; }
+    .check input { position: absolute; opacity: 0; pointer-events: none; }
+    .check .box { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--field-line); display: grid; place-items: center;
+      transition: background .15s, border-color .15s; }
+    .check .box svg { width: 11px; height: 11px; opacity: 0; color: var(--page); }
+    .check input:checked + .box { background: var(--check); border-color: var(--check); }
+    .check input:checked + .box svg { opacity: 1; }
+    .check input:focus-visible + .box { outline: 3px solid color-mix(in srgb, var(--focus) 45%, transparent); outline-offset: 2px; }
+    .linkbtn { border: 0; background: none; padding: 0; color: var(--link); cursor: pointer; font-size: 14px; }
+    .linkbtn:hover { text-decoration: underline; }
+    .linkbtn::after { content: " ›"; }
+
+    .divider { height: 1px; background: var(--hairline); margin: 36px 0 22px; }
+    .fine { font-size: 13px; color: var(--ink-2); line-height: 1.5; letter-spacing: -.005em; margin: 0; }
+    .fine svg { width: 14px; height: 14px; vertical-align: -2px; margin-right: 6px; }
+
+    .welcome { display: none; text-align: left; }
+    .done .form-area { display: none; }
+    .done .welcome { display: block; animation: rise .6s var(--ease) both; }
+    .welcome .avatar { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; font-size: 24px; font-weight: 600;
+      color: #fff; background: linear-gradient(135deg, #7c6cf0, #e85d9c 60%, #f59345); margin-bottom: 22px; letter-spacing: 0; }
+    .welcome h2 { font-size: 34px; }
+    @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+    .panel-foot { padding: 0 40px 28px; font-size: 12px; color: var(--ink-3); letter-spacing: -.005em; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .panel-foot span + span::before { content: ""; }
+
+    /* entrance */
+    .card, .stage-copy, .clock { animation: rise .9s var(--ease) both; }
+    .stage-copy { animation-delay: .15s; }
+    .clock { animation-delay: .35s; }
+
+    /* ------------------------------------------------------------ responsive */
+    @media (max-width: 1180px) {
+      .stage-inner { padding: 32px 40px 40px; }
+      .facts { gap: 28px; }
+      .facts li:nth-child(3) { display: none; }
+    }
+    @media (max-width: 900px) {
+      .shell { grid-template-columns: 1fr; }
+      .stage { min-height: 0; height: min(64vh, 560px); }
+      .stage-inner { padding: 22px 16px 26px; }
+      .stage::after { background: linear-gradient(180deg, rgba(0,0,0,.6) 0%, rgba(0,0,0,0) 26%), linear-gradient(0deg, rgba(0,0,0,.95) 0%, rgba(0,0,0,.5) 40%, rgba(0,0,0,0) 70%); }
+      .brand-word span { display: none; }
+      .clock { top: 20px; right: 16px; gap: 4px; }
+      .clock-time { font-size: 22px; }
+      .clock-track, .ramp, .clock-phase { display: none; }
+      .facts, .credit { display: none; }
+      h1 { font-size: clamp(36px, 10vw, 52px); }
+      .lede { font-size: 16px; margin-top: 14px; }
+      .panel { min-height: 0; border-left: 0; }
+      .panel-top { display: none; }
+      .panel-main { padding: 36px 16px 40px; align-items: flex-start; justify-content: flex-start; }
+      .card { max-width: 520px; }
+      .card-mark { display: none; }
+      .card h2 { font-size: 32px; }
+      .card .sub { margin-bottom: 26px; }
+      .panel-foot { padding: 0 16px 24px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+  <script src="site/config.js?v=1"></script>
+  <script src="site/api.js?v=1"></script>
+</head>
+<body>
+  <div class="shell">
+    <!-- ===================================================== STAGE -->
+    <section class="stage" aria-label="Live preview: modelled street footfall through a Saturday">
+      <canvas id="city" aria-hidden="true"></canvas>
+      <div class="stage-inner">
+        <div class="brand">
+          <svg viewBox="0 0 40 24" aria-hidden="true">
+            <path d="M2 12 L10 4 L18 12 L10 20 Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>
+            <path d="M16 12 L24 4 L32 12 L24 20 Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" opacity=".5"/>
+            <circle cx="35.5" cy="12" r="2.4" fill="currentColor"/>
+          </svg>
+          <div class="brand-word">AGT Intelligence<span>· Location Intelligence</span></div>
+        </div>
+
+        <div class="clock" aria-hidden="true">
+          <div class="clock-day" id="clockDay">Saturday</div>
+          <div class="clock-time" id="clockTime">18:00</div>
+          <div class="clock-phase" id="clockPhase">Evening peak</div>
+          <div class="clock-track"><i id="clockBar"></i></div>
+          <div class="ramp">Quiet <i></i> Busy</div>
+        </div>
+
+        <div class="stage-copy">
+          <p class="eyebrow">Site Footfall Intelligence</p>
+          <h1>Every street.<br /><span class="dim">Every hour.</span></h1>
+          <p class="lede">See how people move through a neighbourhood, hour by hour — then open <b>where the footfall already is</b>.</p>
+          <ul class="facts">
+            <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" data-icon="walking"></svg>
+              <b>Hourly footfall</b><span>Every road segment, modelled for all 24 hours of the week.</span></li>
+            <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" data-icon="radar"></svg>
+              <b>Competition</b><span>Direct and indirect rivals, brand tiers and white space.</span></li>
+            <li><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" data-icon="map-pin-plus"></svg>
+              <b>Expansion</b><span>Shop fronts ranked by peak footfall and fit to the brand.</span></li>
+          </ul>
+        </div>
+        <div class="credit">Modelled Saturday footfall · HSR Layout, Bengaluru · © OpenStreetMap contributors</div>
+      </div>
+    </section>
+
+    <!-- ===================================================== SIGN IN -->
+    <section class="panel">
+      <div class="panel-top"><button type="button" id="themeBtn" aria-label="Switch to dark mode" style="border:0;background:none;color:inherit;cursor:pointer;font-size:14px;margin-right:22px;padding:0">Dark mode</button><a href="admin.html" style="color:inherit;margin-right:22px">Super admin</a><a href="home.html" style="color:inherit">About AGT Intelligence ›</a></div>
+      <main class="panel-main">
+        <div class="card" id="card">
+          <div class="form-area">
+            <svg class="card-mark" viewBox="0 0 40 24" aria-hidden="true">
+              <path d="M2 12 L10 4 L18 12 L10 20 Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>
+              <path d="M16 12 L24 4 L32 12 L24 20 Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" opacity=".5"/>
+              <circle cx="35.5" cy="12" r="2.3" fill="currentColor"/>
+            </svg>
+            <h2>Sign in.</h2>
+            <p class="sub">Enter your Gmail address and we’ll email you a 6-digit code. No password needed.</p>
+
+            <div id="gWrap">
+              <form id="codeForm" novalidate>
+                <div class="fields" id="fields">
+                  <div class="field"><input id="email" type="email" placeholder=" " autocomplete="email" inputmode="email" /><label for="email">Gmail address</label></div>
+                  <div class="pw-wrap"><div><div class="field"><input id="code" type="text" placeholder=" " autocomplete="one-time-code" inputmode="numeric" maxlength="6" /><label for="code">6-digit code</label></div></div></div>
+                  <button type="submit" class="go ready" id="goBtn" aria-label="Continue"><svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>
+                </div>
+              </form>
+              <p class="msg err" id="err" role="alert" aria-live="assertive"></p>
+              <p class="msg ok" id="info" aria-live="polite"></p>
+              <div class="row" id="step2row" hidden><button type="button" class="linkbtn" id="resend">Send a new code</button><button type="button" class="linkbtn" id="change">Use a different address</button></div>
+              <form id="devForm" hidden style="margin-top:22px">
+                <p class="fine" style="margin:0 0 10px"><b>Local test sign-in</b> (only on this computer, switched on in server/config.json)</p>
+                <div class="fields"><div class="field"><input id="devEmail" type="email" placeholder=" " /><label for="devEmail">Test email</label></div>
+                  <button type="submit" class="go ready" aria-label="Sign in"><svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button></div>
+              </form>
+              <div class="row" style="margin-top:26px"><span style="color:var(--ink-2)">New here?</span><a class="linkbtn" href="pricing.html">See pricing &amp; free credits</a></div>
+            </div>
+
+            <div class="divider"></div>
+            <p class="fine">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="7" rx="1.6"/><path d="M5.2 7V5.2a2.8 2.8 0 0 1 5.6 0V7"/></svg>
+              New accounts include 2 free credits. You can open only the reports you requested, once we have checked and released them.
+            </p>
+          </div>
+
+          <div class="welcome" aria-live="polite">
+            <div class="avatar" id="avatar">A</div>
+            <h2 id="hello">Welcome back.</h2>
+            <p class="sub" id="helloSub">Opening your dashboard…</p>
+          </div>
+        </div>
+      </main>
+      <footer class="panel-foot">
+        <span>Copyright © <span id="yr">2026</span> AGT Intelligence. All rights reserved.</span>
+        <span>Modelled estimates — verify on site before committing.</span>
+      </footer>
+    </section>
+  </div>
+
+  <script src="icons.js?v=2"></script>
+  <script src="city.js?v=4"></script>
+  <script>
+  /* ======================================================= email-code sign-in */
+  (function () {
+    const $ = (id) => document.getElementById(id);
+    $("yr").textContent = new Date().getFullYear();
+    const err = $("err"), info = $("info"), card = $("fields");
+    const show = (m) => { info.classList.remove("show"); err.textContent = m; err.classList.add("show"); card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake"); };
+    const say = (m) => { err.classList.remove("show"); info.textContent = m; info.classList.add("show"); };
+    const next = () => { const n = new URLSearchParams(location.search).get("next") || ""; return /^[a-z0-9_.\-]+\.html/i.test(n) ? n : "account.html"; };
+    let step = 1, busy = false;
+    const setStep = (n) => { step = n; $("fields").classList.toggle("step2", n === 2); $("step2row").hidden = n !== 2; if (n === 2) $("code").focus(); else $("email").focus(); };
+    async function sendCode() {
+      const email = $("email").value.trim();
+      await AGT.api("/api/auth/email-code", { body: { email } });
+      setStep(2); say("We’ve emailed a 6-digit code to " + email + ". It works for 10 minutes.");
+    }
+    $("codeForm").addEventListener("submit", async (e) => {
+      e.preventDefault(); if (busy) return; busy = true; $("fields").classList.add("busy"); err.classList.remove("show");
+      try {
+        if (step === 1) await sendCode();
+        else { const j = await AGT.api("/api/auth/verify", { body: { email: $("email").value.trim(), code: $("code").value } }); AGT.setToken(j.token); location.replace(next()); }
+      } catch (x) { show(x.message); } finally { busy = false; $("fields").classList.remove("busy"); }
+    });
+    $("resend").addEventListener("click", async () => { try { await sendCode(); } catch (x) { show(x.message); } });
+    $("change").addEventListener("click", () => { $("code").value = ""; info.classList.remove("show"); err.classList.remove("show"); setStep(1); });
+    AGT.api("/api/config").then((c) => { if (c.dev_login) $("devForm").hidden = false; })
+      .catch(() => show("We couldn’t reach the server. Please try again in a moment."));
+    $("devForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try { const j = await AGT.api("/api/auth/dev", { body: { email: $("devEmail").value } }); AGT.setToken(j.token); location.replace(next()); } catch (x) { show(x.message); }
+    });
+  })();
+
+  /* ======================================================= the city film (city.js) */
+  (function () {
+    const $t = document.getElementById("clockTime"), $p = document.getElementById("clockPhase"), $b = document.getElementById("clockBar");
+    AGTCity.mount(document.getElementById("city"), {
+      startHour: 19,
+      onTick(hf) { $t.textContent = AGTCity.clock(hf); $p.textContent = AGTCity.phase(Math.floor(hf)); $b.style.width = (hf / 24 * 100).toFixed(2) + "%"; },
+    });
+  })();
+  </script>
+<script>
+(function(){var b=document.getElementById("themeBtn"),d=function(){return document.documentElement.dataset.theme==="dark"};
+ var paint=function(){b.textContent=d()?"Light mode":"Dark mode"};paint();
+ b.addEventListener("click",function(){try{localStorage.setItem("agt.theme",d()?"light":"dark")}catch(e){}
+  if(d())delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme="dark";location.reload()})})();
+</script>
+</body>
+</html>

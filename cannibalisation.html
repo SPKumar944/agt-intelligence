@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cannibalisation modelling · AGT Intelligence</title>
+  <meta name="description" content="Trade-area overlap and expected sales transfer between a proposed store and your existing network, in rupees." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M2 12 L10 4 L18 12 L10 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M16 12 L24 4 L32 12 L24 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round' opacity='.55'/%3E%3C/svg%3E" />
+  <link href="site/site.css?v=25" rel="stylesheet" />
+</head>
+<body data-page="cannibalisation">
+<div id="site-header"></div>
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <div class="crumbs"><a href="home.html">Home</a><span>/</span><a href="platform.html">Platform</a><span>/</span>Cannibalisation</div>
+      <div class="page-hero-grid">
+        <div>
+          <p class="eyebrow">Platform · 03</p>
+          <h1 class="h1">Cannibalisation modelling</h1>
+          <p class="lede">The most expensive expansion mistake is a store that mostly moves sales around. Before you sign, we calculate the trade-area overlap between a proposed site and every existing store, and put a rupee figure on the sales expected to transfer.</p>
+          <div class="hero-cta"><a class="btn btn-primary" href="contact.html">Request a demo</a><a class="btn btn-secondary" href="whitespace.html">Next: Whitespace</a></div>
+        </div>
+        <div class="keyfacts">
+          <div><b>Overlap</b><span>share of an existing store's trade area the new site would also serve</span></div>
+          <div><b>Transfer</b><span>annual sales expected to move from each existing store, in ₹</span></div>
+          <div><b>Net new</b><span>the new store's sales minus everything it takes from the network</span></div>
+          <div><b>Spacing</b><span>the distance band where a new store adds the most</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section first" id="concept">
+    <div class="wrap split">
+      <div class="sticky-col rv"><p class="eyebrow">The concept</p><h2 class="h2">Overlap is not the same as loss.</h2></div>
+      <div class="prose rv">
+        <p>Two trade areas can overlap heavily and still both thrive, if the shared neighbourhood has more demand than one store can capture. And a modest overlap can be expensive if it covers the existing store's best customers.</p>
+        <p>That is why we measure <strong>sales transfer</strong>, not just geometric overlap. For every hexagon we estimate how its customers split their spending between your stores and the competition today, and how that split changes when the new store opens. The difference, summed over the map, is the revenue each existing store is expected to lose.</p>
+        <p>The figure that matters to the business is <strong>net new sales</strong>: the new store's forecast minus everything it takes from the network. A site with a smaller forecast and little cannibalisation can be worth more than a bigger site next door to an existing outlet.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="model">
+    <div class="wrap split">
+      <div class="rv"><p class="eyebrow">The Huff model</p><h2 class="h2">How customers choose between stores.</h2>
+        <div class="prose mt-m"><p>The Huff model, introduced by David Huff in 1963, is the standard way to describe store choice. The probability that a customer in an area chooses a store rises with the store's attractiveness and falls with the effort of getting there — and depends on every alternative nearby, including competitors.</p>
+          <p>We calibrate attractiveness (size, format, brand) and distance decay per format, and use travel time on the real network rather than straight-line distance.</p>
+          <p class="small"><a href="methodology.html#decay">Explore distance decay interactively in the methodology →</a></p></div></div>
+      <div class="rv">
+        <div class="formula"><span class="kicker">Choice probability</span>
+          <div class="eq">P<sub>ij</sub> = <span class="frac"><span>A<sub>j</sub><sup>α</sup> · t<sub>ij</sub><sup>−β</sup></span><span>Σ<sub>k</sub> A<sub>k</sub><sup>α</sup> · t<sub>ik</sub><sup>−β</sup></span></span></div>
+          <dl><dt>P<sub>ij</sub></dt><dd>probability that customers in hexagon i choose store j</dd><dt>A<sub>j</sub></dt><dd>attractiveness of store j (size, format, brand)</dd><dt>t<sub>ij</sub></dt><dd>travel time from i to j on the network</dd><dt>α, β</dt><dd>attractiveness and distance-decay parameters, calibrated per format</dd><dt>k</dt><dd>every store in the choice set, including competitors</dd></dl></div>
+        <div class="formula mt-s"><span class="kicker">Sales transfer from existing store e</span>
+          <div class="eq">T<sub>e</sub> = Σ<sub>i</sub> D<sub>i</sub> · ( P<sub>ie</sub><sup class="up">before</sup> − P<sub>ie</sub><sup class="up">after</sup> )</div>
+          <dl><dt>D<sub>i</sub></dt><dd>category spend available in hexagon i</dd><dt>before / after</dt><dd>choice probabilities without and with the proposed store</dd></dl></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="interactive">
+    <div class="wrap">
+      <div class="sec-head rv"><p class="eyebrow">Interactive example</p><h2 class="h2">Move the proposed store.</h2>
+        <p class="lede">Drag the distance and the proposed store's attractiveness. The existing store sells ₹4.0 crore a year; watch how much moves, and how much the network really gains.</p></div>
+      <div class="viz rv">
+        <div class="viz-head"><div class="ctrls">
+          <label class="ctrl"><span>Distance between stores</span><input type="range" id="cnDist" min="0.8" max="7" step="0.1" value="2.6" aria-label="Distance in kilometres" /><b id="cnDistOut">2.6 km</b></label>
+          <label class="ctrl"><span>Proposed store attractiveness</span><input type="range" id="cnAttr" min="0.5" max="2" step="0.1" value="1" aria-label="Relative attractiveness" /><b id="cnAttrOut">1.0×</b></label></div>
+          <span class="viz-tag">Illustrative example</span></div>
+        <div class="viz-body">
+          <div class="viz-canvas"><canvas id="cannCanvas" aria-label="Two store trade areas whose overlap changes with distance"></canvas></div>
+          <div class="viz-side">
+            <div class="vstat"><b id="cn1">—</b><span>of the existing store's trade area is shared</span></div>
+            <div class="vstat"><b id="cn2">—</b><span id="cn2l">moves from the existing store each year</span></div>
+            <div class="vstat"><b id="cn3">—</b><span>net new sales for the network each year</span></div>
+            <div class="vstat"><b id="cn4">—</b><span>of the new store's sales are genuinely incremental</span></div>
+            <ul class="vkey"><li><i class="k-a"></i>Existing store's customers</li><li><i class="k-b"></i>Proposed store's customers</li><li><i class="k-ab"></i>Shared customers</li></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="metrics">
+    <div class="wrap">
+      <div class="sec-head rv"><p class="eyebrow">Metrics</p><h2 class="h2">What every cannibalisation study reports.</h2></div>
+      <div class="table-wrap rv">
+        <table class="table">
+          <thead><tr><th>Metric</th><th>Definition</th><th>Why it matters</th></tr></thead>
+          <tbody>
+            <tr><td>Trade-area overlap</td><td>Share of an existing store's primary trade area also inside the new store's trade area.</td><td>Quick screen for proximity risk.</td></tr>
+            <tr><td>Sales transfer (₹)</td><td>Annual revenue expected to move from each existing store to the new one.</td><td>The real cost of the opening to the network.</td></tr>
+            <tr><td>Transfer rate</td><td>Sales transfer as a share of the existing store's revenue.</td><td>Whether a sister store stays above its own break-even.</td></tr>
+            <tr><td>Net incremental sales</td><td>New store forecast minus total transfer from all existing stores.</td><td>The value the opening actually adds.</td></tr>
+            <tr><td>Incrementality</td><td>Net incremental sales ÷ new store forecast.</td><td>Compares candidates of different sizes fairly.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="method">
+    <div class="wrap split">
+      <div class="sticky-col rv"><p class="eyebrow">Method</p><h2 class="h2">How a study runs.</h2></div>
+      <div class="steps rv">
+        <div class="step"><div><h4>Map demand</h4><p>Category spend per hexagon from households, workers and visitors, using the dynamic catchments of the stores involved.</p></div></div>
+        <div class="step"><div><h4>Build the choice set</h4><p>Your stores and every relevant competitor, with attractiveness from size, format and brand.</p></div></div>
+        <div class="step"><div><h4>Calibrate</h4><p>Distance decay and attractiveness are tuned until modelled sales match existing stores' actual sales.</p></div></div>
+        <div class="step"><div><h4>Simulate the opening</h4><p>Add the proposed store, recompute choice probabilities everywhere, and measure transfer from each store.</p></div></div>
+        <div class="step"><div><h4>Compare candidates</h4><p>Rank candidates by net incremental sales, and test spacing and size scenarios.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="faq">
+    <div class="wrap split">
+      <div class="rv"><p class="eyebrow">FAQ</p><h2 class="h2">Questions about cannibalisation.</h2></div>
+      <div class="faq rv">
+        <details><summary>Does it account for competitors?</summary><div class="a"><p>Yes. Competitors are part of the choice set, so a new store can win share from them as well as from your own stores — which is exactly what makes some close-together openings worthwhile.</p></div></details>
+        <details><summary>Can it handle many stores at once?</summary><div class="a"><p>Yes. The model computes transfer from every existing store simultaneously, and can evaluate a whole expansion programme to find the best sequence and spacing.</p></div></details>
+        <details><summary>What about online and delivery orders?</summary><div class="a"><p>Delivery demand is modelled on its own catchment — the delivery radius — so overlap between delivery zones is reported separately from walk-in overlap.</p></div></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band"><div class="wrap"><h2 class="h2">Test your next opening against your whole network.</h2>
+    <div class="actions"><a class="btn btn-primary" href="contact.html">Request a demo</a><a class="btn btn-secondary" href="whitespace.html">Next: whitespace →</a></div></div></section>
+</main>
+<div id="site-footer"></div>
+<script src="icons.js?v=2"></script>
+<script src="site/config.js?v=1"></script>
+<script src="site/api.js?v=1"></script>
+<script src="site/layout.js?v=6"></script>
+<script src="site/viz.js?v=7"></script>
+</body>
+</html>

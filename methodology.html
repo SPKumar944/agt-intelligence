@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Methodology · AGT Intelligence</title>
+  <meta name="description" content="The established concepts behind AGT Intelligence: trade areas, distance decay and the Huff model, footfall modelling, scoring, forecasting uncertainty and validation." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M2 12 L10 4 L18 12 L10 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M16 12 L24 4 L32 12 L24 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round' opacity='.55'/%3E%3C/svg%3E" />
+  <link href="site/site.css?v=25" rel="stylesheet" />
+</head>
+<body data-page="methodology">
+<div id="site-header"></div>
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <div class="crumbs"><a href="home.html">Home</a><span>/</span>Methodology</div>
+      <div class="page-hero-grid">
+        <div>
+          <p class="eyebrow">Methodology</p>
+          <h1 class="h1">The concepts behind every number.</h1>
+          <p class="lede">Our models are built on established ideas from retail geography and spatial statistics — trade areas, distance decay, spatial interaction, percentile scoring and quantile forecasting. This page explains each one, how we apply it, and where its limits are.</p>
+        </div>
+        <div class="keyfacts">
+          <div><b>1931</b><span>Reilly's law of retail gravitation — the root of trade-area theory</span></div>
+          <div><b>1963</b><span>Huff's probabilistic model of store choice, still the standard</span></div>
+          <div><b>Today</b><span>the same ideas, on travel times, mobility data and 65 m hexagons</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section first" id="trade-areas">
+    <div class="wrap split">
+      <div class="sticky-col rv"><span class="num">01</span><h2 class="h2 mt-s">Trade areas</h2></div>
+      <div class="prose rv">
+        <p>A <strong>trade area</strong> is the geographic area from which a store draws most of its customers. Retail planning divides it into a <strong>primary</strong> zone (roughly 60–70% of customers), a <strong>secondary</strong> zone (the next 15–25%) and a <strong>tertiary</strong> fringe.</p>
+        <p>Historically these zones were drawn as distance rings or drive-time bands. We draw them from behaviour: hexagons are ranked by their share of a store's visitors and accumulated until each zone's share is reached, on real travel times and respecting barriers. Where visitor data is not available — a site that has not opened — a gravity model on population and travel time estimates the shape, validated against comparable stores.</p>
+        <p><a href="catchments.html">See dynamic catchments in action →</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="decay">
+    <div class="wrap">
+      <div class="split">
+        <div class="rv"><span class="num">02</span><h2 class="h2 mt-s">Distance decay and the Huff model</h2>
+          <div class="prose mt-m">
+            <p>The further a store is, the less likely people are to use it — but how fast that likelihood falls depends on the format. People walk a few minutes for coffee and drive half an hour for furniture. The <strong>distance-decay exponent β</strong> captures this: higher β means customers are more reluctant to travel.</p>
+            <p>The <strong>Huff model</strong> turns decay into competition. A customer between two stores splits their custom in proportion to each store's attractiveness divided by its distance raised to β. The <em>break-even point</em> is where the two are equally likely.</p>
+            <p>Move the sliders: with a steeper decay, each store dominates its own side more sharply; make store B more attractive and the break-even point moves towards store A.</p>
+          </div></div>
+        <div class="rv">
+          <div class="viz">
+            <div class="viz-head"><div class="ctrls">
+              <label class="ctrl"><span>Distance decay β</span><input type="range" id="beta" min="0.5" max="3" step="0.1" value="2" aria-label="Distance decay exponent" /><b id="betaOut">2.0</b></label>
+              <label class="ctrl"><span>Store B attractiveness</span><input type="range" id="attrB" min="0.5" max="3" step="0.1" value="1" aria-label="Store B attractiveness" /><b id="attrBOut">1.0×</b></label></div></div>
+            <div class="chart-pad"><svg id="decaySvg" role="img" aria-label="Probability of choosing store A or store B along a 6 km line between them"></svg></div>
+            <div class="figure-cap"><span>Probability that a customer at each point chooses store A (solid) or store B (dashed). Stores sit 6 km apart.</span><span>Break-even: <b id="breakEven">3.0 km</b> from A</span></div>
+          </div>
+          <div class="formula mt-m"><span class="kicker">Huff choice probability</span>
+            <div class="eq">P<sub>ij</sub> = <span class="frac"><span>A<sub>j</sub><sup>α</sup> d<sub>ij</sub><sup>−β</sup></span><span>Σ<sub>k</sub> A<sub>k</sub><sup>α</sup> d<sub>ik</sub><sup>−β</sup></span></span></div>
+            <dl><dt>A<sub>j</sub></dt><dd>attractiveness of store j</dd><dt>d<sub>ij</sub></dt><dd>travel time or distance from i to j</dd><dt>α, β</dt><dd>calibrated per format from observed sales or visits</dd></dl></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="footfall">
+    <div class="wrap">
+      <div class="split">
+        <div class="sticky-col rv"><span class="num">03</span><h2 class="h2 mt-s">Footfall modelling</h2>
+          <div class="prose mt-m"><p>Street-level footfall combines four effects: how much a road can carry, how strongly nearby places pull people, how much transit adds, and when in the day people move. Where aggregated mobility counts exist they calibrate the model; where they don't, the structure still ranks streets and hours reliably.</p></div></div>
+        <div class="rv">
+          <div class="formula"><span class="kicker">Footfall on street segment s in hour h</span>
+            <div class="eq">F<sub>s,h</sub> = Cap<sub>s</sub> × G<sub>s</sub> × T<sub>s</sub> × Σ<sub>k</sub> σ<sub>s,k</sub> c<sub>k</sub>(h)</div>
+            <dl><dt>Cap<sub>s</sub></dt><dd>pedestrian capacity by road class</dd><dt>G<sub>s</sub></dt><dd>gravity of nearby businesses, weighted by category</dd><dt>T<sub>s</sub></dt><dd>uplift near metro stations and bus stops</dd><dt>σ<sub>s,k</sub></dt><dd>the street's mix of office, leisure, shopping and residential character</dd><dt>c<sub>k</sub>(h)</dt><dd>hourly curve for each character, weekday or weekend</dd></dl></div>
+          <div class="viz mt-m">
+            <div class="viz-head"><span class="title">The four hourly curves c<sub>k</sub>(h)</span>
+              <div class="seg" role="group" aria-label="Day type"><button type="button" aria-pressed="true" data-day="wd">Weekday</button><button type="button" aria-pressed="false" data-day="we">Weekend</button></div></div>
+            <div class="chart-pad rhythm-chart" id="rhythm"><svg id="rhythmSvg" role="img" aria-label="Hourly curves for four street characters"></svg><div class="tip" id="rhythmTip"></div></div>
+            <ul class="legend" id="rhythmLegend"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="scoring">
+    <div class="wrap split">
+      <div class="sticky-col rv"><span class="num">04</span><h2 class="h2 mt-s">Scoring</h2></div>
+      <div class="prose rv">
+        <p>A <strong>site score</strong> ranks locations against the whole market. Each driver is converted to a <strong>percentile</strong> — the share of locations in the study area that score lower — so drivers measured in different units (people per hour, rupees, number of rivals) become comparable.</p>
+        <p>The score is a weighted average of those percentiles. Weights are set per business profile, written down with a rationale and shown to users, so they can be challenged and changed. Factors where more is worse, such as competitive pressure, are inverted before weighting.</p>
+        <p>Percentiles are robust to outliers and need no sales history, which makes scoring the right tool for ranking candidates early. Its limitation is that it is relative: a score of 90 says a site is better than most, not how much it will sell. That is the job of the forecast.</p>
+        <div class="formula mt-m"><span class="kicker">Site score</span>
+          <div class="eq">S = Σ<sub>k</sub> w<sub>k</sub> · pct<sub>k</sub>(x) &nbsp;/&nbsp; Σ<sub>k</sub> w<sub>k</sub></div>
+          <dl><dt>pct<sub>k</sub>(x)</dt><dd>percentile of site x on driver k within the market</dd><dt>w<sub>k</sub></dt><dd>weight of driver k from the business profile</dd></dl></div>
+        <p class="mt-m"><a href="forecasting.html#interactive">Change the weights yourself →</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="forecast">
+    <div class="wrap split rev">
+      <div class="viz rv">
+        <div class="viz-head"><span class="title">Annualised revenue after opening · ₹ crore</span><span class="viz-tag">Illustrative example</span></div>
+        <div class="chart-pad"><svg id="fanSvg" role="img" aria-label="Forecast range: P10, P50 and P90 over 24 months"></svg></div>
+      </div>
+      <div class="rv"><span class="num">05</span><h2 class="h2 mt-s">Forecasting and uncertainty</h2>
+        <div class="prose mt-m">
+          <p>Revenue models learn the relationship between a store's surroundings and its sales from existing stores. Rather than a single number, they predict <strong>quantiles</strong>: P10, P50 and P90. A well-calibrated model sees outcomes fall between P10 and P90 about eight times in ten.</p>
+          <p>Each prediction is explained with <strong>additive attributions</strong> — contributions that start from a format baseline and sum exactly to the forecast — so a committee can see which drivers add and which subtract.</p>
+          <p>Ranges also reflect the ramp-up of a new store: early months carry more uncertainty than a mature run-rate.</p>
+        </div></div>
+    </div>
+  </section>
+
+  <section class="section alt" id="validation">
+    <div class="wrap">
+      <div class="sec-head rv"><span class="num">06</span><h2 class="h2 mt-s">Validation and ground truth</h2>
+        <p class="lede">A model is only as good as its last test. We validate at three levels before results reach a decision.</p></div>
+      <div class="grid-3">
+        <div class="card rv"><svg class="ico" data-icon="table"></svg><h4 class="h4">Back-testing</h4><p>Forecasts are tested on stores held out of training, reporting percentage error and how often outcomes fall within the forecast range.</p></div>
+        <div class="card rv"><svg class="ico" data-icon="walking"></svg><h4 class="h4">On-ground counts</h4><p>Short pedestrian counts at shortlisted frontages, during the hours that matter to the format, calibrate modelled footfall where it counts most.</p></div>
+        <div class="card rv"><svg class="ico" data-icon="crosshair"></svg><h4 class="h4">Analyst review</h4><p>Trade areas, competitor matches and outliers are reviewed in QGIS by analysts who know the city before anything is released.</p></div>
+      </div>
+      <div class="callout mt-m rv"><svg class="ico" data-icon="shield"></svg><span><b>Modelled versus measured.</b> Every number in our reports is labelled as measured (an observed count or sale) or modelled (an estimate), with its source and date. Modelled numbers are for ranking and comparing; commitments should rest on numbers that have been checked on the ground.</span></div>
+    </div>
+  </section>
+
+  <section class="section" id="glossary">
+    <div class="wrap split">
+      <div class="sticky-col rv"><span class="num">07</span><h2 class="h2 mt-s">Glossary</h2></div>
+      <div class="table-wrap rv">
+        <table class="table">
+          <tbody>
+            <tr><td>Catchment / trade area</td><td>The area a store draws most of its customers from, divided into primary, secondary and tertiary zones.</td></tr>
+            <tr><td>Isochrone</td><td>The area reachable within a given travel time by a given mode.</td></tr>
+            <tr><td>Distance decay</td><td>The decline in likelihood of travelling to a place as travel time or distance increases.</td></tr>
+            <tr><td>Huff model</td><td>A probabilistic model of store choice based on attractiveness and distance to every alternative.</td></tr>
+            <tr><td>Cannibalisation</td><td>Sales a new store takes from the same brand's existing stores.</td></tr>
+            <tr><td>Sales transfer</td><td>The amount, in currency, expected to move from an existing store to a new one.</td></tr>
+            <tr><td>Incrementality</td><td>The share of a new store's sales that are genuinely new to the network.</td></tr>
+            <tr><td>Whitespace</td><td>Areas where target-customer demand is high and category supply is low.</td></tr>
+            <tr><td>H3</td><td>An open-source hierarchical hexagonal grid used to index all spatial data.</td></tr>
+            <tr><td>Percentile</td><td>The share of locations in a market that score lower on a driver.</td></tr>
+            <tr><td>P10 / P50 / P90</td><td>Forecast quantiles: the outcome should exceed P10 nine times in ten and exceed P90 one time in ten.</td></tr>
+            <tr><td>Back-testing</td><td>Testing a model on data it was not trained on, such as held-out stores.</td></tr>
+            <tr><td>Feature store</td><td>A versioned table of model inputs, shared by every model so they use identical data.</td></tr>
+            <tr><td>Footfall</td><td>The number of people passing a location in a period; modelled or measured.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band"><div class="wrap"><h2 class="h2">Questions about the method? Our analysts will walk you through it.</h2>
+    <div class="actions"><a class="btn btn-primary" href="contact.html">Talk to us</a><a class="btn btn-secondary" href="trust.html">Data &amp; privacy →</a></div></div></section>
+</main>
+<div id="site-footer"></div>
+<script src="icons.js?v=2"></script>
+<script src="site/config.js?v=1"></script>
+<script src="site/api.js?v=1"></script>
+<script src="site/layout.js?v=6"></script>
+<script src="site/viz.js?v=7"></script>
+</body>
+</html>

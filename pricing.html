@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pricing &amp; credits · AGT Intelligence</title>
+  <meta name="description" content="Two free credits to start, ₹1,000 per location after that, and enterprise reports for 11+ locations or several cities." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M2 12 L10 4 L18 12 L10 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M16 12 L24 4 L32 12 L24 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round' opacity='.55'/%3E%3C/svg%3E" />
+  <link href="site/site.css?v=27" rel="stylesheet" />
+  <style>
+    .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; align-items: stretch; }
+    .plan { display: flex; flex-direction: column; padding: 34px; }
+    .plan.feature { box-shadow: 0 0 0 2px var(--ink), var(--shadow); }
+    .plan .tier { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; color: var(--ink-3); }
+    .plan .price { font-size: 46px; font-weight: 700; letter-spacing: -.045em; line-height: 1; margin: 14px 0 4px; }
+    .plan .price small { font-size: 15px; font-weight: 500; letter-spacing: 0; color: var(--ink-3); margin-left: 4px; }
+    .plan .for { color: var(--ink-2); margin: 0 0 22px; min-height: 48px; }
+    .plan .ticks { margin: 0 0 28px; } .plan .btn { margin-top: auto; justify-content: center; }
+    .badge-pill { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 3px 10px; border-radius: 980px; background: var(--ink); color: var(--bg); margin-left: 8px; letter-spacing: 0; text-transform: none; }
+    .rules { width: 100%; border-collapse: collapse; } .rules td { padding: 14px 0; border-top: 1px solid var(--line); vertical-align: top; } .rules td:first-child { font-weight: 600; width: 34%; padding-right: 16px; }
+    .rules .pos { color: #17653a; font-weight: 600; } .rules .neg { color: var(--ink-2); font-weight: 600; }
+    @media (max-width: 960px) { .plans { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body data-page="pricing">
+<div id="site-header"></div>
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <div class="crumbs"><a href="home.html">Home</a><span>/</span>Pricing</div>
+      <p class="eyebrow">Pricing &amp; credits</p>
+      <h1 class="h1">Start free.<br /><span class="dim">Pay only for the locations you analyse.</span></h1>
+      <p class="lede">Every report is paid for in credits. One credit covers one location. Every new account starts with <b data-p="free">2</b> free credits, so you can see a real report before you spend anything.</p>
+      <div class="hero-cta"><a class="btn btn-primary" href="login.html">Get started with Gmail</a><a class="btn btn-secondary" href="#how">How credits work</a></div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:80px">
+    <div class="wrap">
+      <div class="plans">
+        <article class="card plan">
+          <span class="tier">Free</span>
+          <div class="price"><span data-p="free">2</span><small>credits, once</small></div>
+          <p class="for">For trying the platform on your own locations.</p>
+          <ul class="ticks">
+            <li><b>2 locations</b> in total, as one request or two</li>
+            <li>Full interactive dashboard for each location</li>
+            <li>Footfall, competitors, demographics and expansion candidates</li>
+            <li>Bengaluru</li>
+          </ul>
+          <a class="btn btn-secondary" href="login.html">Sign in to claim</a>
+        </article>
+        <article class="card plan feature">
+          <span class="tier">Standard<span class="badge-pill">Pay as you go</span></span>
+          <div class="price"><span data-p="std-price">₹1,000</span><small>per location</small></div>
+          <p class="for">For growing brands that need more than the free locations.</p>
+          <ul class="ticks">
+            <li>Buy as many credits as you need, <b>1 credit = 1 location</b></li>
+            <li>Up to <b data-p="std-max">10</b> locations in one request</li>
+            <li>The same full dashboard as the free plan</li>
+            <li>Credits stay in your account until you use them</li>
+          </ul>
+          <a class="btn btn-primary" href="account.html#credits">Buy credits</a>
+        </article>
+        <article class="card plan">
+          <span class="tier">Enterprise</span>
+          <div class="price"><span data-p="ent-price">₹8,000</span><small>per location</small></div>
+          <p class="for">For large programmes across many locations or several cities.</p>
+          <ul class="ticks">
+            <li><b data-p="ent-min">11</b> or more locations in a request</li>
+            <li>Multiple cities</li>
+            <li><b>Detailed report</b> for each location, with extended analysis and written findings</li>
+            <li>Priority scheduling and a walk-through with our analysts</li>
+          </ul>
+          <a class="btn btn-secondary" href="account.html#enterprise">Send an enterprise enquiry</a>
+        </article>
+      </div>
+      <p class="small muted" style="margin-top:22px">Prices are per location and exclude applicable taxes. Enterprise pricing is confirmed in a written proposal before any work starts.</p>
+    </div>
+  </section>
+
+  <section class="section alt" id="how">
+    <div class="wrap split">
+      <div class="sticky-col"><p class="eyebrow">What is a credit?</p><h2 class="h2">One credit. One location. One report.</h2>
+        <p class="lede">A credit is the unit we use to keep pricing simple. You spend one credit for every location you ask us to analyse, whatever the size of the business.</p></div>
+      <div>
+        <table class="rules">
+          <tr><td>New account</td><td><span class="pos">+<span data-p="free">2</span> credits</span> added automatically, once, when you first sign in with your Gmail address.</td></tr>
+          <tr><td>Submitting a request</td><td><span class="neg">−1 credit per location.</span> A request with three Plus codes uses three credits. They are taken when you submit.</td></tr>
+          <tr><td>Withdrawing a request</td><td><span class="pos">Credits returned.</span> If you withdraw before our analysis starts, every credit comes back to your account.</td></tr>
+          <tr><td>If we can't take it on</td><td><span class="pos">Credits returned.</span> If we reject a request, the credits are returned and we tell you why.</td></tr>
+          <tr><td>Buying more</td><td>Choose how many credits you want, pay using the instructions we send you, and we add them once the payment is confirmed.</td></tr>
+          <tr><td>Larger programmes</td><td>More than <span data-p="std-max">10</span> locations in a request, or locations in several cities, is an enterprise report. Send an enquiry from your account and we will agree the scope and price with you.</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap split">
+      <div><p class="eyebrow">Questions</p><h2 class="h2">Credits &amp; billing.</h2></div>
+      <div class="faq">
+        <details><summary>Do the free credits expire or renew?</summary><div class="a"><p>Free credits are a one-time starter allowance per account. They don't renew. They stay in your account until you use them.</p></div></details>
+        <details><summary>What counts as a location?</summary><div class="a"><p>Each Google Plus code you submit is one location, whether it is an outlet you already run or a site you are evaluating.</p></div></details>
+        <details><summary>How do I pay?</summary><div class="a"><p>Place an order for the number of credits you want. We email you payment details with an order reference. Once we confirm your payment, the credits appear in your account, usually within one working day.</p></div></details>
+        <details><summary>What if I need a refund?</summary><div class="a"><p>Credits for a request you withdraw before the analysis starts, or for a request we reject, go straight back to your account. If something goes wrong with a report, contact us and we will put it right.</p></div></details>
+        <details><summary>What is in an enterprise report?</summary><div class="a"><p>A detailed report for every location, with extended analysis and written findings, for programmes of more than <span data-p="std-max">10</span> locations or across several cities. Scope and price are agreed with you in advance.</p></div></details>
+        <details><summary>Which cities do you cover?</summary><div class="a"><p>Standard reports are available for Bengaluru. Other cities are handled as enterprise projects because they need extra data preparation.</p></div></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band"><div class="wrap"><h2 class="h2">Try it on your own locations, free.</h2>
+    <div class="actions"><a class="btn btn-primary" href="login.html">Get started with Gmail</a><a class="btn btn-secondary" href="contact.html">Talk to us first</a></div></div></section>
+</main>
+<div id="site-footer"></div>
+<script src="icons.js?v=2"></script>
+<script src="site/config.js?v=1"></script>
+<script src="site/api.js?v=1"></script>
+<script src="site/layout.js?v=6"></script>
+<script>
+  // keep the numbers on this page in step with the server's pricing settings
+  if (window.AGT) AGT.api("/api/config").then((c) => {
+    const P = c.pricing, f = (n) => P.currency + Number(n).toLocaleString("en-IN");
+    const map = { "free": P.free_credits, "std-price": f(P.standard_per_location), "std-max": P.standard_max_locations, "ent-price": f(P.enterprise_per_location), "ent-min": P.enterprise_min_locations };
+    document.querySelectorAll("[data-p]").forEach((el) => { if (map[el.dataset.p] !== undefined) el.textContent = map[el.dataset.p]; });
+  }).catch(() => {});
+</script>
+</body>
+</html>

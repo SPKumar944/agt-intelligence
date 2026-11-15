@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Super admin · AGT Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M2 12 L10 4 L18 12 L10 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M16 12 L24 4 L32 12 L24 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round' opacity='.55'/%3E%3C/svg%3E" />
+  <link href="site/site.css?v=26" rel="stylesheet" />
+  <style>
+    [hidden] { display: none !important; }
+    body { font-size: 14.5px; background: var(--bg-2); }
+    .a-head { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid var(--line); }
+    .a-head .in { max-width: 1500px; margin: 0 auto; padding: 0 24px; height: 56px; display: flex; align-items: center; gap: 22px; }
+    .a-head .logo svg { color: var(--ink); } .a-head .tabs { display: flex; gap: 4px; margin-left: 12px; }
+    .a-head .tabs button { border: 0; background: none; padding: 7px 14px; border-radius: 980px; font-size: 13.5px; color: var(--ink-2); cursor: pointer; font-weight: 500; }
+    .a-head .tabs button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+    .a-head .sp { flex: 1; } .icon-b { width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--bg-2); color: var(--ink-2); cursor: pointer; display: grid; place-items: center; padding: 0; } .icon-b svg { width: 17px; height: 17px; }
+    .login { max-width: 400px; margin: 14vh auto 0; padding: 36px; }
+    .login h1 { font-size: 30px; margin: 14px 0 6px; letter-spacing: -.03em; } .login p { color: var(--ink-2); margin: 0 0 22px; }
+    .shell { max-width: 1500px; margin: 0 auto; padding: 22px 24px 60px; display: grid; grid-template-columns: 410px minmax(0, 1fr); gap: 22px; align-items: start; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .chip { border: 0; border-radius: 980px; padding: 6px 12px; background: var(--bg); color: var(--ink-2); font-size: 12.5px; cursor: pointer; box-shadow: 0 0 0 1px var(--line); }
+    .chip b { color: var(--ink); margin-left: 4px; font-weight: 600; } .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); box-shadow: none; } .chip[aria-pressed="true"] b { color: var(--bg); }
+    .list { display: grid; gap: 8px; }
+    .item { text-align: left; border: 0; border-radius: 14px; background: var(--bg); padding: 14px 16px; cursor: pointer; box-shadow: 0 0 0 1px var(--line); display: grid; gap: 6px; }
+    .item:hover { box-shadow: 0 0 0 1px var(--line-2), 0 8px 22px rgba(0,0,0,.06); } .item.sel { box-shadow: 0 0 0 2px var(--ink); }
+    .item .t { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; } .item .t b { font-size: 14.5px; font-weight: 600; letter-spacing: -.01em; }
+    .item .m { font-size: 12.5px; color: var(--ink-3); display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .pill { display: inline-block; border-radius: 980px; padding: 3px 10px; font-size: 11.5px; font-weight: 600; background: var(--bg-3); color: var(--ink-2); white-space: nowrap; }
+    .pill.submitted { background: #fff3d6; color: #8a5a00; } .pill.approved, .pill.processing { background: #e1ecff; color: #1d4ea0; } .pill.results_ready { background: #e8e1ff; color: #4a2fa0; }
+    .pill.released { background: #dcf3e4; color: #17653a; } .pill.rejected, .pill.failed { background: #fde3e0; color: #98231a; }
+    :root[data-theme="dark"] .pill.submitted { background: #3a2f10; color: #f3c969; } :root[data-theme="dark"] .pill.approved, :root[data-theme="dark"] .pill.processing { background: #14233f; color: #8fb4ff; }
+    :root[data-theme="dark"] .pill.results_ready { background: #251a47; color: #c0adff; } :root[data-theme="dark"] .pill.released { background: #12301f; color: #7fd6a2; } :root[data-theme="dark"] .pill.rejected, :root[data-theme="dark"] .pill.failed { background: #3a1613; color: #ffa59c; }
+    .panel { background: var(--bg); border-radius: 18px; box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 12px 36px rgba(0,0,0,.06); }
+    .d-head { padding: 22px 26px 18px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+    .d-head h2 { margin: 0; font-size: 24px; letter-spacing: -.03em; font-weight: 700; } .d-head .sub { color: var(--ink-3); font-size: 13px; margin-top: 4px; }
+    .acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .btn.danger { color: #b42318; border-color: #f0b8b2; }
+    .stepper { display: grid; grid-template-columns: repeat(5, 1fr); padding: 18px 26px; gap: 6px; border-bottom: 1px solid var(--line); }
+    .stepper div { font-size: 12px; color: var(--ink-3); border-top: 3px solid var(--line); padding-top: 8px; } .stepper div.done { border-color: var(--ink); color: var(--ink); } .stepper div.cur { border-color: var(--ink); color: var(--ink); font-weight: 600; } .stepper div.bad { border-color: #b42318; color: #b42318; }
+    .sec { padding: 20px 26px; border-bottom: 1px solid var(--line); } .sec:last-child { border-bottom: 0; }
+    .sec h3 { margin: 0 0 12px; font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+    .kv { display: grid; grid-template-columns: 130px 1fr; gap: 8px 14px; font-size: 14px; } .kv span:nth-child(odd) { color: var(--ink-3); }
+    .desc { white-space: pre-wrap; background: var(--bg-2); border-radius: 12px; padding: 14px 16px; font-size: 14px; line-height: 1.55; }
+    .locrow { display: grid; grid-template-columns: 28px 1fr auto; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px; } .locrow:first-of-type { border-top: 0; }
+    .locrow .n { color: var(--ink-3); } .locrow code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; background: var(--bg-2); padding: 2px 7px; border-radius: 6px; }
+    .bar { height: 8px; border-radius: 4px; background: var(--bg-3); overflow: hidden; margin: 10px 0 8px; } .bar i { display: block; height: 100%; background: var(--ink); border-radius: 4px; transition: width .6s; }
+    pre.log { margin: 12px 0 0; background: #111; color: #ddd; border-radius: 12px; padding: 12px 14px; font-size: 11.5px; max-height: 240px; overflow: auto; white-space: pre-wrap; word-break: break-word; line-height: 1.5; }
+    textarea.prof { width: 100%; min-height: 300px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; line-height: 1.5; border: 1px solid var(--line-2); border-radius: 12px; padding: 12px; background: var(--bg); color: var(--ink); }
+    textarea.t, input.t { width: 100%; border: 1px solid var(--line-2); border-radius: 10px; padding: 10px 12px; font: inherit; background: var(--bg); color: var(--ink); } textarea.t { min-height: 72px; resize: vertical; }
+    details.fold summary { cursor: pointer; font-weight: 600; font-size: 14px; list-style: none; display: flex; align-items: center; gap: 8px; } details.fold summary::before { content: "›"; transition: transform .2s; display: inline-block; } details.fold[open] summary::before { transform: rotate(90deg); }
+    .tl { display: grid; gap: 8px; font-size: 13px; } .tl div { display: grid; grid-template-columns: 150px 1fr; gap: 10px; color: var(--ink-2); } .tl span:first-child { color: var(--ink-3); }
+    .sitebtns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .empty { text-align: center; color: var(--ink-3); padding: 70px 20px; }
+    .mail { border-radius: 14px; background: var(--bg); box-shadow: 0 0 0 1px var(--line); padding: 14px 16px; margin-bottom: 8px; } .mail .h { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--ink-3); } .mail b { display: block; font-size: 14.5px; margin: 4px 0; } .mail pre { white-space: pre-wrap; font: inherit; color: var(--ink-2); margin: 8px 0 0; font-size: 13px; }
+    .banner-warn { background: #fff3d6; color: #6b4600; border-radius: 12px; padding: 10px 14px; font-size: 13px; margin-bottom: 14px; } :root[data-theme="dark"] .banner-warn { background: #3a2f10; color: #f3c969; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 11px 18px; border-radius: 980px; font-size: 13.5px; z-index: 50; opacity: 0; transition: opacity .25s; pointer-events: none; } .toast.on { opacity: 1; }
+    dialog { border: 0; border-radius: 18px; padding: 26px; max-width: 440px; width: calc(100% - 32px); background: var(--bg); color: var(--ink); box-shadow: 0 24px 80px rgba(0,0,0,.28); } dialog::backdrop { background: rgba(0,0,0,.4); }
+    dialog h3 { margin: 0 0 6px; font-size: 20px; letter-spacing: -.02em; } dialog label.opt { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 12px; box-shadow: 0 0 0 1px var(--line); margin-top: 10px; cursor: pointer; }
+    .wide { max-width: 1100px; margin: 0 auto; padding: 22px 24px 60px; } .wide .panel { margin-bottom: 18px; } .wide .sec h3 { margin-bottom: 12px; }
+    table.tb { width: 100%; border-collapse: collapse; font-size: 13.5px; } table.tb th { text-align: left; font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; padding: 8px 10px; border-bottom: 1px solid var(--line); } table.tb td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: middle; } table.tb tr:last-child td { border-bottom: 0; }
+    .rowf { display: flex; gap: 14px; flex-wrap: wrap; align-items: end; } .rowf .f { display: grid; gap: 4px; font-size: 12.5px; color: var(--ink-3); } .rowf input[type=number], .rowf input[type=time], .rowf input[type=datetime-local] { border: 1px solid var(--line-2); border-radius: 10px; padding: 8px 10px; font: inherit; background: var(--bg); color: var(--ink); }
+    @media (max-width: 1000px) { .shell { grid-template-columns: 1fr; } .kv { grid-template-columns: 100px 1fr; } .stepper div { font-size: 11px; } }
+  </style>
+  <script src="site/config.js?v=1"></script>
+  <script src="site/api.js?v=1"></script>
+</head>
+<body>
+<div id="loginView" hidden>
+  <div class="card login">
+    <svg viewBox="0 0 40 24" width="40" height="24" aria-hidden="true"><path d="M2 12 L10 4 L18 12 L10 20 Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><path d="M16 12 L24 4 L32 12 L24 20 Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" opacity=".5"/><circle cx="35.5" cy="12" r="2.4" fill="currentColor"/></svg>
+    <h1>Super admin</h1><p>Review report requests, approve them, check results and release them to clients.</p>
+    <form id="loginForm" class="form"><div class="field"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required /></div>
+      <button class="btn btn-primary" type="submit">Sign in</button><p class="form-note" id="loginNote"></p></form>
+    <p class="small muted" style="margin:18px 0 0"><a href="home.html">← Back to the website</a></p>
+  </div>
+</div>
+
+<div id="appView" hidden>
+  <header class="a-head"><div class="in">
+    <a class="logo" href="home.html"><svg viewBox="0 0 40 24" aria-hidden="true"><path d="M2 12 L10 4 L18 12 L10 20 Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><path d="M16 12 L24 4 L32 12 L24 20 Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" opacity=".5"/><circle cx="35.5" cy="12" r="2.4" fill="currentColor"/></svg>AGT Intelligence <span style="font-weight:400;color:var(--ink-3);margin-left:6px">Super admin</span></a>
+    <div class="tabs"><button type="button" data-tab="req" aria-pressed="true">Requests</button><button type="button" data-tab="que" aria-pressed="false">Queue</button><button type="button" data-tab="usr" aria-pressed="false">Users</button><button type="button" data-tab="ord" aria-pressed="false">Orders &amp; enquiries</button><button type="button" data-tab="out" aria-pressed="false">Emails</button></div>
+    <div class="sp"></div>
+    <button class="icon-b" id="themeB" type="button" aria-label="Light / dark"></button>
+    <button class="btn btn-secondary btn-sm" id="logoutB" type="button">Sign out</button>
+  </div></header>
+
+  <main id="reqView" class="shell">
+    <aside><div class="chips" id="chips"></div><div class="list" id="list"></div></aside>
+    <section id="detail"><div class="panel empty">Select a request to review it.</div></section>
+  </main>
+  <main id="queView" class="wide" hidden></main>
+  <main id="usrView" class="wide" hidden></main>
+  <main id="ordView" class="wide" hidden></main>
+  <main id="outView" class="shell" style="grid-template-columns:minmax(0,820px)" hidden><section><div id="mails"></div></section></main>
+</div>
+<dialog id="apprDlg"><form method="dialog" id="apprForm"><h3>Approve request</h3><p class="small muted" id="apprSub" style="margin:0 0 6px"></p>
+  <label class="opt"><input type="radio" name="when" value="now" checked /><span><b>Add to the queue now</b><br /><span class="small muted">Starts as soon as a slot is free.</span></span></label>
+  <label class="opt"><input type="radio" name="when" value="at" /><span><b>Schedule for a time</b><br /><input type="datetime-local" id="apprAt" class="t" style="margin-top:6px" /></span></label>
+  <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px"><button type="button" class="btn btn-secondary btn-sm" id="apprCancel">Cancel</button><button type="submit" class="btn btn-primary btn-sm" id="apprOk">Approve</button></div></form></dialog>
+<div class="toast" id="toast" role="status"></div>
+<script>
+(() => {
+  "use strict";
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const fdt = (t) => t ? new Date(t * 1000).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
+  const LABEL = { submitted: "Awaiting approval", approved: "Queued", processing: "Analysing", results_ready: "Ready for review", released: "Released", rejected: "Rejected", failed: "Failed" };
+  const STEPS = ["Submitted", "Approved", "Analysing", "Review", "Released"];
+  const STEPIDX = { submitted: 0, approved: 1, processing: 2, failed: 2, results_ready: 3, released: 4, rejected: 0 };
+  let LIST = [], COUNTS = {}, filter = "all", sel = null, DET = null, timer = null, profileDirty = false;
+
+  async function api(path, body) {
+    try { return await AGT.api("/api/admin/" + path, body === undefined ? {} : { body }); }
+    catch (e) { if (e.status === 401) { showLogin(); throw new Error("auth"); } throw e; }
+  }
+  function toast(t) { const el = $("#toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 2600); }
+
+  // ---------------------------------------------------------------- session
+  function showLogin() { $("#appView").hidden = true; $("#loginView").hidden = false; clearInterval(timer); setTimeout(() => $("#pw").focus(), 50); }
+  function showApp() { $("#loginView").hidden = true; $("#appView").hidden = false; loadList().then(() => { const ref = decodeURIComponent(location.hash.slice(1)); if (ref) open(ref); }); clearInterval(timer); timer = setInterval(tick, 4000); }
+  $("#loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault(); $("#loginNote").textContent = "";
+    try { const j = await AGT.api("/api/admin/login", { body: { password: $("#pw").value } }); AGT.setToken(j.token); $("#pw").value = ""; showApp(); }
+    catch (x) { $("#loginNote").textContent = x.message || "Could not sign in."; }
+  });
+  $("#logoutB").addEventListener("click", async () => { await AGT.logout(); showLogin(); });
+  const dk = () => document.documentElement.dataset.theme === "dark";
+  const SUN = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="10" cy="10" r="3.6"/><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4"/></svg>';
+  const MOON = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 11.6A6.6 6.6 0 0 1 8.4 3.5a6.6 6.6 0 1 0 8.1 8.1Z"/></svg>';
+  $("#themeB").innerHTML = dk() ? SUN : MOON;
+  $("#themeB").addEventListener("click", () => { try { localStorage.setItem("agt.theme", dk() ? "light" : "dark"); } catch (e) {} location.reload(); });
+  const VIEWS = { req: "#reqView", que: "#queView", usr: "#usrView", ord: "#ordView", out: "#outView" };
+  let tab = "req";
+  const LOADERS = { que: () => loadQueue(), usr: () => loadUsers(), ord: () => loadOrders(), out: () => loadMails() };
+  function setTab(t) { tab = t; $$("[data-tab]").forEach((x) => x.setAttribute("aria-pressed", x.dataset.tab === t)); for (const k in VIEWS) $(VIEWS[k]).hidden = k !== t; if (LOADERS[t]) LOADERS[t]().catch(() => {}); }
+  $$("[data-tab]").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
+
+  // ---------------------------------------------------------------- list
+  async function loadList() {
+    const j = await api("requests"); LIST = j.requests; COUNTS = j.counts; renderList();
+  }
+  function renderList() {
+    const groups = [["all", "All"], ["submitted", "Awaiting approval"], ["processing", "In progress"], ["results_ready", "Ready for review"], ["released", "Released"], ["closed", "Rejected / failed"]];
+    const inGroup = (r, g) => g === "all" || (g === "processing" ? ["approved", "processing"].includes(r.status) : g === "closed" ? ["rejected", "failed"].includes(r.status) : r.status === g);
+    $("#chips").innerHTML = groups.map(([g, l]) => `<button class="chip" data-f="${g}" aria-pressed="${filter === g}">${l}<b>${LIST.filter((r) => inGroup(r, g)).length}</b></button>`).join("");
+    $$("#chips .chip").forEach((b) => b.addEventListener("click", () => { filter = b.dataset.f; renderList(); }));
+    const rows = LIST.filter((r) => inGroup(r, filter));
+    $("#list").innerHTML = rows.length ? rows.map((r) => `<button class="item ${r.ref === sel ? "sel" : ""}" data-ref="${r.ref}">
+      <div class="t"><b>${esc(r.company)}</b><span class="pill ${r.status}">${esc(r.status_label || LABEL[r.status])}${r.progress ? ` ${r.progress.done}/${r.progress.total}` : ""}</span></div>
+      <div class="m"><span>${esc(r.name)} · ${r.n_locations} location${r.n_locations === 1 ? "" : "s"}</span><span>${fdt(r.created_at)}</span></div><div class="m"><span>${r.ref}</span><span>${esc(r.format || "")}</span></div></button>`).join("")
+      : `<div class="empty panel">No requests here yet.</div>`;
+    $$("#list .item").forEach((b) => b.addEventListener("click", () => open(b.dataset.ref)));
+  }
+  async function tick() {
+    if (document.hidden) return;
+    try { await loadList(); if (sel && DET && ["approved", "processing"].includes(DET.status) && !profileDirty) await open(sel, true); else if (sel && DET && DET.status !== (LIST.find((r) => r.ref === sel) || {}).status && !profileDirty) await open(sel, true); } catch (e) { /* signed out */ }
+  }
+
+  // ---------------------------------------------------------------- detail
+  async function open(ref, quiet) {
+    sel = ref; if (!quiet) { location.hash = ref; profileDirty = false; }
+    try { DET = await api("requests/" + ref); } catch (e) { return; }
+    renderList(); renderDetail();
+  }
+  function actions(d) {
+    const b = (id, label, cls = "btn-secondary") => `<button class="btn ${cls} btn-sm" id="${id}">${label}</button>`;
+    return { submitted: b("aApprove", "Approve & start analysis", "btn-primary") + b("aReject", "Reject", "btn-secondary danger"),
+      approved: `<span class="small muted">${d.scheduled_for && d.scheduled_for * 1000 > Date.now() ? "Scheduled for " + fdt(d.scheduled_for) : "In the queue"}</span>` + b("aSched", "Schedule…") + b("aTop", "Run next") + b("aReject", "Reject", "btn-secondary danger"), processing: `<span class="small muted">Analysis running — this page updates itself.</span>`,
+      results_ready: b("aRelease", "Release to client", "btn-primary") + b("aRerun", "Run again") + b("aReject", "Reject", "btn-secondary danger"),
+      released: b("aResend", "Resend sign-in link") + b("aRevoke", "Withdraw access", "btn-secondary danger"), failed: b("aRerun", "Try again", "btn-primary") + b("aReject", "Reject", "btn-secondary danger"), rejected: "" }[d.status] || "";
+  }
+  function renderDetail() {
+    const d = DET, si = STEPIDX[d.status];
+    const pr = d.progress, pct = pr && pr.total ? Math.round((pr.done / pr.total) * 100) : 0;
+    $("#detail").innerHTML = `<div class="panel">
+      <div class="d-head"><div><h2>${esc(d.company)}</h2><div class="sub">${d.ref} · submitted ${fdt(d.created_at)} · <span class="pill ${d.status}">${esc(d.status_label || LABEL[d.status])}</span></div></div><div class="acts">${actions(d)}</div></div>
+      <div class="stepper">${STEPS.map((s, i) => `<div class="${d.status === "failed" && i === 2 ? "bad" : d.status === "rejected" && i === 0 ? "bad" : i < si ? "done" : i === si ? "cur" : ""}">${s}${d.status === "rejected" && i === 0 ? " — rejected" : ""}${d.status === "failed" && i === 2 ? " — failed" : ""}</div>`).join("")}</div>
+
+      ${["approved", "processing", "failed"].includes(d.status) && pr ? `<div class="sec"><h3>Analysis</h3>
+        <div class="small"><b>${pr.done} of ${pr.total}</b> location${pr.total === 1 ? "" : "s"} analysed${pr.failed ? ` · <span style="color:#b42318">${pr.failed} failed</span>` : ""}</div>
+        <div class="bar"><i style="width:${pct}%"></i></div><div class="small muted">${esc(pr.current || "Starting…")}${pr.step ? " — " + esc(pr.step) : ""}</div>
+        <details class="fold" style="margin-top:12px"><summary>Log</summary><pre class="log">${esc((pr.log || []).join("\n"))}</pre></details></div>` : ""}
+
+      ${["results_ready", "released"].includes(d.status) ? `<div class="sec"><h3>Review the results</h3>
+        <p class="small muted" style="margin:0 0 12px">Open the dashboard exactly as the client will see it (${(d.sites || []).length} location${(d.sites || []).length === 1 ? "" : "s"}). Nothing is visible to the client until you release it.</p>
+        <div class="sitebtns">${(d.sites || []).map((s) => `<a class="btn btn-secondary btn-sm" target="_blank" rel="noopener" href="index.html#${d.business_id}/${s.id}">${esc((s.label || s.id).slice(0, 42))} ↗</a>`).join("") || '<span class="small muted">No sites found in the output.</span>'}</div>
+        ${d.status === "results_ready" ? `<label class="small" for="relMsg" style="font-weight:600">Message to the client <span class="muted" style="font-weight:400">(optional, included in the email)</span></label><textarea class="t" id="relMsg" style="margin-top:6px" placeholder="A short note, e.g. what to look at first"></textarea>` : `<div class="small muted">Released ${fdt(d.released_at)}${d.release_message ? " · “" + esc(d.release_message) + "”" : ""}</div>`}</div>` : ""}
+
+      <div class="sec"><h3>Owner</h3><div class="kv"><span>Name</span><span>${esc(d.name)}</span><span>Email</span><span><a href="mailto:${esc(d.email)}">${esc(d.email)}</a></span><span>Phone</span><span>${esc(d.phone) || "—"}</span><span>Role</span><span>${esc(d.role) || "—"}</span></div></div>
+      <div class="sec"><h3>Business</h3><div class="kv"><span>Company</span><span>${esc(d.company)}</span><span>Format</span><span>${esc(d.format) || "—"}</span><span>City</span><span>${esc(d.city)}</span><span>Website</span><span>${d.website ? `<a href="${esc(d.website)}" target="_blank" rel="noopener">${esc(d.website)}</a>` : "—"}</span></div>
+        <div class="desc" style="margin-top:14px">${esc(d.description)}</div></div>
+      <div class="sec"><h3>Locations (${d.locations.length})</h3>${d.locations.map((l, i) => `<div class="locrow"><span class="n">${i + 1}</span><span><code>${esc(l.code)}</code>${l.label ? " · " + esc(l.label) : ""}</span><span class="pill">${l.role === "existing" ? "Existing outlet" : "Site to evaluate"}</span></div>`).join("")}
+        <div class="small muted" style="margin-top:8px"><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/${encodeURIComponent(d.locations[0] ? d.locations[0].code : "")}">Check the first code on Google Maps ↗</a></div></div>
+
+      <div class="sec"><details class="fold" ${d.status === "submitted" ? "open" : ""}><summary>Business profile used for the analysis</summary>
+        <p class="small muted" style="margin:10px 0">Drafted from the description. Adjust competitors, demand hours, weights or locations before approving — the analysis uses exactly this.</p>
+        <textarea class="prof" id="prof" spellcheck="false">${esc(d.profile)}</textarea>
+        <div style="margin-top:10px;display:flex;gap:10px;align-items:center"><button class="btn btn-secondary btn-sm" id="saveProf">Save profile</button><span class="small muted" id="profNote"></span></div></details></div>
+      <div class="sec"><h3>Internal note</h3><textarea class="t" id="note" placeholder="Visible to you only">${esc(d.admin_note || "")}</textarea><div style="margin-top:8px"><button class="btn btn-secondary btn-sm" id="saveNote">Save note</button></div></div>
+      <div class="sec"><h3>History</h3><div class="tl">${(d.events || []).slice().reverse().map((e) => `<div><span>${fdt(e.at)}</span><span>${esc(e.kind.replace(/_/g, " "))}${e.text ? " — " + esc(e.text) : ""} <span style="color:var(--ink-3)">(${esc(e.actor)})</span></span></div>`).join("")}</div>
+        ${(d.emails || []).length ? `<div class="small muted" style="margin-top:12px">Emails: ${(d.emails || []).map((m) => `${esc(m.subject)} → ${esc(m.to_addr)} (${m.status})`).join(" · ")}</div>` : ""}</div></div>`;
+    bind();
+  }
+  function bind() {
+    const d = DET, on = (id, fn) => { const el = $("#" + id); if (el) el.addEventListener("click", fn); };
+    const act = async (path, body, msg) => { try { await api(`requests/${d.ref}/${path}`, body); toast(msg); await loadList(); await open(d.ref, true); } catch (e) { if (e.message !== "auth") toast(e.message); } };
+    $("#prof") && $("#prof").addEventListener("input", () => { profileDirty = true; });
+    on("saveProf", async () => { try { await api(`requests/${d.ref}/profile`, { profile: $("#prof").value }); profileDirty = false; $("#profNote").textContent = "Saved."; } catch (e) { $("#profNote").textContent = e.message; } });
+    on("saveNote", () => act("note", { note: $("#note").value }, "Note saved"));
+    on("aApprove", async () => { const w = await askWhen(`Approve ${d.company} · ${d.locations.length} location(s). The client will be emailed.`, "Approve"); if (!w) return; profileDirty = false; act("approve", { profile: $("#prof").value, note: $("#note").value, ...w }, w.start === "at" ? "Approved — scheduled" : "Approved — queued"); });
+    on("aSched", async () => { const w = await askWhen(`Choose when the analysis for ${d.company} should start.`, "Save", d.scheduled_for); if (w) act("schedule", { at: w.start === "at" ? w.at : null }, "Schedule updated"); });
+    on("aTop", () => act("prioritise", { action: "top" }, "Moved to the front of the queue"));
+    on("aReject", () => { const r = prompt("Reason to include in the email to the client (optional):", ""); if (r !== null) act("reject", { reason: r }, "Request rejected"); });
+    on("aRerun", () => { if (confirm("Run the analysis again?")) act("retry", {}, "Queued again"); });
+    on("aRelease", () => { if (confirm(`Release this report to ${d.name} <${d.email}>?\nThey will get a private link by email and can then see only this report.`)) act("release", { message: ($("#relMsg") || {}).value || "" }, "Released — the client has been emailed"); });
+    on("aResend", () => act("resend", {}, "Sign-in link sent"));
+    on("aRevoke", () => { if (confirm("Withdraw the client's access to this report?")) act("revoke", {}, "Access withdrawn"); });
+  }
+
+  // ---------------------------------------------------------------- approve / schedule dialog
+  const toLocal = (t) => { const d = new Date((t || Date.now() / 1000 + 3600) * 1000); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 16); };
+  function askWhen(sub, okLabel, cur) {
+    return new Promise((res) => {
+      const dlg = $("#apprDlg"); $("#apprSub").textContent = sub; $("#apprOk").textContent = okLabel; $("#apprAt").value = toLocal(cur);
+      $$('input[name=when]', dlg).forEach((r) => { r.checked = r.value === (cur ? "at" : "now"); });
+      const done = (v) => { dlg.close(); $("#apprForm").onsubmit = null; $("#apprCancel").onclick = null; res(v); };
+      $("#apprForm").onsubmit = (e) => { e.preventDefault(); const at = $('input[name=when]:checked', dlg).value === "at"; const t = at ? new Date($("#apprAt").value).getTime() / 1000 : null; if (at && !(t > 0)) { toast("Pick a date and time."); return; } done(at ? { start: "at", at: t } : { start: "now" }); };
+      $("#apprCancel").onclick = () => done(null); dlg.showModal();
+    });
+  }
+  const money = (n) => "₹" + Number(n || 0).toLocaleString("en-IN");
+  const post = async (path, body, msg, reload) => { try { await api(path, body); toast(msg); await reload(); } catch (e) { if (e.message !== "auth") toast(e.message); } };
+
+  // ---------------------------------------------------------------- queue
+  async function loadQueue() {
+    const q = await api("queue"), st = q.settings;
+    $("#queView").innerHTML = `<div class="panel"><div class="sec"><h3>Queue controls</h3><div class="rowf">
+        <button class="btn ${st.paused ? "btn-primary" : "btn-secondary"} btn-sm" id="qPause">${st.paused ? "Resume queue" : "Pause queue"}</button>
+        <label class="f">Run at once<input type="number" id="qConc" min="1" max="4" value="${st.max_concurrent}" style="width:80px" /></label>
+        <label class="f">Window from<input type="time" id="qWs" value="${esc(st.window_start)}" /></label><label class="f">until<input type="time" id="qWe" value="${esc(st.window_end)}" /></label>
+        <button class="btn btn-secondary btn-sm" id="qSave">Save</button></div>
+        <p class="small muted" style="margin:12px 0 0">${st.paused ? "The queue is paused: nothing new starts." : st.window_open ? "Analyses may start now." : "Outside the processing window — waiting for it to open."} Leave the window empty to run any time. About ${q.minutes_per_location} min per location.</p></div></div>
+      <div class="panel"><div class="sec"><h3>Running (${q.running.length})</h3>${q.running.length ? `<table class="tb"><tr><th>Request</th><th>Company</th><th>Locations</th><th>Started</th></tr>${q.running.map((r) => `<tr><td><a href="#${r.ref}" data-open="${r.ref}">${r.ref}</a></td><td>${esc(r.company)}</td><td>${r.locations}</td><td>${fdt(r.started)}</td></tr>`).join("")}</table>` : '<div class="small muted">Nothing is running.</div>'}</div></div>
+      <div class="panel"><div class="sec"><h3>Waiting (${q.queue.length})</h3>${q.queue.length ? `<table class="tb"><tr><th>#</th><th>Request</th><th>Company</th><th>Loc.</th><th>Starts</th><th></th></tr>${q.queue.map((r, i) => `<tr><td>${i + 1}</td><td><a href="#${r.ref}" data-open="${r.ref}">${r.ref}</a></td><td>${esc(r.company)}</td><td>${r.locations}</td><td>${r.waiting_for_schedule ? "Scheduled " + fdt(r.scheduled_for) : "Est. " + fdt(r.est_start)}</td>
+        <td style="text-align:right;white-space:nowrap"><button class="btn btn-secondary btn-sm" data-q="top" data-ref="${r.ref}">Run next</button> <button class="btn btn-secondary btn-sm" data-q="up" data-ref="${r.ref}" aria-label="Move up">↑</button> <button class="btn btn-secondary btn-sm" data-q="down" data-ref="${r.ref}" aria-label="Move down">↓</button> <button class="btn btn-secondary btn-sm" data-q="sched" data-ref="${r.ref}">Schedule…</button></td></tr>`).join("")}</table>` : '<div class="small muted">No approved requests are waiting.</div>'}</div></div>`;
+    const re = () => loadQueue();
+    $("#qPause").onclick = () => post("queue/settings", { paused: !st.paused }, st.paused ? "Queue resumed" : "Queue paused", re);
+    $("#qSave").onclick = () => post("queue/settings", { max_concurrent: +$("#qConc").value || 1, window_start: $("#qWs").value, window_end: $("#qWe").value }, "Saved", re);
+    $$("#queView [data-open]").forEach((a) => a.addEventListener("click", () => { setTab("req"); open(a.dataset.open); }));
+    $$("#queView [data-q]").forEach((b) => b.addEventListener("click", async () => {
+      if (b.dataset.q === "sched") { const w = await askWhen("Choose when this analysis should start.", "Save"); if (w) post(`requests/${b.dataset.ref}/schedule`, { at: w.start === "at" ? w.at : null }, "Schedule updated", re); }
+      else post(`requests/${b.dataset.ref}/prioritise`, { action: b.dataset.q }, "Queue updated", re);
+    }));
+  }
+
+  // ---------------------------------------------------------------- users
+  async function loadUsers() {
+    const j = await api("users");
+    $("#usrView").innerHTML = `<div class="panel"><div class="sec"><h3>Users (${j.users.length})</h3>${j.users.length ? `<table class="tb"><tr><th>Email</th><th>Plan</th><th>Credits</th><th>Requests</th><th>Joined</th><th>Last sign-in</th><th></th></tr>${j.users.map((u) => `<tr><td>${esc(u.email)}</td><td>${esc(u.plan)}</td><td><b>${u.credits}</b></td><td>${u.requests}</td><td>${fdt(u.created_at)}</td><td>${fdt(u.last_login)}</td><td style="text-align:right"><button class="btn btn-secondary btn-sm" data-adj="${u.id}" data-email="${esc(u.email)}">Adjust credits</button></td></tr>`).join("")}</table>` : '<div class="small muted">No users yet.</div>'}</div></div>`;
+    $$("#usrView [data-adj]").forEach((b) => b.addEventListener("click", () => {
+      const v = prompt(`Add or remove credits for ${b.dataset.email} (e.g. 5 or -2):`, "5"); if (v === null) return;
+      const note = prompt("Note (optional):", "") || "";
+      post(`users/${b.dataset.adj}/credits`, { delta: parseInt(v, 10), note }, "Credits updated", loadUsers);
+    }));
+  }
+
+  // ---------------------------------------------------------------- orders & enquiries
+  async function loadOrders() {
+    const j = await api("orders");
+    $("#ordView").innerHTML = `<div class="panel"><div class="sec"><h3>Credit orders (${j.orders.length})</h3>${j.orders.length ? `<table class="tb"><tr><th>Order</th><th>User</th><th>Credits</th><th>Amount</th><th>Status</th><th>Placed</th><th></th></tr>${j.orders.map((o) => `<tr><td>${o.ref}</td><td>${esc(o.email)}</td><td>${o.qty}</td><td>${money(o.amount)}</td><td>${esc(o.status)}</td><td>${fdt(o.created_at)}</td><td style="text-align:right;white-space:nowrap">${o.status === "pending" ? `<button class="btn btn-primary btn-sm" data-oc="${o.ref}">Confirm payment</button> <button class="btn btn-secondary btn-sm" data-ox="${o.ref}">Cancel</button>` : ""}</td></tr>`).join("")}</table>` : '<div class="small muted">No orders yet.</div>'}</div></div>
+      <div class="panel"><div class="sec"><h3>Enterprise enquiries (${j.enquiries.length})</h3>${j.enquiries.length ? `<table class="tb"><tr><th>Ref</th><th>From</th><th>Locations</th><th>Cities</th><th>Status</th><th>Notes</th><th></th></tr>${j.enquiries.map((e) => `<tr><td>${e.ref}</td><td>${esc(e.email)}${e.company ? "<br><span class='small muted'>" + esc(e.company) + "</span>" : ""}</td><td>${e.locations}</td><td>${esc(e.cities) || "—"}</td><td>${esc(e.status)}</td><td class="small">${esc(e.notes) || "—"}${e.response ? "<br><span class='muted'>Reply: " + esc(e.response) + "</span>" : ""}</td><td style="text-align:right"><button class="btn btn-secondary btn-sm" data-er="${e.ref}">Respond</button></td></tr>`).join("")}</table>` : '<div class="small muted">No enquiries yet.</div>'}</div></div>`;
+    $$("#ordView [data-oc]").forEach((b) => b.addEventListener("click", () => { const p = prompt("Payment reference (optional):", ""); if (p !== null) post(`orders/${b.dataset.oc}/confirm`, { payment_ref: p }, "Payment confirmed — credits added", loadOrders); }));
+    $$("#ordView [data-ox]").forEach((b) => b.addEventListener("click", () => { if (confirm("Cancel this order?")) post(`orders/${b.dataset.ox}/cancel`, {}, "Order cancelled", loadOrders); }));
+    $$("#ordView [data-er]").forEach((b) => b.addEventListener("click", () => { const r = prompt("Reply to the customer (emailed to them):", ""); if (r === null) return; post(`enquiries/${b.dataset.er}/respond`, { response: r, close: confirm("Mark this enquiry as closed?") }, "Reply saved", loadOrders); }));
+  }
+
+  // ---------------------------------------------------------------- emails
+  async function loadMails() {
+    const j = await api("outbox");
+    $("#mails").innerHTML = `<div style="display:flex;gap:12px;align-items:center;margin-bottom:14px"><button class="btn btn-secondary btn-sm" id="testMail">Send test email to ${esc("prem@agt-intelligence.com")}</button><span class="small muted" id="testNote"></span></div>` + (j.smtp ? "" : `<div class="banner-warn"><b>Outbox mode.</b> No mail account is configured yet, so emails are saved here and in <code>server/data/outbox/</code> instead of being sent. Add SMTP settings to <code>server/config.json</code> to send them for real.</div>`) +
+      (j.emails.length ? j.emails.map((m) => `<div class="mail"><div class="h"><span>To ${esc(m.to_addr)}</span><span>${fdt(m.at)} · ${esc(m.status)}${m.error ? " · " + esc(m.error) : ""}</span></div><b>${esc(m.subject)}</b><details><summary class="small muted" style="cursor:pointer">Show message</summary><pre>${esc(m.body)}</pre></details></div>`).join("") : `<div class="empty panel">No emails yet.</div>`);
+  }
+
+  document.addEventListener("click", async (e) => {
+    if (e.target.id !== "testMail") return;
+    e.target.disabled = true; $("#testNote").textContent = "Sending…";
+    try { const r = await api("test-email", {}); $("#testNote").textContent = r.status === "sent" ? `Sent to ${r.to}. Check the inbox (and spam).` : `Not sent: ${r.error || "mail account not configured"}`; await loadMails(); } catch (x) { $("#testNote").textContent = x.message; }
+  });
+  window.addEventListener("hashchange", () => { const ref = decodeURIComponent(location.hash.slice(1)); if (ref && ref !== sel) open(ref); });
+  AGT.session().then((s) => (s.role === "admin" ? showApp() : showLogin()));
+})();
+</script>
+</body>
+</html>

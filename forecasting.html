@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Revenue forecasting · AGT Intelligence</title>
+  <meta name="description" content="Site scores and revenue forecasts that break down into weighted drivers, with P10–P90 ranges and back-testing." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M2 12 L10 4 L18 12 L10 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M16 12 L24 4 L32 12 L24 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round' opacity='.55'/%3E%3C/svg%3E" />
+  <link href="site/site.css?v=25" rel="stylesheet" />
+</head>
+<body data-page="forecasting">
+<div id="site-header"></div>
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <div class="crumbs"><a href="home.html">Home</a><span>/</span><a href="platform.html">Platform</a><span>/</span>Revenue forecasting</div>
+      <div class="page-hero-grid">
+        <div>
+          <p class="eyebrow">Platform · 02</p>
+          <h1 class="h1">Transparent revenue forecasting</h1>
+          <p class="lede">When a site scores 92 out of 100 or projects ₹4.2 crore a year, anyone in the room should be able to open the number and see what drives it. Every score and forecast we publish decomposes into weighted drivers, with a range — not a single point — for the revenue.</p>
+          <div class="hero-cta"><a class="btn btn-primary" href="contact.html">Request a demo</a><a class="btn btn-secondary" href="cannibalisation.html">Next: Cannibalisation</a></div>
+        </div>
+        <div class="keyfacts">
+          <div><b>Score</b><span>a 0–100 ranking of sites against the market, from weighted driver percentiles</span></div>
+          <div><b>₹ P50</b><span>an annual revenue forecast trained on store performance</span></div>
+          <div><b>P10–P90</b><span>the range the true outcome should fall in eight times out of ten</span></div>
+          <div><b>Drivers</b><span>every prediction decomposed into named, weighted contributions</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section first" id="concept">
+    <div class="wrap split">
+      <div class="sticky-col rv"><p class="eyebrow">The concept</p><h2 class="h2">A score ranks. A forecast sizes.</h2></div>
+      <div class="prose rv">
+        <p>Two different questions sit behind every site decision, and they need two different answers.</p>
+        <p><strong>"Is this a better site than that one?"</strong> is answered by a <strong>site score</strong>. Each driver — footfall, co-tenancy, income, access, competition — is measured and converted to a percentile against every other location in the market. The score is a weighted average of those percentiles. It is relative, comparable across a city, and needs no sales history.</p>
+        <p><strong>"How much will it sell?"</strong> is answered by a <strong>revenue forecast</strong>. That requires learning from real stores: a model trained on the performance of existing outlets, their trade areas and their surroundings, which then predicts sales for a candidate site in rupees.</p>
+        <p>Both are explained the same way. The score shows each driver's weight and percentile; the forecast shows how much each driver adds to or subtracts from a format baseline. And both are published with their sources, so the conversation is about assumptions rather than trust.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="approaches">
+    <div class="wrap">
+      <div class="sec-head rv"><p class="eyebrow">Established approaches</p><h2 class="h2">Choosing the right forecasting method.</h2>
+        <p class="lede">Site forecasting has four well-established families of methods. The right one depends mostly on how many stores you have and how comparable they are.</p></div>
+      <div class="table-wrap rv">
+        <table class="table">
+          <thead><tr><th>Approach</th><th>How it works</th><th>Best when</th><th>Limitations</th></tr></thead>
+          <tbody>
+            <tr><td>Analogue</td><td>Find existing stores whose trade areas most resemble the candidate and use their sales as the estimate.</td><td>Few stores, strong local knowledge.</td><td>Depends on how good the analogues are; hard to explain differences.</td></tr>
+            <tr><td>Regression</td><td>Fit sales to trade-area variables — population, income, footfall, competition — with explicit coefficients.</td><td>Dozens of stores; need simple, auditable drivers.</td><td>Misses interactions and non-linear effects.</td></tr>
+            <tr><td>Gravity / Huff</td><td>Model how customers in each area split their spend between stores by distance and attractiveness.</td><td>Dense markets with strong competition; cannibalisation questions.</td><td>Needs calibrated distance decay and attractiveness.</td></tr>
+            <tr><td>Machine learning</td><td>Learn non-linear relationships from many features and stores; explain each prediction with attributions.</td><td>Larger networks and rich features.</td><td>Needs enough stores; must be explained to be trusted.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout mt-m rv"><svg class="ico" data-icon="sparkles"></svg><span><b>Our default is a blend.</b> A transparent weighted score and a gravity model from day one; a trained revenue model (PyTorch) once the network is large enough to learn from — with the score kept as its explainable baseline.</span></div>
+    </div>
+  </section>
+
+  <section class="section" id="interactive">
+    <div class="wrap">
+      <div class="sec-head rv"><p class="eyebrow">Interactive example</p><h2 class="h2">Open the forecast. Change the weights.</h2>
+        <p class="lede">Select a driver to see its evidence. Switch to "Score weights" and move a slider: the site score is recalculated as a weighted average of driver percentiles.</p></div>
+      <div class="viz rv">
+        <div class="viz-head"><div class="seg fc-tabs" role="group" aria-label="View"><button type="button" aria-pressed="true" data-fctab="drivers">Revenue drivers</button><button type="button" aria-pressed="false" data-fctab="weights">Score weights</button></div><span class="viz-tag">Illustrative example</span></div>
+        <div class="fc">
+          <div class="fc-score">
+            <div class="ring-wrap">
+              <svg viewBox="0 0 164 164" class="score-ring" aria-hidden="true"><circle class="bg" cx="82" cy="82" r="70" fill="none" stroke-width="8"/>
+                <circle id="ringArc" class="fg" cx="82" cy="82" r="70" fill="none" stroke-width="8" stroke-linecap="round" transform="rotate(-90 82 82)" stroke-dasharray="439.82" stroke-dashoffset="439.82"/></svg>
+              <div class="ring-num"><b id="scoreNum">0</b><span>site score / 100</span></div>
+            </div>
+            <div class="fc-rev"><span>Forecast revenue</span><b>₹4.22 Cr</b><small>per year · P10–P90 ₹3.6–4.9 Cr</small></div>
+          </div>
+          <div class="fc-main">
+            <div data-fcpane="drivers"><div class="wf" id="waterfall"></div><div class="fc-detail" id="fcDetail" aria-live="polite"></div></div>
+            <div data-fcpane="weights" hidden><div class="weights" id="weights"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2 mt-l">
+        <div class="formula rv"><span class="kicker">Site score</span>
+          <div class="eq">S = <span class="frac"><span>Σ<sub>k</sub> w<sub>k</sub> · s<sub>k</sub></span><span>Σ<sub>k</sub> w<sub>k</sub></span></span></div>
+          <dl><dt>s<sub>k</sub></dt><dd>driver score: the site's percentile on driver k across the market (0–100)</dd><dt>w<sub>k</sub></dt><dd>driver weight, set per business profile and visible to users</dd></dl></div>
+        <div class="formula rv"><span class="kicker">Forecast decomposition</span>
+          <div class="eq">R̂ = R<sub>0</sub> + Σ<sub>k</sub> φ<sub>k</sub></div>
+          <dl><dt>R<sub>0</sub></dt><dd>format baseline: expected revenue of an average store of this format</dd><dt>φ<sub>k</sub></dt><dd>contribution of driver k for this site, positive or negative, in ₹</dd></dl></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="uncertainty">
+    <div class="wrap split rev">
+      <div class="viz rv">
+        <div class="viz-head"><span class="title">Annualised revenue after opening · ₹ crore</span><span class="viz-tag">Illustrative example</span></div>
+        <div class="chart-pad"><svg id="fanSvg" role="img" aria-label="Forecast range widening over 24 months: P10, P50 and P90"></svg></div>
+      </div>
+      <div class="rv"><p class="eyebrow">Uncertainty</p><h2 class="h2">Ranges, not false precision.</h2>
+        <div class="prose mt-m">
+          <p>A single number invites false confidence. We forecast quantiles: <strong>P50</strong> is the central estimate, <strong>P10</strong> the level the store should beat nine times in ten, <strong>P90</strong> the upside it should reach only one time in ten.</p>
+          <p>Ranges widen with distance from what the model has seen — a new format, an unusual neighbourhood, a ramp-up period — and narrow as comparable stores accumulate. Committees can then size the downside explicitly: does the P10 still clear the hurdle rate?</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="method">
+    <div class="wrap split">
+      <div class="sticky-col rv"><p class="eyebrow">Method</p><h2 class="h2">From features to a forecast you can defend.</h2></div>
+      <div class="steps rv">
+        <div class="step"><div><h4>Build features per hexagon</h4><p>Footfall by daypart, residents and workers by segment, spending power, co-tenants, competitors and access — computed once in the feature store and shared by every model.</p></div></div>
+        <div class="step"><div><h4>Describe each store's trade area</h4><p>Features are aggregated over each existing store's dynamic catchment, weighted by where its customers come from.</p></div></div>
+        <div class="step"><div><h4>Train and back-test</h4><p>Models are trained on store performance with point-in-time features and tested on stores held out of training, reporting error (such as MAPE) and how often outcomes fall inside the P10–P90 band.</p></div></div>
+        <div class="step"><div><h4>Explain every prediction</h4><p>Additive attributions split each forecast into driver contributions that sum back to the prediction, so nothing is hidden in the model.</p></div></div>
+        <div class="step"><div><h4>Monitor after opening</h4><p>Actual sales are compared with the forecast range as stores trade; the models are retrained as the network grows.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="faq">
+    <div class="wrap split">
+      <div class="rv"><p class="eyebrow">FAQ</p><h2 class="h2">Questions about forecasting.</h2></div>
+      <div class="faq rv">
+        <details><summary>We only have a few stores. Can you still forecast?</summary><div class="a"><p>Yes, with honest limits. With few stores we rely on the site score, analogue stores and gravity models, and widen the forecast range accordingly. As the network grows, a trained model takes over.</p></div></details>
+        <details><summary>Who sets the weights in the score?</summary><div class="a"><p>We propose weights in the business profile, with a written rationale, and agree them with you. Where sales data exists, weights are checked against how well they rank existing stores.</p></div></details>
+        <details><summary>How accurate are the forecasts?</summary><div class="a"><p>Accuracy depends on the format, the market and how many comparable stores exist, so we report it per engagement from back-testing on held-out stores — error and band coverage — rather than quoting a universal figure.</p></div></details>
+        <details><summary>Can we see the model itself?</summary><div class="a"><p>You see every input, every driver contribution and the back-test results. Model artefacts can be shared under the engagement agreement.</p></div></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band"><div class="wrap"><h2 class="h2">Bring a candidate site; we'll open its forecast with you.</h2>
+    <div class="actions"><a class="btn btn-primary" href="contact.html">Request a demo</a><a class="btn btn-secondary" href="cannibalisation.html">Next: cannibalisation →</a></div></div></section>
+</main>
+<div id="site-footer"></div>
+<script src="icons.js?v=2"></script>
+<script src="site/config.js?v=1"></script>
+<script src="site/api.js?v=1"></script>
+<script src="site/layout.js?v=6"></script>
+<script src="site/viz.js?v=7"></script>
+</body>
+</html>

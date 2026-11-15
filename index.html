@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AGT Intelligence · Site Footfall Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <link href="styles.css?v=12" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="https://unpkg.com/deck.gl@9.0.38/dist.min.js"></script>
+  <script src="site/config.js?v=1"></script>
+  <script src="site/api.js?v=1"></script>
+</head>
+<body>
+  <!-- ================= HEADER ================= -->
+  <header class="topbar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 40 24" aria-hidden="true">
+        <path d="M2 12 L10 4 L18 12 L10 20 Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M16 12 L24 4 L32 12 L24 20 Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" opacity=".55"/>
+        <circle cx="35" cy="12" r="2.6" fill="currentColor"/>
+      </svg>
+      <div class="brand-text"><b>AGT</b>INTELLIGENCE<span>Site Footfall Intelligence</span></div>
+    </div>
+    <div class="controls">
+      <label class="select-wrap" id="bizWrap"><span class="select-icon">◆</span><span class="select-label">BUSINESS</span>
+        <select id="bizSelect" style="min-width:170px"></select></label>
+      <label class="select-wrap"><span class="select-icon">⌂</span><span class="select-label">SITE</span>
+        <select id="siteSelect"></select></label>
+      <label class="select-wrap"><span class="select-icon">▦</span><span class="select-label">DAY</span>
+        <select id="daySelect">
+          <option value="0">Monday · Weekday</option><option value="1">Tuesday · Weekday</option>
+          <option value="2">Wednesday · Midweek</option><option value="3">Thursday · Pre-weekend</option>
+          <option value="4">Friday · Evening surge</option><option value="5" selected>Saturday · Weekend peak</option>
+          <option value="6">Sunday · Family peak</option>
+        </select></label>
+    </div>
+    <div class="header-right">
+      <div class="badge mono" id="snapshotBadge">—</div>
+      <button class="ghost-btn" id="methodBtn" title="Data sources & methodology">ⓘ Data &amp; method</button>
+      <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch to dark mode" title="Light / dark"></button>
+      <div class="account" id="account">
+        <button class="avatar-btn" id="avatarBtn" aria-haspopup="menu" aria-expanded="false" title="Account"></button>
+        <div class="account-menu hidden" id="accountMenu" role="menu">
+          <div class="account-who"><b id="accName"></b><span id="accEmail"></span></div>
+          <button role="menuitem" id="signOutBtn">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="app">
+    <div id="map"></div>
+
+    <!-- ================= LEFT: SITE PANEL ================= -->
+    <aside class="panel left-panel" id="leftPanel">
+      <div class="panel-head">
+        <div><div class="eyebrow">SITE OVERVIEW</div><div class="panel-title" id="storeName">Loading…</div></div>
+        <button class="icon-btn" data-collapse="leftPanel" title="Collapse">‹</button>
+      </div>
+      <div class="panel-body" id="sitePanel">
+        <div class="skeleton">Loading site data…</div>
+      </div>
+    </aside>
+    <button class="panel-reopen left" id="leftReopen" title="Show site overview">›</button>
+
+    <!-- ================= RIGHT: LAYERS / EXPANSION ================= -->
+    <aside class="panel right-panel" id="rightPanel">
+      <div class="panel-head">
+        <div class="tabs">
+          <button class="tab active" data-tab="layersTab">Data layers <span class="pill" id="activeCount">0</span></button>
+          <button class="tab" data-tab="expansionTab">Expansion</button>
+        </div>
+        <button class="icon-btn" data-collapse="rightPanel" title="Collapse">›</button>
+      </div>
+      <div class="panel-body">
+        <div class="tab-pane active" id="layersTab"></div>
+        <div class="tab-pane" id="expansionTab"></div>
+      </div>
+    </aside>
+    <button class="panel-reopen right" id="rightReopen" title="Show layers">‹</button>
+
+    <!-- ================= LEGEND ================= -->
+    <section class="card legend" id="legend">
+      <div class="legend-head">
+        <div class="eyebrow-row"><span class="dot-icon">≋</span> ROAD FOOTFALL INDEX</div>
+        <span class="chip mono" id="legendTime">21:00 SAT</span>
+      </div>
+      <div class="legend-sub">Click a tier to filter · <span id="tierFilterLabel">all tiers</span></div>
+      <div class="tier-row" id="tierRow"></div>
+      <div class="tier-scale mono"><span>&lt;120/hr</span><span>850–1,200</span><span>4,200+/hr</span></div>
+      <div class="legend-hex" id="hexLegend"></div>
+    </section>
+
+    <!-- ================= INSPECTOR ================= -->
+    <section class="card inspector hidden" id="inspector">
+      <button class="icon-btn close" id="inspectorClose" title="Close">✕</button>
+      <div id="inspectorBody"></div>
+    </section>
+
+    <!-- coordinates readout -->
+    <div class="coords mono" id="coords">LAT —  |  LON —  |  ZOOM —</div>
+  </main>
+
+  <!-- ================= TIMELINE ================= -->
+  <footer class="timeline">
+    <div class="tl-top">
+      <div class="tl-controls">
+        <button class="icon-btn sq" id="prevHour" title="Previous hour">‹</button>
+        <button class="icon-btn sq play" id="playBtn" title="Play 24 hours">▶</button>
+        <button class="icon-btn sq" id="nextHour" title="Next hour">›</button>
+        <div class="tl-time mono"><span id="tlHour">21:00</span><small id="tlHour12">(9 PM)</small></div>
+        <span class="chip" id="tlDay">Saturday</span>
+        <span class="chip accent" id="tlPhase">Prime dessert peak</span>
+      </div>
+      <div class="tl-hint">Scroll or drag the timeline to change the hour · street colours update live</div>
+      <div class="tl-index">
+        <div class="tl-index-badge mono" id="tlBadge">10+</div>
+        <div><div class="eyebrow">WALKSHED PEAK STREET</div><div class="tl-index-val mono" id="tlIndexVal">— / hr</div></div>
+        <div class="tl-sep"></div>
+        <div><div class="eyebrow">350 m WALKSHED FLOW</div><div class="tl-index-val mono" id="tlTotalVal">— / hr</div></div>
+      </div>
+    </div>
+    <div class="tl-bars" id="tlBars"></div>
+    <div class="tl-scrub">
+      <span class="mono">00:00</span>
+      <input type="range" id="hourRange" min="0" max="23" value="21" />
+      <span class="mono">23:00</span>
+    </div>
+    <div class="tl-marks mono"><span>03:00 Night quiet</span><span>08:00 Morning transit</span><span>13:00 Lunch rush</span><span>17:00 Evening transition</span><span>21:00 Prime dessert peak</span></div>
+  </footer>
+
+  <!-- ================= METHOD MODAL ================= -->
+  <div class="modal hidden" id="methodModal">
+    <div class="modal-card">
+      <button class="icon-btn close" data-close="methodModal">✕</button>
+      <div id="methodBody"></div>
+    </div>
+  </div>
+
+  <div class="loader" id="loader"><div class="spinner"></div><div id="loaderText">Loading intelligence layers…</div></div>
+  <script src="https://unpkg.com/supercluster@8.0.1/dist/supercluster.min.js"></script>
+  <script src="icons.js?v=2"></script>
+  <script src="app.js?v=13"></script>
+  <script>
+    (function () {   // light / dark (default light)
+      const b = document.getElementById("themeBtn"), dk = () => document.documentElement.dataset.theme === "dark";
+      const SUN = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="10" cy="10" r="3.6"/><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M4.7 15.3l1.4-1.4M13.9 6.1l1.4-1.4"/></svg>';
+      const MOON = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 11.6A6.6 6.6 0 0 1 8.4 3.5a6.6 6.6 0 1 0 8.1 8.1Z"/></svg>';
+      b.innerHTML = dk() ? SUN : MOON; b.setAttribute("aria-label", dk() ? "Switch to light mode" : "Switch to dark mode");
+      b.onclick = () => { try { localStorage.setItem("agt.theme", dk() ? "light" : "dark"); } catch (e) {} location.reload(); };
+    })();
+    (function () {   // account menu — who is signed in comes from the server
+      const $ = (id) => document.getElementById(id), btn = $("avatarBtn"), menu = $("accountMenu");
+      AGT.session().then((s) => {
+        if (s.role === "none") { location.replace("login.html"); return; }
+        const ini = (s.name || s.email).split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
+        btn.textContent = ini; $("accName").textContent = s.role === "admin" ? "Super admin" : (s.name || "Your report"); $("accEmail").textContent = s.email;
+        $("signOutBtn").insertAdjacentHTML("beforebegin", s.role === "admin" ? '<a class="menu-link" href="admin.html">Back to admin</a>' : '<a class="menu-link" href="account.html">My account</a>');
+      });
+      const toggle = (open) => { menu.classList.toggle("hidden", !open); btn.setAttribute("aria-expanded", open); };
+      btn.onclick = (e) => { e.stopPropagation(); toggle(menu.classList.contains("hidden")); };
+      document.addEventListener("click", (e) => { if (!$("account").contains(e.target)) toggle(false); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape") toggle(false); });
+      $("signOutBtn").onclick = () => AGT.logout().then(() => location.replace("login.html"));
+    })();
+  </script>
+</body>
+</html>

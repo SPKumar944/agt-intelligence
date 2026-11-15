@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AGT Intelligence · Retail Location Intelligence</title>
+  <meta name="description" content="Trade areas, revenue forecasts, cannibalisation and whitespace analysis for retail — each one explained, sourced and ready to defend." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M2 12 L10 4 L18 12 L10 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M16 12 L24 4 L32 12 L24 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round' opacity='.55'/%3E%3C/svg%3E" />
+  <link href="site/site.css?v=25" rel="stylesheet" />
+</head>
+<body data-page="home">
+<div id="site-header"></div>
+<main>
+
+  <!-- ============================================================ HERO -->
+  <section class="hero-full" aria-label="Introduction">
+    <canvas id="city" aria-hidden="true"></canvas>
+    <div class="clock" aria-hidden="true">
+      <div class="d">Saturday</div>
+      <div class="t" id="clockTime">17:00</div>
+      <div class="p" id="clockPhase">Evening build-up</div>
+      <div class="track"><i id="clockBar"></i></div>
+      <div class="ramp">Quiet <i></i> Busy</div>
+    </div>
+    <div class="wrap">
+      <p class="eyebrow">Retail location intelligence</p>
+      <h1 class="display">Every site decision,<br /><span class="dim">defensible.</span></h1>
+      <p class="lede">AGT Intelligence turns mobility, demographic and spatial data into <b>real trade areas, transparent revenue forecasts, cannibalisation estimates and whitespace maps</b> — for every retail format, in every market you're weighing up.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="contact.html">Request a demo</a>
+        <a class="link-arrow" href="platform.html">Explore the platform</a>
+      </div>
+    </div>
+    <div class="hero-note">Live: modelled street-level footfall through a Saturday, Bengaluru · © OpenStreetMap contributors</div>
+  </section>
+
+  <!-- ============================================================ STATEMENT -->
+  <section class="section">
+    <div class="wrap">
+      <p class="statement">A radius ring is not a trade area. A score without reasons is not a decision. <span class="fade">Committees need to see where customers really come from, what a site will earn, what it will take from their own stores and where the market is still open — and exactly why.</span></p>
+      <div class="stats">
+        <div class="stat"><b>65 m</b><span>hexagon resolution for every score, forecast and whitespace cell</span></div>
+        <div class="stat"><b>168</b><span>hourly mobility profiles per street — 24 hours × 7 days</span></div>
+        <div class="stat"><b>100%</b><span>of scores and forecasts traceable to their drivers</span></div>
+        <div class="stat"><b>Minutes</b><span>not weeks, from an address list to a site report</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ FOUR QUESTIONS -->
+  <section class="section alt">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">The platform</p>
+        <h2 class="h2">Four questions behind every new store.</h2>
+        <p class="lede">Each module answers one question with a method you can inspect. Open any of them.</p>
+      </div>
+      <div class="grid-4">
+        <a class="card card-link qcard" href="catchments.html"><svg class="ico" data-icon="map"></svg><span class="q">Where do our customers actually come from?</span><p>Trade areas built from visitor origins and real travel times.</p><span class="link-arrow">Dynamic catchments</span></a>
+        <a class="card card-link qcard" href="forecasting.html"><svg class="ico" data-icon="line-chart"></svg><span class="q">What will this site earn — and why?</span><p>Revenue forecasts with ranges, broken down into drivers.</p><span class="link-arrow">Revenue forecasting</span></a>
+        <a class="card card-link qcard" href="cannibalisation.html"><svg class="ico" data-icon="layers"></svg><span class="q">What will it take from our own stores?</span><p>Trade-area overlap and sales transfer, in rupees.</p><span class="link-arrow">Cannibalisation</span></a>
+        <a class="card card-link qcard" href="whitespace.html"><svg class="ico" data-icon="target"></svg><span class="q">Where should we be that we aren't?</span><p>A metro-wide scan for under-served pockets.</p><span class="link-arrow">Whitespace</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ EXPLAINABILITY -->
+  <section class="section">
+    <div class="wrap">
+      <div class="explain-head">
+        <div>
+          <p class="eyebrow">Explainability</p>
+          <h2 class="h2">A forecast you can argue with.</h2>
+        </div>
+        <div>
+          <p class="lede" style="margin-top:0">Committees reject black-box scores, and they are right to. Every number we publish breaks down into the variables that produced it — with weights, measured values and how each compares with the market.</p>
+          <p class="muted" style="margin:14px 0 0">Hover or select a driver to see its evidence.</p>
+          <a class="link-arrow mt-s" style="display:inline-flex" href="forecasting.html">Change the weights yourself</a>
+        </div>
+      </div>
+      <div class="viz mt-l">
+        <div class="viz-head"><span class="title">Candidate site · forecast breakdown</span><span class="viz-tag">Illustrative example</span></div>
+        <div class="fc">
+          <div class="fc-score">
+            <div class="ring-wrap">
+              <svg viewBox="0 0 164 164" class="score-ring" aria-hidden="true"><circle class="bg" cx="82" cy="82" r="70" fill="none" stroke-width="8"/>
+                <circle id="ringArc" class="fg" cx="82" cy="82" r="70" fill="none" stroke-width="8" stroke-linecap="round" transform="rotate(-90 82 82)" stroke-dasharray="439.82" stroke-dashoffset="439.82"/></svg>
+              <div class="ring-num"><b id="scoreNum">0</b><span>site score / 100</span></div>
+            </div>
+            <div class="fc-rev"><span>Forecast revenue</span><b>₹4.22 Cr</b><small>per year · P10–P90 ₹3.6–4.9 Cr</small></div>
+          </div>
+          <div class="fc-main"><div class="wf" id="waterfall"></div><div class="fc-detail" id="fcDetail" aria-live="polite"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ MOBILITY -->
+  <section class="section studio">
+    <div class="wrap">
+      <div class="sec-head">
+        <p class="eyebrow">Mobility</p>
+        <h2 class="h2">Every street keeps its own hours.</h2>
+        <p class="lede">An office corridor, a leisure strip, a shopping street and a residential lane can carry the same number of people in a day — at completely different times.</p>
+      </div>
+      <div class="viz">
+        <div class="viz-head"><span class="title">Share of a day's footfall, by hour</span>
+          <div class="seg" role="group" aria-label="Day type"><button type="button" aria-pressed="true" data-day="wd">Weekday</button><button type="button" aria-pressed="false" data-day="we">Weekend</button></div></div>
+        <div class="chart-pad rhythm-chart" id="rhythm"><svg id="rhythmSvg" role="img" aria-label="Hourly footfall curves for four street types"></svg><div class="tip" id="rhythmTip"></div></div>
+        <ul class="legend" id="rhythmLegend"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================================ TECHNOLOGY + INDUSTRIES -->
+  <section class="section">
+    <div class="wrap grid-2">
+      <a class="card card-link" href="technology.html" style="padding:40px">
+        <svg class="ico" data-icon="cpu"></svg>
+        <h3 class="h2" style="font-size:36px;margin-top:22px">An engine built for answers in minutes.</h3>
+        <p class="mt-s">GeoParquet, Zarr and H3 for storage; Google Earth Engine for imagery; PyTorch and Apple MLX for models; QGIS for human verification.</p>
+        <span class="link-arrow">Explore the architecture</span>
+      </a>
+      <a class="card card-link" href="industries.html" style="padding:40px">
+        <svg class="ico" data-icon="store"></svg>
+        <h3 class="h2" style="font-size:36px;margin-top:22px">Built for every physical retail format.</h3>
+        <p class="mt-s">Grocery, food service, apparel, health, banking, leisure, fuel and real estate — each modelled on what drives it.</p>
+        <span class="link-arrow">See industries</span>
+      </a>
+      <a class="card card-link" href="methodology.html" style="padding:40px">
+        <svg class="ico" data-icon="file-text"></svg>
+        <h3 class="h2" style="font-size:36px;margin-top:22px">The concepts behind every number.</h3>
+        <p class="mt-s">Trade areas, distance decay, the Huff model, scoring, forecasting uncertainty and validation — explained.</p>
+        <span class="link-arrow">Read the methodology</span>
+      </a>
+      <a class="card card-link" href="trust.html" style="padding:40px">
+        <svg class="ico" data-icon="lock"></svg>
+        <h3 class="h2" style="font-size:36px;margin-top:22px">Aggregated people. Named sources.</h3>
+        <p class="mt-s">People enter our models only as counts. Every number carries its source, date and licence.</p>
+        <span class="link-arrow">Trust &amp; data</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <div class="wrap">
+      <h2 class="h2">See the platform on the locations you're weighing up.</h2>
+      <div class="actions"><a class="btn btn-primary" href="contact.html">Request a demo</a></div>
+    </div>
+  </section>
+</main>
+<div id="site-footer"></div>
+<script src="icons.js?v=2"></script>
+<script src="city.js?v=4"></script>
+<script src="site/config.js?v=1"></script>
+<script src="site/api.js?v=1"></script>
+<script src="site/layout.js?v=6"></script>
+<script src="site/viz.js?v=7"></script>
+</body>
+</html>

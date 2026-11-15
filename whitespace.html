@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Whitespace analysis · AGT Intelligence</title>
+  <meta name="description" content="Scan an entire metro area for pockets where your target customers are concentrated but under-served by your category." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M2 12 L10 4 L18 12 L10 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M16 12 L24 4 L32 12 L24 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round' opacity='.55'/%3E%3C/svg%3E" />
+  <link href="site/site.css?v=25" rel="stylesheet" />
+</head>
+<body data-page="whitespace">
+<div id="site-header"></div>
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <div class="crumbs"><a href="home.html">Home</a><span>/</span><a href="platform.html">Platform</a><span>/</span>Whitespace</div>
+      <div class="page-hero-grid">
+        <div>
+          <p class="eyebrow">Platform · 04</p>
+          <h1 class="h1">Whitespace analysis</h1>
+          <p class="lede">Reverse-engineer your growth. Instead of judging one address at a time, we scan an entire metro area hexagon by hexagon and surface the pockets where your target customers are concentrated but under-served by your category.</p>
+          <div class="hero-cta"><a class="btn btn-primary" href="contact.html">Request a demo</a><a class="btn btn-secondary" href="technology.html">How the engine works</a></div>
+        </div>
+        <div class="keyfacts">
+          <div><b>Demand</b><span>where your target customers live, work and spend</span></div>
+          <div><b>Supply</b><span>how well existing category stores already cover them</span></div>
+          <div><b>Gap</b><span>demand left uncovered — the opportunity surface</span></div>
+          <div><b>Pockets</b><span>clusters of opportunity, ranked and ready for site search</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section first" id="concept">
+    <div class="wrap split">
+      <div class="sticky-col rv"><p class="eyebrow">The concept</p><h2 class="h2">Start from the market, not the shortlist.</h2></div>
+      <div class="prose rv">
+        <p>Most site searches begin with whatever a broker has available. That answers "is this site good?" but never "is this where we should be?".</p>
+        <p>Whitespace analysis turns the question round. It defines who your customers are, measures where they are concentrated across the whole metro area, subtracts the demand your category already serves, and leaves the gaps: places with many of your customers and too few stores to serve them.</p>
+        <p>The result is a <strong>map of opportunity</strong>, not a list of addresses. Pockets are ranked by the unserved demand they hold, then handed to site search — so brokers are briefed on where to look, and every candidate arrives already inside a gap.</p>
+        <p>The same scan reveals where a network is <strong>over-served</strong>: clusters of stores competing for the same customers, which are candidates for consolidation or relocation.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="interactive">
+    <div class="wrap">
+      <div class="sec-head rv"><p class="eyebrow">Interactive example</p><h2 class="h2">Scan a metro area for your customer.</h2>
+        <p class="lede">Choose a target customer. Shading shows their concentration; outlined squares are existing category stores; highlighted cells are demand those stores don't reach. Raise the threshold to keep only the strongest pockets.</p></div>
+      <div class="viz rv">
+        <div class="viz-head">
+          <div class="ctrls">
+            <div class="seg" role="group" aria-label="Target customer"><button type="button" aria-pressed="true" data-ws="young">Young professionals</button><button type="button" aria-pressed="false" data-ws="family">Affluent families</button><button type="button" aria-pressed="false" data-ws="value">Value shoppers</button></div>
+            <label class="ctrl"><span>Minimum opportunity</span><input type="range" id="wsThr" min="20" max="70" step="5" value="35" aria-label="Minimum opportunity threshold" /><b id="wsThrOut">35%</b></label>
+          </div>
+          <span class="viz-tag">Illustrative example</span>
+        </div>
+        <div class="viz-body">
+          <div class="viz-canvas"><canvas id="wsCanvas" aria-label="Hexagon map of a metro area with under-served pockets highlighted"></canvas></div>
+          <div class="viz-side">
+            <div class="vstat"><b id="ws1">—</b><span>hexagons scanned across the metro area</span></div>
+            <div class="vstat"><b id="ws2">—</b><span>pockets above the threshold</span></div>
+            <ol class="pockets" id="wsPockets"></ol>
+            <ul class="vkey"><li><i class="k-seq"></i>Target-customer concentration</li><li><i class="k-ab"></i>Unserved demand</li><li><i class="k-store"></i>Existing category store</li></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="model">
+    <div class="wrap split">
+      <div class="rv"><p class="eyebrow">The opportunity model</p><h2 class="h2">Demand, coverage and the gap between them.</h2>
+        <div class="prose mt-m"><p>Every hexagon gets a demand score for the target segment and a coverage score from the existing stores that can reach it. Opportunity is the demand left over.</p>
+          <p>Coverage decays with travel time from each store, at a rate calibrated to how far customers of the format typically travel. Pockets are formed by clustering high-opportunity cells and ranked by the unserved demand they contain.</p></div></div>
+      <div class="rv">
+        <div class="formula"><span class="kicker">Opportunity per hexagon</span>
+          <div class="eq">O<sub>h</sub> = D<sub>h</sub> · ( 1 − C<sub>h</sub> )</div>
+          <dl><dt>D<sub>h</sub></dt><dd>target-customer demand in hexagon h (households, workers or spend)</dd><dt>C<sub>h</sub></dt><dd>coverage by existing stores, between 0 and 1</dd></dl></div>
+        <div class="formula mt-s"><span class="kicker">Coverage</span>
+          <div class="eq">C<sub>h</sub> = max<sub>s</sub> exp( −( t<sub>hs</sub> / λ )<sup>2</sup> )</div>
+          <dl><dt>t<sub>hs</sub></dt><dd>travel time from hexagon h to store s</dd><dt>λ</dt><dd>typical travel tolerance for the format, calibrated from trade areas</dd></dl></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="method">
+    <div class="wrap split">
+      <div class="sticky-col rv"><p class="eyebrow">Method</p><h2 class="h2">From a customer definition to a ranked pocket list.</h2></div>
+      <div class="steps rv">
+        <div class="step"><div><h4>Define the target customer</h4><p>From your best stores' trade areas — or your own customer data — we identify the segments that over-index: age bands, household types, workers, spending power.</p></div></div>
+        <div class="step"><div><h4>Measure demand everywhere</h4><p>Segment counts and spend are estimated for every hexagon in the metro area from population aggregates, daytime population and mobility.</p></div></div>
+        <div class="step"><div><h4>Map supply</h4><p>Your stores and competitors in the category are matched from places data, with coverage decaying by travel time.</p></div></div>
+        <div class="step"><div><h4>Find and rank pockets</h4><p>High-opportunity cells are clustered into pockets and ranked by unserved demand, with a minimum size so pockets can support a store.</p></div></div>
+        <div class="step"><div><h4>Hand over to site search</h4><p>Each pocket comes with its demand profile and the streets with the best frontage footfall inside it.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="outputs">
+    <div class="wrap">
+      <div class="sec-head rv"><p class="eyebrow">Outputs</p><h2 class="h2">What you receive.</h2></div>
+      <div class="table-wrap rv">
+        <table class="table">
+          <thead><tr><th>Output</th><th>Description</th><th>Format</th></tr></thead>
+          <tbody>
+            <tr><td>Opportunity surface</td><td>Demand, coverage and opportunity for every hexagon in the metro area, per segment.</td><td>GeoParquet, CSV</td></tr>
+            <tr><td>Ranked pockets</td><td>Pocket outlines with unserved demand, nearest store and competitive context.</td><td>GeoJSON, site report</td></tr>
+            <tr><td>Over-served clusters</td><td>Areas where stores compete for the same customers.</td><td>GeoJSON, site report</td></tr>
+            <tr><td>Search briefs</td><td>For each pocket, the frontage streets with the strongest footfall during your trading hours.</td><td>PDF, CSV</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="faq">
+    <div class="wrap split">
+      <div class="rv"><p class="eyebrow">FAQ</p><h2 class="h2">Questions about whitespace.</h2></div>
+      <div class="faq rv">
+        <details><summary>How large an area can you scan?</summary><div class="a"><p>An entire metro area at 65 m resolution, using coarser hexagons first and refining where opportunity is high. The scan is limited by data coverage rather than size.</p></div></details>
+        <details><summary>Can we define our own target customer?</summary><div class="a"><p>Yes. Segments can be defined from your own customer data, from your best stores' trade areas, or by hand — for example "households with children, upper-middle income".</p></div></details>
+        <details><summary>Does whitespace account for competitors?</summary><div class="a"><p>Yes. Coverage includes competitors in your category, weighted by their attractiveness, so a pocket is only flagged if customers are under-served by everyone.</p></div></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band"><div class="wrap"><h2 class="h2">Find the gaps in your market before your competitors do.</h2>
+    <div class="actions"><a class="btn btn-primary" href="contact.html">Request a demo</a><a class="btn btn-secondary" href="technology.html">How the engine works →</a></div></div></section>
+</main>
+<div id="site-footer"></div>
+<script src="icons.js?v=2"></script>
+<script src="site/config.js?v=1"></script>
+<script src="site/api.js?v=1"></script>
+<script src="site/layout.js?v=6"></script>
+<script src="site/viz.js?v=7"></script>
+</body>
+</html>

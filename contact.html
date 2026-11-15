@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Request a demo · AGT Intelligence</title>
+  <meta name="description" content="Request a demo of AGT Intelligence on the locations you are weighing up." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M2 12 L10 4 L18 12 L10 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M16 12 L24 4 L32 12 L24 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round' opacity='.55'/%3E%3C/svg%3E" />
+  <link href="site/site.css?v=25" rel="stylesheet" />
+</head>
+<body data-page="contact">
+<div id="site-header"></div>
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <div class="crumbs"><a href="home.html">Home</a><span>/</span>Request a demo</div>
+      <div class="split">
+        <div>
+          <p class="eyebrow">Request a demo</p>
+          <h1 class="h1">See the platform on the locations that matter to you.</h1>
+          <p class="lede">Tell us about your format and the markets you're weighing up. We'll come back to arrange a walk-through on real candidates.</p>
+          <div class="steps mt-l">
+            <div class="step"><div><h4>Introductory call</h4><p>Thirty minutes on your format, network and the decisions in front of you.</p></div></div>
+            <div class="step"><div><h4>Live demonstration</h4><p>The platform on a market and candidate sites you choose.</p></div></div>
+            <div class="step"><div><h4>Scoped proposal</h4><p>Sites, modules and timeline, with the data we would need from you.</p></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <form class="form" id="contactForm" novalidate>
+            <div class="two">
+              <div class="field"><label for="cName">Name</label><input id="cName" name="name" autocomplete="name" required /></div>
+              <div class="field"><label for="cCompany">Company or brand</label><input id="cCompany" name="company" autocomplete="organization" /></div>
+            </div>
+            <div class="two">
+              <div class="field"><label for="cEmail">Work email</label><input id="cEmail" name="email" type="email" autocomplete="email" required /></div>
+              <div class="field"><label for="cRole">Role</label><select id="cRole" name="role"><option>Expansion / real estate</option><option>Strategy / finance</option><option>Founder / leadership</option><option>Franchise development</option><option>Developer / landlord</option><option>Other</option></select></div>
+            </div>
+            <div class="two">
+              <div class="field"><label for="cFormat">Format</label><select id="cFormat" name="format"><option>Grocery &amp; convenience</option><option>QSR, cafés &amp; dining</option><option>Apparel &amp; lifestyle</option><option>Pharmacy &amp; health</option><option>Banking &amp; services</option><option>Entertainment &amp; leisure</option><option>Fuel &amp; automotive</option><option>Real estate</option><option>Other</option></select></div>
+              <div class="field"><label for="cStores">Number of stores today</label><select id="cStores" name="stores"><option>Planning the first</option><option>1–10</option><option>11–50</option><option>51–200</option><option>200+</option></select></div>
+            </div>
+            <div class="field"><label for="cMarkets">Markets of interest</label><input id="cMarkets" name="markets" placeholder="e.g. Bengaluru, Hyderabad, Pune" /></div>
+            <div class="field"><label for="cMsg">What would you like to know?</label><textarea id="cMsg" name="message" placeholder="Candidate sites, questions, timelines"></textarea></div>
+            <button class="btn btn-primary" type="submit">Request a demo</button>
+            <p class="form-note" id="formNote" role="status"></p>
+            <p class="small muted" style="margin:0">We use these details only to respond to your request.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="faq">
+    <div class="wrap split">
+      <div class="rv"><p class="eyebrow">Engagement FAQ</p><h2 class="h2">Before we talk.</h2></div>
+      <div class="faq rv">
+        <details><summary>What do you need from us to start?</summary><div class="a"><p>A list of your stores and candidate sites (addresses, coordinates or plus codes) and a description of the format. Store-level sales are optional but turn scores into calibrated revenue forecasts.</p></div></details>
+        <details><summary>How long does a study take?</summary><div class="a"><p>The engine produces results for a set of sites quickly; most of an engagement is spent agreeing the business profile and reviewing results with you. We give a timeline in the proposal.</p></div></details>
+        <details><summary>Do we need any software?</summary><div class="a"><p>No. You get access to the web platform and site reports; data exports work with the GIS, BI and spreadsheet tools you already use.</p></div></details>
+        <details><summary>Which cities can you cover?</summary><div class="a"><p>Our models are built and proven in Bengaluru and extend to any metro area where the underlying data is available. We confirm coverage for your markets in the first call.</p></div></details>
+        <details><summary>Can we start small?</summary><div class="a"><p>Yes. Many clients start with a handful of candidate sites or one module — often catchments or cannibalisation — and expand from there.</p></div></details>
+      </div>
+    </div>
+  </section>
+</main>
+<div id="site-footer"></div>
+<script src="icons.js?v=2"></script>
+<script src="site/config.js?v=1"></script>
+<script src="site/api.js?v=1"></script>
+<script src="site/layout.js?v=6"></script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dynamic catchments · AGT Intelligence</title>
+  <meta name="description" content="Trade areas built from where customers actually live and work, shaped by travel time, transit and barriers — not radius rings." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M2 12 L10 4 L18 12 L10 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M16 12 L24 4 L32 12 L24 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round' opacity='.55'/%3E%3C/svg%3E" />
+  <link href="site/site.css?v=25" rel="stylesheet" />
+</head>
+<body data-page="catchments">
+<div id="site-header"></div>
+<main>
+  <section class="page-hero">
+    <div class="wrap">
+      <div class="crumbs"><a href="home.html">Home</a><span>/</span><a href="platform.html">Platform</a><span>/</span>Dynamic catchments</div>
+      <div class="page-hero-grid">
+        <div>
+          <p class="eyebrow">Platform · 01</p>
+          <h1 class="h1">Dynamic catchment visualisation</h1>
+          <p class="lede">A trade area is the territory a store actually draws customers from. We map it from where visitors really live and work, shaped by travel time, public transport and the barriers people rarely cross — so the catchment you plan around is the one that exists.</p>
+          <div class="hero-cta"><a class="btn btn-primary" href="contact.html">Request a demo</a><a class="btn btn-secondary" href="forecasting.html">Next: Revenue forecasting</a></div>
+        </div>
+        <div class="keyfacts">
+          <div><b>2</b><span>origin types per store — where visitors live, and where they work</span></div>
+          <div><b>3</b><span>travel modes — walking, driving and public transport</span></div>
+          <div><b>65 m</b><span>hexagon resolution for every trade-area boundary</span></div>
+          <div><b>P / S / T</b><span>primary, secondary and tertiary zones by share of customers</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section first" id="concept">
+    <div class="wrap split">
+      <div class="sticky-col rv"><p class="eyebrow">The concept</p><h2 class="h2">Why radius rings mislead.</h2></div>
+      <div class="prose rv">
+        <p>A radius ring — "everyone within 3 km" — is the oldest shortcut in site selection. It assumes customers travel equally in every direction and that every household inside the circle is equally likely to visit. Neither is true.</p>
+        <p><strong>Distance is not travel time.</strong> Two homes 2 km away can be five minutes apart along an arterial road or twenty-five minutes apart across a river with one bridge. People choose stores by the effort it takes to reach them, which is why trade areas stretch along fast roads and transit lines and stop short at rail lines, expressways and water.</p>
+        <p><strong>Where people live is only half the story.</strong> A store near offices draws its weekday lunch trade from people who live elsewhere. Aggregated mobility data shows both footprints — night-time origins and day-time origins — and they are often very different shapes.</p>
+        <p><strong>Rings hide empty ground.</strong> Lakes, parks, industrial land and gated campuses sit inside rings and send almost no one. Counting them inflates the population a site appears to serve.</p>
+        <p>A <strong>dynamic catchment</strong> replaces the circle with the smallest area that actually holds a given share of a store's customers, built on real travel times. It is the foundation for every other module: forecasts, cannibalisation and whitespace all start from it.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="interactive">
+    <div class="wrap">
+      <div class="sec-head rv"><p class="eyebrow">Interactive example</p><h2 class="h2">The same site, two ways.</h2>
+        <p class="lede">Switch between a 3 km radius and the trade area built from customer origins. A river with one bridge cuts the east side; a metro line carries customers in from the west.</p></div>
+      <div class="viz rv">
+        <div class="viz-head">
+          <div class="seg" role="group" aria-label="Catchment view"><button type="button" aria-pressed="false" data-catch="ring">3 km radius</button><button type="button" aria-pressed="true" data-catch="real">Actual trade area</button></div>
+          <span class="viz-tag">Illustrative example</span>
+        </div>
+        <div class="viz-body">
+          <div class="viz-canvas"><canvas id="catchCanvas" aria-label="Radius ring compared with a trade area shaped by a river and a metro line"></canvas></div>
+          <div class="viz-side">
+            <div class="vstat"><b id="cs1">—</b><span>of real customers fall inside the radius</span></div>
+            <div class="vstat"><b id="cs2">—</b><span>of the radius area sends almost no one</span></div>
+            <div class="vstat"><b id="cs3">—</b><span>of customers arrive along the metro corridor</span></div>
+            <ul class="vkey"><li><i class="k-seq"></i>Customer origins (80% capture)</li><li><i class="k-river"></i>River with one bridge</li><li><i class="k-metro"></i>Metro line and stations</li><li><i class="k-ring"></i>3 km radius</li></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="method">
+    <div class="wrap split">
+      <div class="sticky-col rv"><p class="eyebrow">Method</p><h2 class="h2">How a trade area is built.</h2>
+        <p class="lede">Five steps, the same for every site, so trade areas are comparable across a whole network.</p></div>
+      <div class="rv">
+        <div class="steps">
+          <div class="step"><div><h4>Collect visitor origins</h4><p>Aggregated mobility data gives the share of a location's visitors whose night-time and day-time locations fall in each hexagon. Where mobility data is thin, a gravity model on population and travel time fills the gap.</p></div></div>
+          <div class="step"><div><h4>Compute travel times</h4><p>A routable network of roads, footpaths and transit — with speeds by road class and time of day — gives the walking, driving and transit time from every hexagon to the site.</p></div></div>
+          <div class="step"><div><h4>Respect barriers</h4><p>Rivers, rail lines, expressways and closed campuses are crossed only where the network allows, so customers beyond a barrier are reached via the real bridge or underpass.</p></div></div>
+          <div class="step"><div><h4>Draw capture contours</h4><p>Hexagons are ranked by their share of customers and accumulated until the contour holds a target share — the primary trade area at about 60–70%, the secondary at 80–85%.</p></div></div>
+          <div class="step"><div><h4>Validate</h4><p>Shapes are checked by an analyst against local knowledge and, where available, loyalty or delivery addresses aggregated to hexagons.</p></div></div>
+        </div>
+        <div class="formula mt-m">
+          <span class="kicker">Capture contour</span>
+          <div class="eq">TA<sub>p</sub> = smallest set S such that &nbsp;Σ<sub>i∈S</sub> v<sub>i</sub> ≥ p · Σ<sub>i</sub> v<sub>i</sub></div>
+          <dl><dt>v<sub>i</sub></dt><dd>customers (or visits) originating in hexagon i</dd><dt>p</dt><dd>target capture share, e.g. 0.7 for the primary trade area</dd><dt>S</dt><dd>hexagons taken in descending order of v<sub>i</sub>, contiguous with the site</dd></dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="zones">
+    <div class="wrap">
+      <div class="sec-head rv"><p class="eyebrow">Trade-area zones</p><h2 class="h2">Primary, secondary and tertiary.</h2>
+        <p class="lede">Retail planning has long divided a trade area into zones by share of customers. We keep the convention — and draw each zone from real behaviour instead of distance bands.</p></div>
+      <div class="table-wrap rv">
+        <table class="table">
+          <thead><tr><th>Zone</th><th>Share of customers</th><th>What it tells you</th><th>Typical use</th></tr></thead>
+          <tbody>
+            <tr><td>Primary</td><td>about 60–70%</td><td>The core neighbourhood the store depends on; most frequent visitors.</td><td>Population, spend and competition measures; local marketing.</td></tr>
+            <tr><td>Secondary</td><td>a further 15–25%</td><td>Less frequent visitors, often reached along a corridor or transit line.</td><td>Growth headroom; overlap with sister stores.</td></tr>
+            <tr><td>Tertiary (fringe)</td><td>the remainder</td><td>Occasional, destination or passing trade.</td><td>Destination formats; sensitivity checks.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout mt-m rv"><svg class="ico" data-icon="clock"></svg><span><b>Day and night trade areas.</b> For formats with strong dayparts — coffee, quick-service food, pharmacies near offices — we publish separate weekday-daytime and evening trade areas, because the people inside them are different.</span></div>
+    </div>
+  </section>
+
+  <section class="section" id="outputs">
+    <div class="wrap">
+      <div class="sec-head rv"><p class="eyebrow">Outputs</p><h2 class="h2">What you receive.</h2></div>
+      <div class="table-wrap rv">
+        <table class="table">
+          <thead><tr><th>Output</th><th>Description</th><th>Format</th></tr></thead>
+          <tbody>
+            <tr><td>Trade-area polygons</td><td>Primary, secondary and tertiary zones per site, day and evening variants where relevant.</td><td>GeoJSON, GeoParquet</td></tr>
+            <tr><td>Origin surface</td><td>Share of visitors per 65 m hexagon, by home and work location.</td><td>CSV, GeoParquet</td></tr>
+            <tr><td>Isochrones</td><td>Walk, drive and transit time bands from the site.</td><td>GeoJSON</td></tr>
+            <tr><td>Trade-area profile</td><td>Population, households, spending power, daytime workers and competitors inside each zone.</td><td>Site report, CSV</td></tr>
+            <tr><td>Radius comparison</td><td>How the trade area differs from a radius ring — coverage, empty area, corridor share.</td><td>Site report</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="section alt" id="faq">
+    <div class="wrap split">
+      <div class="rv"><p class="eyebrow">FAQ</p><h2 class="h2">Questions about catchments.</h2></div>
+      <div class="faq rv">
+        <details><summary>Do you track individual devices?</summary><div class="a"><p>No. Mobility data reaches us already aggregated to hexagons and time windows, with minimum-count thresholds. We never see or store individual movement traces.</p></div></details>
+        <details><summary>What if a site is new and has no visitors yet?</summary><div class="a"><p>We build the expected trade area from comparable stores of the same format and from a travel-time gravity model on population. Once the store opens, its observed footprint replaces the estimate.</p></div></details>
+        <details><summary>Can we use our own customer addresses?</summary><div class="a"><p>Yes. Loyalty or delivery addresses, aggregated to hexagons under your agreement, are the best possible validation and can replace modelled origins entirely.</p></div></details>
+        <details><summary>Which capture share should we use?</summary><div class="a"><p>We default to 70% for primary and 85% for secondary, a common convention. Destination formats often use wider bands; convenience formats narrower ones. The share is a setting, not a hidden assumption.</p></div></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-band"><div class="wrap"><h2 class="h2">See your stores' real trade areas.</h2>
+    <div class="actions"><a class="btn btn-primary" href="contact.html">Request a demo</a><a class="btn btn-secondary" href="forecasting.html">Next: revenue forecasting →</a></div></div></section>
+</main>
+<div id="site-footer"></div>
+<script src="icons.js?v=2"></script>
+<script src="site/config.js?v=1"></script>
+<script src="site/api.js?v=1"></script>
+<script src="site/layout.js?v=6"></script>
+<script src="site/viz.js?v=7"></script>
+</body>
+</html>
