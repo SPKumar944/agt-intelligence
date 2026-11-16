@@ -928,7 +928,7 @@ async function loadSite(id, isNewBusiness = false) {
   { // coverage tier badge (high-precision = locally calibrated city; otherwise standard coverage)
     const hi = /^Electoral roll/.test(site.provenance.population_counts_source || "");
     let cb = $("covBadge"); if (!cb) { cb = document.createElement("div"); cb.id = "covBadge"; cb.className = "badge"; $("snapshotBadge").before(cb); }
-    cb.textContent = hi ? "Premium intelligence" : "Pan-India insights"; cb.title = hi ? "Built on our premium, high-precision, locally calibrated models for this city." : "Wide, city-level insights. This city is being upgraded to premium, Bengaluru-level precision very soon.";
+    cb.textContent = hi ? "Premium intelligence" : "Pan-India insights"; cb.title = hi ? "Built on our premium, high-precision, locally calibrated models for this city." : "Wide, city-level insights. This city is being upgraded to premium, Bengaluru-level precision between December 2026 and March 2027.";
     cb.style.fontWeight = "600"; if (hi) { cb.style.background = "var(--ink, #1d1d1f)"; cb.style.color = "var(--bg, #fff)"; }
   }
   $("snapshotBadge").textContent = `OSM ${String(site.provenance.osm_snapshot_utc || "").slice(0, 10)} · Overture ${site.provenance.overture_release || ""}`;
