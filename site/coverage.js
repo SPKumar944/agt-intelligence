@@ -37,6 +37,7 @@
   .cov-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:56px;align-items:start}
   .cov-map{position:relative;max-width:470px;width:100%;margin:0 auto}
   .cov-map svg{width:100%;height:auto;display:block;overflow:visible}
+  .cov-map{--ca:4%;--cb:11%} :root[data-theme="dark"] .cov-map{--ca:10%;--cb:20%}
   .cov-map svg{filter:drop-shadow(0 14px 22px rgba(0,0,0,.09))}
   .cov-india{fill:url(#covLand);stroke:color-mix(in srgb,var(--ink) 24%,var(--bg));stroke-width:.8;stroke-linejoin:round}
   .cov-o{fill:var(--ink);pointer-events:none} .cov-halo{fill:var(--ink);opacity:.12;pointer-events:none} .cov-s{fill:var(--ink);stroke:var(--bg);stroke-width:1.4;pointer-events:none} .cov-live{fill:var(--ink);stroke:var(--bg);stroke-width:1.8;pointer-events:none}
@@ -116,7 +117,7 @@
     if (live) { const [x, y] = at(live.x, live.y); g += `<circle class="cov-halo" cx="${f(x)}" cy="${f(y)}" r="10"/><circle class="cov-pulse" cx="${f(x)}" cy="${f(y)}" r="5"/><circle class="cov-live" cx="${f(x)}" cy="${f(y)}" r="4.6"/>${hit(live, x, y)}`; }
     g += labelled.map((c) => { const p = pos.get(c); return p ? `<text class="cov-lab${c === live ? " lv" : ""}" x="${f(p[1])}" y="${f(p[2])}" text-anchor="${p[0]}">${esc(c.n)}</text>` : ""; }).join("");
     const [, , w, h] = M.viewBox.split(" ").map(Number);
-    return `<svg viewBox="-14 -10 ${w + 28} ${h + 20}" role="img" aria-label="Map of India. All of India is covered with city-level insights. Bengaluru has premium intelligence. ${esc(ti.name)} cities, ${chosen.length} in all, are highlighted and upgrade to premium by ${esc(ti.by)}."><defs><linearGradient id="covLand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--ink) 4%,var(--bg))"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--ink) 11%,var(--bg))"/></linearGradient></defs><path class="cov-india" d="${M.path}"/>${g}</svg>`;
+    return `<svg viewBox="-14 -10 ${w + 28} ${h + 20}" role="img" aria-label="Map of India. All of India is covered with city-level insights. Bengaluru has premium intelligence. ${esc(ti.name)} cities, ${chosen.length} in all, are highlighted and upgrade to premium by ${esc(ti.by)}."><defs><linearGradient id="covLand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--ink) var(--ca),var(--bg))"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--ink) var(--cb),var(--bg))"/></linearGradient></defs><path class="cov-india" d="${M.path}"/>${g}</svg>`;
   }
 
   function statesPanel(sel) {

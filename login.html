@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <script>(function(){var t=null;try{t=localStorage.getItem("agt.theme")}catch(e){}if(t!=="light")document.documentElement.dataset.theme="dark"})()</script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Sign in · AGT Intelligence</title>
   <meta name="description" content="AGT Intelligence — location intelligence for retail. Sign in to your workspace." />
@@ -234,7 +234,7 @@
   <script src="site/config.js?v=1"></script>
   <script src="site/api.js?v=1"></script>
   <script src="site/coverage-data.js?v=1"></script>
-<script src="site/coverage.js?v=7"></script>
+<script src="site/coverage.js?v=8"></script>
 </head>
 <body>
   <div class="shell">

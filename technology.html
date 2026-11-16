@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <script>(function(){var t=null;try{t=localStorage.getItem("agt.theme")}catch(e){}if(t!=="light")document.documentElement.dataset.theme="dark"})()</script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Technology · AGT Intelligence</title>
   <meta name="description" content="The AGT Intelligence engine: GeoParquet and Zarr spatial lake, H3 indexing, Google Earth Engine, PyTorch and Apple MLX models, with human verification in QGIS." />

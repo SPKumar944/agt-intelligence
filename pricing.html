@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <script>(function(){var t=null;try{t=localStorage.getItem("agt.theme")}catch(e){}if(t!=="light")document.documentElement.dataset.theme="dark"})()</script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Pricing &amp; credits · AGT Intelligence</title>
   <meta name="description" content="Two free credits to start, ₹1,000 per location after that, and enterprise reports for 11+ locations or several cities." />
@@ -130,7 +130,7 @@
 <script src="site/api.js?v=1"></script>
 <script src="site/layout.js?v=6"></script>
 <script src="site/coverage-data.js?v=1"></script>
-<script src="site/coverage.js?v=7"></script>
+<script src="site/coverage.js?v=8"></script>
 <script>
   // keep the numbers on this page in step with the server's pricing settings
   if (window.AGT) AGT.api("/api/config").then((c) => {

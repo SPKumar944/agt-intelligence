@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <script>try{if(localStorage.getItem("agt.theme")==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+  <script>(function(){var t=null;try{t=localStorage.getItem("agt.theme")}catch(e){}if(t!=="light")document.documentElement.dataset.theme="dark"})()</script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AGT Intelligence · Retail Location Intelligence</title>
   <meta name="description" content="Trade areas, revenue forecasts, cannibalisation and whitespace analysis for retail — each one explained, sourced and ready to defend." />
@@ -163,7 +163,7 @@
 <script src="site/layout.js?v=6"></script>
 <script src="site/india-map.js?v=2"></script>
 <script src="site/coverage-data.js?v=1"></script>
-<script src="site/coverage.js?v=7"></script>
+<script src="site/coverage.js?v=8"></script>
 <script src="site/viz.js?v=7"></script>
 </body>
 </html>
