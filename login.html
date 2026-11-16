@@ -15,10 +15,11 @@
     window.addEventListener("load", () => { if (!window.AGT) return; AGT.session().then((s) => {
       if (s.role === "none") return;
       const next = new URLSearchParams(location.search).get("next") || "";
-      location.replace(s.role === "admin" ? "admin.html" : (next || "account.html"));
+      location.replace(s.role === "admin" ? "admin.html" : (next && next !== "admin.html" ? next : "account.html"));
     }); });
   </script>
   <style>
+    [hidden] { display: none !important; }
     :root {
       --ink: #1d1d1f;
       --ink-2: #6e6e73;
@@ -275,7 +276,7 @@
 
     <!-- ===================================================== SIGN IN -->
     <section class="panel">
-      <div class="panel-top"><button type="button" id="themeBtn" aria-label="Switch to dark mode" style="border:0;background:none;color:inherit;cursor:pointer;font-size:14px;margin-right:22px;padding:0">Dark mode</button><a href="admin.html" style="color:inherit;margin-right:22px">Super admin</a><a href="home.html" style="color:inherit">About AGT Intelligence ›</a></div>
+      <div class="panel-top"><button type="button" id="themeBtn" aria-label="Switch to dark mode" style="border:0;background:none;color:inherit;cursor:pointer;font-size:14px;margin-right:22px;padding:0">Dark mode</button><a href="home.html" style="color:inherit">About AGT Intelligence ›</a></div>
       <main class="panel-main">
         <div class="card" id="card">
           <div class="form-area">
@@ -285,12 +286,12 @@
               <circle cx="35.5" cy="12" r="2.3" fill="currentColor"/>
             </svg>
             <h2>Sign in.</h2>
-            <p class="sub">Enter your Gmail address and we’ll email you a 6-digit code. No password needed.</p>
+            <p class="sub">Enter your email address and we’ll send a 6-digit code. No password needed — super admins, managers and clients all sign in here.</p>
 
             <div id="gWrap">
               <form id="codeForm" novalidate>
                 <div class="fields" id="fields">
-                  <div class="field"><input id="email" type="email" placeholder=" " autocomplete="email" inputmode="email" /><label for="email">Gmail address</label></div>
+                  <div class="field"><input id="email" type="email" placeholder=" " autocomplete="email" inputmode="email" /><label for="email">Email address</label></div>
                   <div class="pw-wrap"><div><div class="field"><input id="code" type="text" placeholder=" " autocomplete="one-time-code" inputmode="numeric" maxlength="6" /><label for="code">6-digit code</label></div></div></div>
                   <button type="submit" class="go ready" id="goBtn" aria-label="Continue"><svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button>
                 </div>
@@ -337,7 +338,7 @@
     const err = $("err"), info = $("info"), card = $("fields");
     const show = (m) => { info.classList.remove("show"); err.textContent = m; err.classList.add("show"); card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake"); };
     const say = (m) => { err.classList.remove("show"); info.textContent = m; info.classList.add("show"); };
-    const next = () => { const n = new URLSearchParams(location.search).get("next") || ""; return /^[a-z0-9_.\-]+\.html/i.test(n) ? n : "account.html"; };
+    const next = () => { const n = new URLSearchParams(location.search).get("next") || ""; return /^[a-z0-9_.\-]+\.html/i.test(n) && !/^admin\.html/i.test(n) ? n : "account.html"; };
     let step = 1, busy = false;
     const setStep = (n) => { step = n; $("fields").classList.toggle("step2", n === 2); $("step2row").hidden = n !== 2; if (n === 2) $("code").focus(); else $("email").focus(); };
     async function sendCode() {
@@ -349,7 +350,7 @@
       e.preventDefault(); if (busy) return; busy = true; $("fields").classList.add("busy"); err.classList.remove("show");
       try {
         if (step === 1) await sendCode();
-        else { const j = await AGT.api("/api/auth/verify", { body: { email: $("email").value.trim(), code: $("code").value } }); AGT.setToken(j.token); location.replace(next()); }
+        else { const j = await AGT.api("/api/auth/verify", { body: { email: $("email").value.trim(), code: $("code").value } }); AGT.setToken(j.token); location.replace(j.role === "admin" ? "admin.html" : next()); }
       } catch (x) { show(x.message); } finally { busy = false; $("fields").classList.remove("busy"); }
     });
     $("resend").addEventListener("click", async () => { try { await sendCode(); } catch (x) { show(x.message); } });
