@@ -69,7 +69,8 @@
   @media (max-width:900px){.cov-t4{grid-template-columns:1fr 1fr}} @media (max-width:520px){.cov-t4{grid-template-columns:1fr}}
   .cov-sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:20px 26px}
   .cov-sg h4{margin:0 0 7px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
-  .cov-sg .cs{display:flex;flex-wrap:wrap;gap:6px} .cov-sg .cs span{font-size:13.5px;border:1px solid var(--line-2);border-radius:980px;padding:4px 12px;color:var(--ink);background:var(--bg)} .cov-sg .cs span.live{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .cov-sg .cs{display:flex;flex-wrap:wrap;gap:6px} .cov-sg .cs span{font-size:13.5px;border:1px solid var(--line-2);border-radius:980px;padding:4px 12px;color:var(--ink);background:var(--bg)} .cov-sg .cs a.brief{font-size:13.5px;border:1px solid var(--ink);border-radius:980px;padding:4px 12px;color:var(--ink);background:var(--bg);text-decoration:none;font-weight:600} .cov-sg .cs a.brief em{font-style:normal;font-weight:500;color:var(--ink-3);font-size:12px;margin-left:4px} .cov-sg .cs a.brief:hover{background:var(--ink);color:var(--bg)} .cov-sg .cs a.brief:hover em{color:inherit}
+  .cov-sg .cs span.live{background:var(--ink);color:var(--bg);border-color:var(--ink)}
   @media (max-width:600px){.cov-two{grid-template-columns:1fr}}
   .cov-ask{margin-top:30px;border:1px solid var(--line);border-radius:18px;padding:24px 28px;background:var(--bg);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:12px 40px;align-items:center}
   .cov-ask h3{margin:0 0 6px;font-size:19px;letter-spacing:-.01em} .cov-ask p{margin:0;font-size:14.5px;color:var(--ink-2)} .cov-ask .fm{min-width:0} .cov-ask .fm .cov-msg{grid-column:auto}
@@ -125,7 +126,7 @@
     ALL.filter((c) => c.t === sel).forEach((c) => (by[c.s] = by[c.s] || []).push(c));
     const states = Object.keys(by).sort();
     return `<div class="hd"><h3>${esc(ti.name)} · ${esc(ti.kind)}</h3><span>${countIn(sel)} cities across ${states.length} states and territories · premium upgrade by <strong>${esc(ti.by)}</strong></span></div>
-      <div class="cov-sg">${states.map((s) => `<div><h4>${esc(s)}</h4><div class="cs">${by[s].map((c) => `<span class="${norm(c.n) === norm(LIVE) ? "live" : ""}">${esc(c.n)}${norm(c.n) === norm(LIVE) ? " · live" : ""}</span>`).join("")}</div></div>`).join("")}</div>`;
+      <div class="cov-sg">${states.map((s) => `<div><h4>${esc(s)}</h4><div class="cs">${by[s].map((c) => `${(R.briefs || []).includes(norm(c.n).replace(/\s+/g, "-")) ? `<a class="brief" href="city.html?c=${norm(c.n).replace(/\s+/g, "-")}" title="Open the ${esc(c.n)} city brief">${esc(c.n)} <em>city brief ↗</em></a>` : `<span class="${norm(c.n) === norm(LIVE) ? "live" : ""}">${esc(c.n)}${norm(c.n) === norm(LIVE) ? " · live" : ""}</span>`}`).join("")}</div></div>`).join("")}</div>`;
   }
 
 
@@ -210,6 +211,8 @@
     const wrap = inp.parentNode, other = document.createElement("input"), note = document.createElement("div"), s2 = document.createElement("select");
     s2.id = "city"; s2.name = "city";
     s2.innerHTML = optionGroups(false) + `<option value="__other">Another city…</option>`; s2.value = LIVE;
+    const want = new URLSearchParams(location.search).get("city");
+    if (want) { const o = [...s2.options].find((x) => norm(x.value) === norm(want)); if (o) s2.value = o.value; }
     other.id = "cityOther"; other.placeholder = "City name"; other.hidden = true; other.style.marginTop = "8px"; other.maxLength = 60;
     note.className = "cov-note"; note.setAttribute("aria-live", "polite");
     inp.replaceWith(s2); wrap.append(other, note);
