@@ -405,3 +405,11 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 .cbar .tr div { border-radius: 3px; background-color: transparent; }
 :root[data-theme="dark"] .deck-tooltip { background: #1d1d1f !important; color: #f5f5f7 !important; } :root[data-theme="dark"] .tt-s { color: #c7c7cc; }
 .account-menu .menu-link { display: block; padding: 9px 10px; border-radius: 8px; font-weight: 600; color: var(--text); text-decoration: none; } .account-menu .menu-link:hover { background: var(--surface-2); }
+
+/* model weights panel (admin + manager) */
+.wpanel { border: 1px solid var(--line, #e5e5ea); border-radius: 14px; padding: 14px; margin-bottom: 16px; background: var(--panel-2, transparent); }
+.wrow { display: grid; grid-template-columns: 1fr 92px 40px; align-items: center; gap: 10px; padding: 6px 0; font-size: 13px; }
+.wrow input[type=range] { width: 100%; accent-color: currentColor; }
+.wrow output { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted, #6e6e73); }
+.wfoot { display: flex; gap: 8px; justify-content: space-between; margin-top: 10px; }
+.wfoot .ghost-btn { flex: 1; }

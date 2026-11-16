@@ -196,6 +196,8 @@ const HEX_MODES = {
   com_idx: { label: "Commercial index", kind: "idx", field: "com_idx" },
   syn_idx: { label: "Retail synergy index", kind: "idx", field: "syn_idx" },
   suit_score: { label: "New-store suitability", kind: "suit", field: "suit_score" },
+  ci_net_units: { label: "Expected net volume (interaction model)", kind: "seq", field: "ci_net_units" },
+  ci_cannibal_pct: { label: "Cannibalisation of own outlets (model)", kind: "seq", field: "ci_cannibal_pct", pct: false },
 };
 
 function compColor(tier) { const tc = (B().competitors || {}).tier_colors || COMP_TIER; return tc[tier] || COMP_TIER[tier] || "#64748b"; }
@@ -471,7 +473,7 @@ function inspect(info) {
         ["Floating adults", fmt(hx.floating_adults[i])], ["IT intensity", fmt((hx.it_intensity[i] || 0) * 100) + "%"], ["Kids 0–14", fmt(hx.k[i])],
         ["Youth 15–24", fmt(hx.y[i])], ["Working 25–59", fmt(hx.w[i])], ["Seniors 60+", fmt(hx.s[i])], ["Workforce", fmt(hx.com_workers[i])],
         ["Office floor", fmt(hx.off_m2[i]) + " m²"], ["Res / Com / Syn idx", `${fmt(hx.res_idx[i], 0)} / ${fmt(hx.com_idx[i], 0)} / ${fmt(hx.syn_idx[i], 0)}`],
-        ["Suitability", `${fmt(hx.suit_score[i], 1)} · ${dec(hx.tier, i)}`], ["Dist. to store", fmt(hx.dist_km[i], 2) + " km"],
+        ["Suitability", `${fmt(hx.suit_score[i], 1)} · ${(SUIT.find(([t]) => hx.suit_score[i] >= t) || SUIT[3])[2].replace(/ [\d<–-].*$/, "")}`], ["Dist. to store", fmt(hx.dist_km[i], 2) + " km"],
         ["Golden band", hx.in_golden_band[i] ? "Yes — eligible" : "No"], ["Competitors ≤1.5 km", fmt(hx.comp_count[i])], ["Dining ≤1.5 km", fmt(hx.dining_count[i])],
         ["Target demand ≤1.5 km", fmt(hx.target_demand_15k && hx.target_demand_15k[i])], ["Floating adults ≤1.5 km", fmt(hx.floating_15k && hx.floating_15k[i])],
         ...(B().custom_layers || []).map((c) => [`${c.label} ≤1.5 km`, fmt((hx[`custom_${c.id}_count`] || [])[i])]),
@@ -503,7 +505,8 @@ function inspect(info) {
 function candidateGrid(o) {
   return grid([["Persona", o.corridor_type], ["Shop front", `${o.frontage_street || o.corridor} (${o.frontage_road_type || "road"})`],
     [`Peak footfall ${o.peak_window || ""}`, `${fmt(o.frontage_peak_hourly)}/hr · #${o.peak_footfall_rank} of 10`], ["Daily footfall", fmt(o.frontage_daily_footfall)], ["Corridor", o.corridor], ["Suitability", `${o.overall_suitability_score} · ${o.suitability_tier}`],
-    ["Nearest store", `${o.min_distance_km} km`], ["Analog benchmark", o.analog_benchmark], ["Cannibalisation risk", o.cannibalization_risk_pct + "%"],
+    ["Nearest store", `${o.min_distance_km} km`], ["Analog benchmark", o.analog_benchmark], ["Cannibalisation of own outlets", o.cannibalization_risk_pct + "%"],
+    ...(o.ci_rev_lakhs != null ? [["Revenue range ₹ L/month (P10–P90)", `${fmt(o.ci_rev_p10, 1)} – ${fmt(o.ci_rev_p90, 1)}`], ["Share of nearby demand captured", fmt(o.ci_capture_pct, 1) + "%"], ["Beats a typical site", fmt(o.ci_p_beat_typical) + "% of scenarios"]] : []),
     [`Projected ${UNIT().toLowerCase()}`, fmt(o.projected_daily_units)], ["Target demand ≤1.5 km", fmt(o.target_demand_15k)], ["Customers/month", fmt(o.projected_monthly_customers)], ["Revenue ₹ L/month", fmt(o.projected_monthly_revenue_lakhs, 2)],
     ["Payback", o.est_payback_months + " months"], ["Residents ≤1.5 km", fmt(o.walkshed_pop_15k)], ["Kids ≤1.5 km", fmt(o.kids_cohort_15k)],
     ["Youth ≤1.5 km", fmt(o.youth_cohort_15k)], ["Workforce ≤1.5 km", fmt(o.workforce_15k)], ["Competitors ≤1.5 km", fmt(o.competitor_count_15k)],
@@ -714,6 +717,65 @@ function scoreGradient(v) {
   const stops = SCORE_STOPS.map(([p, c]) => `rgb(${c.join(",")}) ${p}%`).join(",");
   return `linear-gradient(90deg,${stops})`.replace(/\)$/, ")") + `;background-size:${(10000 / Math.max(v, 8)).toFixed(0)}% 100%;background-repeat:no-repeat`;
 }
+
+/* ----------------------------------------------------------------- model weights (super admin + manager only) */
+const WKEYS = [["demographic", "Demographic demand", "demographic_score"], ["commercial", "Commercial activity", "commercial_score"], ["synergy", "Co-tenant synergy", "synergy_score"], ["white_space", "White space", "white_space_score"]];
+const WSTATE = { level: "client", canEdit: false, base: null, saved: null };
+function applyWeights(w) {
+  const tot = WKEYS.reduce((a, [k]) => a + (w[k] || 0), 0) || 1, n = {};
+  WKEYS.forEach(([k]) => { n[k] = (w[k] || 0) / tot; });
+  const hx = D.hexes;
+  for (let i = 0; i < hx.n; i++) hx.suit_score[i] = Math.round(WKEYS.reduce((a, [k, , f]) => a + n[k] * (hx[f] ? hx[f][i] : 0), 0) * 10) / 10;
+  const cs = D.layers.candidates;
+  cs.forEach((c) => { c.overall_suitability_score = Math.round(WKEYS.reduce((a, [k, , f]) => a + n[k] * (c[f] || 0), 0) * 10) / 10; });
+  if (!(cs.length && cs[0].ci_rev_lakhs != null)) cs.sort((a, b) => b.overall_suitability_score - a.overall_suitability_score).forEach((c, k) => { c.rank = k + 1; });   // with the interaction model, rank = expected net volume
+  D.site.weights = n;
+}
+async function initWeights() {
+  WSTATE.base = { ...D.site.weights }; WSTATE.saved = null; WSTATE.canEdit = false;
+  try { const s = await AGT.session(); WSTATE.level = s.level || (s.role === "admin" ? "admin" : "client"); } catch (e) { /* default */ }
+  if (!BIZ) return;
+  try {
+    const r = await AGT.api("/api/weights/" + encodeURIComponent(BIZ));
+    WSTATE.canEdit = !!r.can_edit; WSTATE.saved = r.weights;
+    if (r.weights) applyWeights(r.weights);
+  } catch (e) { /* use pipeline defaults */ }
+}
+function renderModelTab() {
+  const btn = $("modelTabBtn"), pane = $("modelTab");
+  btn.style.display = WSTATE.canEdit ? "" : "none";
+  if (!WSTATE.canEdit) { pane.innerHTML = ""; if (pane.classList.contains("active")) document.querySelector("[data-tab=layersTab]").click(); return; }
+  pane.innerHTML = weightsPanel(); bindWeights();
+}
+function weightsPanel() {
+  const w = D.site.weights;
+  return `<div class="wpanel"><div class="section-title"><h4>Model weights</h4><span>${WSTATE.level === "admin" ? "Super admin" : "Manager"}</span></div>
+    <p class="note" style="margin:0 0 10px">Change how much each driver counts. Quick-score values, tiers and the suitability layer update live (candidates stay ranked by the interaction model’s expected volume); Save makes the new weights the ones every user of this report sees. Revenue and unit projections are not re-forecast.</p>
+    ${WKEYS.map(([k, l]) => `<div class="wrow"><label for="w_${k}">${l}</label><input type="range" id="w_${k}" data-w="${k}" min="0" max="100" value="${Math.round(w[k] * 100)}"><output id="wo_${k}">${Math.round(w[k] * 100)}%</output></div>`).join("")}
+    <div class="wfoot"><button class="ghost-btn" id="wReset" type="button">Reset to model default</button><button class="ghost-btn" id="wSave" type="button" style="font-weight:600">Save weights</button></div><div class="note" id="wMsg" aria-live="polite"></div></div>`;
+}
+function bindWeights() {
+  const root = $("modelTab"); if (!WSTATE.canEdit) return;
+  const read = () => Object.fromEntries(WKEYS.map(([k]) => [k, +root.querySelector(`[data-w=${k}]`).value]));
+  const msg = (t) => { const m = $("wMsg"); if (m) m.textContent = t; };
+  root.querySelectorAll("[data-w]").forEach((el) => el.oninput = () => {
+    const v = read(), tot = Object.values(v).reduce((a, b) => a + b, 0) || 1;
+    WKEYS.forEach(([k]) => { $("wo_" + k).textContent = Math.round((v[k] / tot) * 100) + "%"; });
+    applyWeights(v); refreshAfterWeights();
+  });
+  $("wSave").onclick = async () => { try { const r = await AGT.api("/api/weights/" + encodeURIComponent(BIZ), { body: { weights: read() } }); WSTATE.saved = r.weights; msg("Saved. Everyone who opens this report now sees these weights."); } catch (e) { msg(e.message || "Could not save."); } };
+  $("wReset").onclick = async () => { try { await AGT.api("/api/weights/" + encodeURIComponent(BIZ), { body: { reset: true } }); WSTATE.saved = null; applyWeights(WSTATE.base); renderModelTab(); refreshAfterWeights(); $("wMsg").textContent = "Back to the model's default weights."; } catch (e) { msg(e.message || "Could not reset."); } };
+}
+function refreshAfterWeights() {
+  const sc = $("expansionTab").scrollTop;
+  renderExpansion(); $("expansionTab").scrollTop = sc;
+  if (S.hexMode === "suit_score") buildHexScale();
+  if (typeof redraw === "function") redraw();
+}
+function ciNote() {
+  const m = (D.site.profile || {}).interaction_model || {};
+  return `<div class="note"><b>Revenue model — competitive interaction.</b> Each site’s expected volume comes from a Huff / MCI gravity model: every demand cell splits its custom between the candidate, ${fmt(m.rivals)} rival outlets and ${fmt(m.own_outlets)} of your own, in proportion to attraction ÷ distance<sup>${m.beta}</sup>. Attraction rises with complementary venues nearby (dining, transit, offices, education…) and falls with stronger rivals. Cannibalisation is the volume the candidate would take from your own outlets. Ranges are P10–P90 over ${m.draws} runs with the distance decay, complement strength, rival strength and outside option varied. Levels are anchored to the baseline of ${fmt(m.typical_site_units_per_day)}/day for a typical site until real sales data calibrate it; ranking between sites is what the model establishes. Ranked by expected net volume.</div>`;
+}
 function renderExpansion() {
   const hx = D.hexes, ly = D.layers, [b0, b1] = D.site.golden_band_km;
   const elig = hx.all.filter((i) => hx.eligible && hx.eligible[i]);
@@ -730,10 +792,10 @@ function renderExpansion() {
         <div class="score" style="color:${scoreColor(c.overall_suitability_score)}">${fmt(c.overall_suitability_score, 1)}<small>/ 100</small></div></div>
       <div class="cand-bars">${[["DEMO", c.demographic_score], ["COMM", c.commercial_score], ["SYN", c.synergy_score], ["WHITE", c.white_space_score]].map(([l, v]) =>
         `<div class="cbar"><div class="l">${l} ${fmt(v, 0)}</div><div class="tr"><div style="width:${v}%;background-image:${scoreGradient(v)}"></div></div></div>`).join("")}</div>
-      <div class="cand-stats"><div>${UNIT()}<b>${fmt(c.projected_daily_units)}</b></div><div>₹ L/mo<b>${fmt(c.projected_monthly_revenue_lakhs, 1)}</b></div>
-        <div>Payback<b>${fmt(c.est_payback_months, 1)} mo</b></div><div>Risk<b>${fmt(c.cannibalization_risk_pct, 1)}%</b></div></div>
+      <div class="cand-stats"><div>${UNIT()}<b>${fmt(c.projected_daily_units)}</b></div><div>₹ L/mo<b>${fmt(c.projected_monthly_revenue_lakhs, 1)}</b>${c.ci_rev_p10 != null ? `<small style="display:block;color:#6e6e73;font-weight:400">${fmt(c.ci_rev_p10, 1)}–${fmt(c.ci_rev_p90, 1)}</small>` : ""}</div>
+        <div>Payback<b>${fmt(c.est_payback_months, 1)} mo</b></div><div>${c.ci_rev_p10 != null ? "Own-outlet loss" : "Risk"}<b>${fmt(c.cannibalization_risk_pct, 1)}%</b></div></div>
     </div>`).join("")}
-    <div class="note">Candidates are restricted to the 10 busiest peak-hour shop fronts in the golden band (≥1.5 km apart; expressways and ramps excluded), then ranked by area score. Score = ${Math.round(w.demographic * 100)}% demographic + ${Math.round(w.commercial * 100)}% commercial + ${Math.round(w.synergy * 100)}% synergy + ${Math.round(w.white_space * 100)}% white space, each a percentile within the study area. ${esc(UNIT())} and revenue are heuristic projections from a baseline of ${fmt((B().economics || {}).baseline_daily_units)} ${esc((DEM().unit || "units"))}/day at ₹${fmt((B().economics || {}).avg_ticket_inr)} per bill; risk is the Huff-model share of the candidate’s 1.5 km demand pulled by the nearest existing outlet.</div>`;
+    <div class="note">Candidates are restricted to the 10 busiest peak-hour shop fronts in the golden band (≥1.5 km apart; expressways and ramps excluded), then ranked by area score. Score = ${Math.round(w.demographic * 100)}% demographic + ${Math.round(w.commercial * 100)}% commercial + ${Math.round(w.synergy * 100)}% synergy + ${Math.round(w.white_space * 100)}% white space, each a percentile within the study area. ${esc(UNIT())} and revenue are heuristic projections from a baseline of ${fmt((B().economics || {}).baseline_daily_units)} ${esc((DEM().unit || "units"))}/day at ₹${fmt((B().economics || {}).avg_ticket_inr)} per bill; risk is the Huff-model share of the candidate’s 1.5 km demand pulled by the nearest existing outlet.</div>${(ly.candidates[0] || {}).ci_rev_lakhs != null ? ciNote() : ""}`;
   $("expansionTab").querySelectorAll("[data-cand]").forEach((el) => el.onclick = () => selectCandidate(el.dataset.cand, true));
   $("showSuit").onclick = () => { S.hexMode = "suit_score"; S.hexScope = "band"; S.on.hexes = true; S.hexOpacity = 0.7; S.openGroups.add("mesh"); buildHexScale(); renderLayersPanel(); renderHexLegend(); redraw(); };
 }
@@ -824,7 +886,7 @@ function renderMethod() {
     ${row("Street footfall", "Gravity model", "Road class × business pull (profile weights) × transit × residents; 24 h curves", "MODELLED")}
     ${row("Business demand", "Profile demand curve", "Footfall × hourly propensity of the product", "MODELLED")}
     ${row("Day-of-week", "Dashboard modifiers", "Fri evening ×1.2, Sun family peak ×1.04", "MODELLED")}
-    ${row("Suitability & projections", "Multi-criteria + heuristics", `Percentile scores; ${esc(bz.demand?.unit || "units")} from baseline ${fmt(eco.baseline_daily_units)}/day`, "MODELLED")}
+    ${row("Suitability & projections", "Competitive interaction (Huff/MCI) + multi-criteria score", `Percentile scores; ${esc(bz.demand?.unit || "units")} from baseline ${fmt(eco.baseline_daily_units)}/day`, "MODELLED")}
     ${row("Google ratings", src.google, "Needs a Places API key", "OBSERVED")}</table>
     <h3>Privacy</h3><div class="note" style="font-size:12px">Only booth-level counts by age band and gender are read from the electoral roll. Names, EPIC numbers, relatives and addresses are never loaded or published.</div>`;
 }
@@ -862,14 +924,14 @@ async function loadSite(id, isNewBusiness = false) {
   D = { site, streets, hexes, pois, layers: layersData };
   if (isNewBusiness) applyBusinessDefaults(site);
   D.tierRGB = {}; site.tiers.forEach((t) => { D.tierRGB[t.level] = hex2rgb(t.color); });
-  prepStreets(); prepHexes(); prepPois(); buildHexScale();
+  prepStreets(); prepHexes(); prepPois(); await initWeights(); buildHexScale();
   $("snapshotBadge").textContent = `OSM ${String(site.provenance.osm_snapshot_utc || "").slice(0, 10)} · Overture ${site.provenance.overture_release || ""}`;
   document.querySelector(".brand-text span").textContent = (site.business || {}).display_name || "Site Footfall Intelligence";
   document.title = `AGT Intelligence · ${(site.business || {}).display_name || "Site intelligence"}`;
   const pk = DEM().peak_hours || [21, 22];
   document.querySelector(".tl-marks").innerHTML = [[3, "Night quiet"], [8, "Morning transit"], [13, "Lunch rush"], [16, "Afternoon"],
     [pk[0], DEM().peak_label || "Evening peak"]].map(([h, l]) => `<span>${hh(h)} ${esc(l)}</span>`).join("");
-  renderSite(); renderLayersPanel(); renderExpansion(); renderLegend(); renderMethod(); updateTime();
+  renderSite(); renderLayersPanel(); renderExpansion(); renderModelTab(); renderLegend(); renderMethod(); updateTime();
   map.jumpTo({ center: site.centre, zoom: 14.2 });
   $("loader").classList.add("hidden");
 }
