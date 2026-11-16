@@ -573,7 +573,7 @@ function renderSite() {
         <div class="r">${km(c.network_dist_m)}<small>${esc(c.direction || "")}</small></div></div>`).join("")}</div></div>
     <div class="section"><div class="section-title"><h4>Business mix · ${s.radius_km} km</h4><span>${fmt(businesses)} points</span></div>
       ${mix.map(([k, v]) => `<div class="hbar"><span class="lbl">${ico(iconFor(k), CAT_COLORS[k] || "#6366f1", 13, 1.5)}${k.replace(/_/g, " ")}</span><div class="track"><div class="fill" style="width:${(v / mixmax) * 100}%;background:${CAT_COLORS[k] || "#6366f1"}"></div></div><span class="num">${compact(v)}</span></div>`).join("")}</div>
-    <div class="note">Sources: OpenStreetMap, Overture Maps, electoral-roll booth aggregates, Overture buildings. Footfall, workforce and projections are modelled. Open “Data &amp; method” for details.</div>`;
+    <div class="note">Sources: OpenStreetMap, Overture Maps, ${pop.voters_registered ? "electoral-roll booth aggregates" : "WorldPop / Meta HRSL population"}, Overture buildings. Footfall, workforce and projections are modelled. Open “Data &amp; method” for details.</div>`;
   $("sitePanel").querySelectorAll("[data-corridor]").forEach((el) => el.onclick = () => flyToCorridor(el.dataset.corridor));
   $("sitePanel").querySelectorAll("[data-lng]").forEach((el) => el.onclick = () => map.flyTo({ center: [+el.dataset.lng, +el.dataset.lat], zoom: 17 }));
 }
