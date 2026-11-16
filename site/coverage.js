@@ -19,24 +19,24 @@
     { name: "Ahmedabad", lon: 72.57, lat: 23.02, label: "l", phase: 3 },
   ];
   const PHASES = [
-    { n: 1, status: "Live", text: "Bengaluru — high-precision data and models." },
-    { n: 2, status: "In build", text: "Hyderabad, Chennai and Pune." },
-    { n: 3, status: "Planned", text: "Mumbai, Delhi NCR, Kolkata and Ahmedabad." },
+    { n: 1, status: "Premium · live", text: "Bengaluru — premium, high-precision intelligence." },
+    { n: 2, status: "Upgrading soon", text: "Hyderabad, Chennai and Pune." },
+    { n: 3, status: "Upgrading next", text: "Mumbai, Delhi NCR, Kolkata and Ahmedabad." },
   ];
   const TIERS = [
-    { key: "high", name: "High-precision", where: "Bengaluru", state: "Live",
+    { key: "high", name: "Premium intelligence", where: "Bengaluru", state: "Live",
       points: ["Street-level modelling at 65 m resolution", "Demand calibrated to the city's own patterns", "Competition and complementary-business model tuned locally"] },
-    { key: "std", name: "Standard coverage", where: "Any other Indian city", state: "Available now",
-      points: ["Same platform, same dashboard and forecasts", "Built on city-wide datasets, so local detail is coarser", "Upgraded automatically when your city's phase goes live"] },
-    { key: "next", name: "Next phases", where: "Hyderabad, Chennai, Pune and more", state: "In build",
-      points: ["High-precision data and models being built city by city", "Order of cities follows demand", "Tell us which city you need next"] },
+    { key: "std", name: "Pan-India insights", where: "Every other city in India", state: "Available now",
+      points: ["Footfall, competitors, demographics and expansion candidates in the same dashboard", "Wide, city-level insights for any location you send us", "Upgraded to premium automatically as your city goes live"] },
+    { key: "next", name: "Premium everywhere", where: "All cities, city by city", state: "Coming very soon",
+      points: ["Every city is being brought up to the Bengaluru standard", "Order of cities follows demand", "Tell us which city to upgrade first"] },
   ];
 
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const tierOf = (city) => (String(city || "").trim().toLowerCase() === LIVE.toLowerCase() ? "high" : "std");
   const NOTE = {
-    high: ["High-precision coverage", "Your report is built on our high-precision Bengaluru data and models."],
-    std: ["Standard coverage", "We can analyse this city today on city-wide datasets. Local detail is coarser than in Bengaluru; high-precision coverage for more cities is being built in phases."],
+    high: ["Premium intelligence", "Your report is built on our premium, high-precision Bengaluru data and models."],
+    std: ["Pan-India insights", "We cover this city today with wide, city-level insights — footfall, competitors, demographics and expansion candidates. Premium, Bengaluru-level precision is coming to every city very soon, and your report upgrades with it."],
   };
 
   // ---------------------------------------------------------------- styles (self-contained, theme-aware)
@@ -44,15 +44,20 @@
   .cov-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:56px;align-items:center}
   .cov-map{position:relative;max-width:440px;width:100%;margin:0 auto}
   .cov-map svg{width:100%;height:auto;display:block;overflow:visible}
-  .cov-india{fill:var(--bg-2);stroke:var(--line-2);stroke-width:1.1;stroke-linejoin:round}
+  .cov-india{fill:color-mix(in srgb,var(--ink) 9%,var(--bg));stroke:color-mix(in srgb,var(--ink) 30%,var(--bg));stroke-width:1.1;stroke-linejoin:round}
   .cov-dot-live{fill:var(--ink)} .cov-pulse{fill:none;stroke:var(--ink);stroke-width:1.2;transform-box:fill-box;transform-origin:center;animation:covp 2.6s ease-out infinite}
-  .cov-dot-2{fill:var(--bg);stroke:var(--ink);stroke-width:1.6;stroke-dasharray:3 2.4} .cov-dot-3{fill:var(--bg);stroke:var(--ink-3);stroke-width:1.4;stroke-dasharray:2.4 2.4}
-  .cov-lab{font:600 11px/1 var(--sans,system-ui);fill:var(--ink)} .cov-lab.dim{fill:var(--ink-3);font-weight:500}
+  .cov-dot-2{fill:var(--bg);stroke:var(--ink);stroke-width:1.6;stroke-dasharray:3 2.4} .cov-dot-3{fill:var(--bg);stroke:var(--ink);stroke-width:1.6;stroke-dasharray:3 2.4}
+  .cov-lab{font:600 11px/1 var(--sans,system-ui);fill:var(--ink)} .cov-lab.dim{fill:var(--ink-2);font-weight:500}
   @keyframes covp{0%{transform:scale(1);opacity:.7}100%{transform:scale(4.2);opacity:0}}
   @media (prefers-reduced-motion:reduce){.cov-pulse{animation:none;opacity:.25}}
   .cov-legend{display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:center;margin:20px 0 0;font-size:12.5px;color:var(--ink-2)}
   .cov-legend span{display:inline-flex;align-items:center;gap:8px} .cov-legend i{width:11px;height:11px;border-radius:50%;display:inline-block;box-sizing:border-box}
-  .cov-legend .a{background:var(--ink)} .cov-legend .b{border:1.6px dashed var(--ink)} .cov-legend .c{border:1.4px dashed var(--ink-3)}
+  .cov-legend .a{background:var(--ink)} .cov-legend .b{border:1.6px dashed var(--ink)} .cov-legend .c{border:1.4px dashed var(--ink-3)} .cov-legend .d{border-radius:3px;background:color-mix(in srgb,var(--ink) 14%,var(--bg));border:1px solid color-mix(in srgb,var(--ink) 30%,var(--bg))}
+  .cov-two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:24px}
+  .cov-box{border:1px solid var(--line);border-radius:16px;padding:16px 18px;background:var(--bg)} .cov-box.prem{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+  .cov-box .tg{font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)} .cov-box.prem .tg{color:var(--ink)}
+  .cov-box ul{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:8px} .cov-box li{font-size:13.5px;color:var(--ink-2);line-height:1.45;padding-left:14px;position:relative} .cov-box li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:1px;background:var(--ink-3)}
+  @media (max-width:600px){.cov-two{grid-template-columns:1fr}}
   .cov-roll{display:grid;border-top:1px solid var(--line)}
   .cov-row{padding:20px 0;border-bottom:1px solid var(--line);display:grid;gap:12px}
   .cov-row .rh{display:flex;justify-content:space-between;align-items:center;gap:10px} .cov-row .rh b{font-size:15px;font-weight:600;color:var(--ink)}
@@ -90,7 +95,7 @@
       const mark = c.phase === 1 ? `<circle class="cov-pulse" cx="${x}" cy="${y}" r="5"/><circle class="cov-dot-live" cx="${x}" cy="${y}" r="5.5"/>` : `<circle class="cov-dot-${c.phase}" cx="${x}" cy="${y}" r="5"/>`;
       return `<g>${mark}<text class="cov-lab ${c.phase === 1 ? "" : "dim"}" x="${tx}" y="${+y + 4}" text-anchor="${left ? "end" : "start"}">${esc(c.name)}</text></g>`;
     }).join("");
-    return `<svg viewBox="-12 -8 ${M.viewBox.split(" ")[2] * 1 + 24} ${M.viewBox.split(" ")[3] * 1 + 16}" role="img" aria-label="Map of India showing coverage: Bengaluru is live with high-precision coverage; Hyderabad, Chennai and Pune are in build; Mumbai, Delhi NCR, Kolkata and Ahmedabad are planned."><path class="cov-india" d="${M.path}"/>${dots}</svg>`;
+    return `<svg viewBox="-12 -8 ${M.viewBox.split(" ")[2] * 1 + 24} ${M.viewBox.split(" ")[3] * 1 + 16}" role="img" aria-label="Map of India. All of India is covered with city-level insights. Bengaluru has premium, high-precision intelligence; Hyderabad, Chennai, Pune, Mumbai, Delhi NCR, Kolkata and Ahmedabad are being upgraded to premium."><path class="cov-india" d="${M.path}"/>${dots}</svg>`;
   }
 
   // ---------------------------------------------------------------- rollout (deliberately no map: no geography is drawn)
@@ -105,14 +110,17 @@
     el.innerHTML = `<div class="wrap"><div class="cov-grid">
       <div>
         <p class="eyebrow">Coverage</p>
-        <h2 class="h2">Built deep in Bengaluru.<br /><span class="dim">Expanding city by city.</span></h2>
-        <p class="lede" style="font-size:18px">High-precision data and models for Bengaluru are live today. We are building the same depth for other Indian cities in phases — and reports for other cities are already available at standard coverage.</p>
-        <ul class="cov-pts">${TIERS[0].points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>
+        <h2 class="h2">All of India, today.<br /><span class="dim">Premium precision — starting with Bengaluru.</span></h2>
+        <p class="lede" style="font-size:18px">We cover every Indian city right now with wide, city-level insights. Bengaluru runs at our premium, high-precision level — and every other city is being upgraded to the same standard, very soon.</p>
+        <div class="cov-two">
+          <div class="cov-box prem"><span class="tg">Premium · Bengaluru</span><ul>${TIERS[0].points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>
+          <div class="cov-box"><span class="tg">Pan-India · other cities</span><ul>${TIERS[1].points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>
+        </div>
         <div style="margin-top:26px">${roll()}</div>
       </div>
       <div>
-        <div class="cov-map">${mapSvg()}<div class="cov-legend"><span><i class="a"></i>High-precision · live</span><span><i class="b"></i>Next phase · in build</span><span><i class="c"></i>Planned</span></div></div>
-        <div class="cov-ask"><h3>Which city should be next?</h3><p>Tell us where you need high-precision coverage. It helps us decide the order — and we'll email you when it's ready.</p>
+        <div class="cov-map">${mapSvg()}<div class="cov-legend"><span><i class="a"></i>Premium · live</span><span><i class="b"></i>Upgrading to premium</span><span><i class="d"></i>Available across India</span></div></div>
+        <div class="cov-ask"><h3>Which city should we upgrade first?</h3><p>Tell us where you need premium, Bengaluru-level precision. It helps us decide the order — and we'll email you the moment it's ready.</p>
           <form id="covForm" novalidate>
             <select id="covCity" aria-label="City">${others.map((c) => `<option>${esc(c)}</option>`).join("")}<option value="__other">Another city…</option></select>
             <input id="covEmail" type="email" placeholder="Your email" autocomplete="email" aria-label="Your email" />
@@ -136,7 +144,7 @@
   function tiers(el) {
     el.innerHTML = `<div class="cov-tiers">${TIERS.map((t) => `<article class="cov-tier ${t.key}"><div class="k"><span class="nm">${esc(t.name)}</span><span class="st">${esc(t.state)}</span></div><p class="wh">${esc(t.where)}</p><ul>${t.points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></article>`).join("")}</div>`;
   }
-  function strip(el) { el.innerHTML = `<div class="cov-strip"><i></i><span>High-precision coverage in Bengaluru · more cities being added in phases</span></div>`; }
+  function strip(el) { el.innerHTML = `<div class="cov-strip"><i></i><span>Premium intelligence in Bengaluru · pan-India insights everywhere · every city being upgraded soon</span></div>`; }
 
   // ---------------------------------------------------------------- request-form city picker
   function picker(sel) {
