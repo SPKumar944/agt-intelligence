@@ -24,6 +24,10 @@
   ];
 
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  // Published city briefs (site/briefs.js). A city has one when its slug is listed.
+  const briefSlugs = () => (Array.isArray(window.AGT_BRIEFS) ? window.AGT_BRIEFS.map((b) => b.slug) : (R.briefs || []));
+  const slugOf = (c) => norm(c.n).replace(/\s+/g, "-");
+  const hasBrief = (c) => briefSlugs().includes(slugOf(c));
   const tierOf = (city) => (norm(city) === norm(LIVE) ? "high" : "std");
   function noteFor(city) {
     if (tierOf(city) === "high") return ["Premium intelligence", "Your report is built on our premium, high-precision Bengaluru data and models."];
@@ -45,6 +49,10 @@
   .cov-lab{font:500 10px/1 var(--sans,system-ui);letter-spacing:.01em;fill:var(--ink);paint-order:stroke;stroke:color-mix(in srgb,var(--ink) 7%,var(--bg));stroke-width:2.6px;stroke-linejoin:round;pointer-events:none} .cov-lab.lv{font-weight:700;font-size:11px}
   @keyframes covp{0%{transform:scale(1);opacity:.6}100%{transform:scale(3.6);opacity:0}}
   @media (prefers-reduced-motion:reduce){.cov-pulse{animation:none;opacity:.2}}
+  .cov-bring{fill:none;stroke:var(--ink);stroke-width:1.2;pointer-events:none} .cov-pt-brief{cursor:pointer} .cov-pt-brief:focus{outline:none} .cov-pt-brief:focus-visible{stroke:var(--ink);stroke-width:1.5;fill:color-mix(in srgb,var(--ink) 12%,transparent)}
+  .cov-lab.bl{font-weight:700;text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:1px}
+  .cov-tip em.bf{opacity:1;margin-top:6px;padding-top:6px;border-top:1px solid color-mix(in srgb,var(--bg) 30%,transparent);font-weight:600}
+  .cov-legend .e{background:transparent;border:1.4px solid var(--ink);width:11px;height:11px;box-shadow:inset 0 0 0 2.4px var(--bg),inset 0 0 0 6px var(--ink)}
   .cov-tip{position:absolute;z-index:3;pointer-events:none;background:var(--ink);color:var(--bg);border-radius:10px;padding:8px 12px;font-size:12px;line-height:1.35;box-shadow:0 8px 24px rgba(0,0,0,.22);opacity:0;transform:translate(-50%,-100%) translateY(-8px);transition:opacity .15s;white-space:nowrap} .cov-tip.on{opacity:1} .cov-tip b{display:block;font-size:13px;font-weight:600} .cov-tip em{display:block;font-style:normal;opacity:.7;margin-top:2px}
   .cov-tabs{display:flex;gap:6px;justify-content:center;margin:0 0 14px;flex-wrap:wrap}
   .cov-tabs button{border:0;border-radius:980px;padding:7px 14px;background:var(--bg);color:var(--ink-2);font:600 12.5px/1 inherit;cursor:pointer;box-shadow:0 0 0 1px var(--line-2)} .cov-tabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg);box-shadow:none}
@@ -110,13 +118,16 @@
     const f = (v) => v.toFixed(1), ti = tierInfo(sel);
     const chosen = ALL.filter((c) => c.t === sel && norm(c.n) !== norm(LIVE)), others = ALL.filter((c) => c.t !== sel && norm(c.n) !== norm(LIVE));
     const live = ALL.find((c) => norm(c.n) === norm(LIVE));
-    const labelled = [live, ...chosen].filter(Boolean), pos = placeLabels(labelled, at);
+    const briefCities = ALL.filter((c) => hasBrief(c) && c !== live);
+    const labelled = [live, ...chosen, ...briefCities.filter((c) => !chosen.includes(c))].filter(Boolean), pos = placeLabels(labelled, at);
     const idxOf = (c) => ALL.indexOf(c), hit = (c, x, y) => `<circle class="cov-pt" cx="${f(x)}" cy="${f(y)}" r="8" data-i="${idxOf(c)}"/>`;
     const fade = { 1: .5, 2: .42, 3: .34, 4: .28 };
     let g = others.map((c) => { const [x, y] = at(c.x, c.y); return `<circle class="cov-o" cx="${f(x)}" cy="${f(y)}" r="1.5" opacity="${fade[c.t] || .3}"/>${hit(c, x, y)}`; }).join("");
     g += chosen.map((c) => { const [x, y] = at(c.x, c.y); return `<circle class="cov-halo" cx="${f(x)}" cy="${f(y)}" r="6.5"/><circle class="cov-s" cx="${f(x)}" cy="${f(y)}" r="3"/>${hit(c, x, y)}`; }).join("");
     if (live) { const [x, y] = at(live.x, live.y); g += `<circle class="cov-halo" cx="${f(x)}" cy="${f(y)}" r="10"/><circle class="cov-pulse" cx="${f(x)}" cy="${f(y)}" r="5"/><circle class="cov-live" cx="${f(x)}" cy="${f(y)}" r="4.6"/>${hit(live, x, y)}`; }
-    g += labelled.map((c) => { const p = pos.get(c); return p ? `<text class="cov-lab${c === live ? " lv" : ""}" x="${f(p[1])}" y="${f(p[2])}" text-anchor="${p[0]}">${esc(c.n)}</text>` : ""; }).join("");
+    // cities with a published brief: always drawn as a ringed, clickable point on top, whichever tier is selected
+    g += briefCities.map((c) => { const [x, y] = at(c.x, c.y); return `<circle class="cov-halo" cx="${f(x)}" cy="${f(y)}" r="8"/><circle class="cov-bring" cx="${f(x)}" cy="${f(y)}" r="6"/><circle class="cov-s" cx="${f(x)}" cy="${f(y)}" r="3.2"/><circle class="cov-pt cov-pt-brief" cx="${f(x)}" cy="${f(y)}" r="10" data-i="${idxOf(c)}" data-brief="${slugOf(c)}" tabindex="0" role="link" aria-label="Open the ${esc(c.n)} city brief"/>`; }).join("");
+    g += labelled.map((c) => { const p = pos.get(c); return p ? `<text class="cov-lab${c === live ? " lv" : ""}${hasBrief(c) ? " bl" : ""}" x="${f(p[1])}" y="${f(p[2])}" text-anchor="${p[0]}">${esc(c.n)}${hasBrief(c) ? " ↗" : ""}</text>` : ""; }).join("");
     const [, , w, h] = M.viewBox.split(" ").map(Number);
     return `<svg viewBox="-14 -10 ${w + 28} ${h + 20}" role="img" aria-label="Map of India. All of India is covered with city-level insights. Bengaluru has premium intelligence. ${esc(ti.name)} cities, ${chosen.length} in all, are highlighted and upgrade to premium by ${esc(ti.by)}."><defs><linearGradient id="covLand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb,var(--ink) var(--ca),var(--bg))"/><stop offset="1" style="stop-color:color-mix(in srgb,var(--ink) var(--cb),var(--bg))"/></linearGradient></defs><path class="cov-india" d="${M.path}"/>${g}</svg>`;
   }
@@ -126,7 +137,7 @@
     ALL.filter((c) => c.t === sel).forEach((c) => (by[c.s] = by[c.s] || []).push(c));
     const states = Object.keys(by).sort();
     return `<div class="hd"><h3>${esc(ti.name)} · ${esc(ti.kind)}</h3><span>${countIn(sel)} cities across ${states.length} states and territories · premium upgrade by <strong>${esc(ti.by)}</strong></span></div>
-      <div class="cov-sg">${states.map((s) => `<div><h4>${esc(s)}</h4><div class="cs">${by[s].map((c) => `${(R.briefs || []).includes(norm(c.n).replace(/\s+/g, "-")) ? `<a class="brief" href="city.html?c=${norm(c.n).replace(/\s+/g, "-")}" title="Open the ${esc(c.n)} city brief">${esc(c.n)} <em>city brief ↗</em></a>` : `<span class="${norm(c.n) === norm(LIVE) ? "live" : ""}">${esc(c.n)}${norm(c.n) === norm(LIVE) ? " · live" : ""}</span>`}`).join("")}</div></div>`).join("")}</div>`;
+      <div class="cov-sg">${states.map((s) => `<div><h4>${esc(s)}</h4><div class="cs">${by[s].map((c) => `${hasBrief(c) ? `<a class="brief" href="city.html?c=${slugOf(c)}" title="Open the ${esc(c.n)} city brief">${esc(c.n)} <em>city brief ↗</em></a>` : `<span class="${norm(c.n) === norm(LIVE) ? "live" : ""}">${esc(c.n)}${norm(c.n) === norm(LIVE) ? " · live" : ""}</span>`}`).join("")}</div></div>`).join("")}</div>`;
   }
 
 
@@ -149,7 +160,7 @@
         </div>
         <div>
           <div class="cov-tabs" id="covTabs" role="group" aria-label="Show tier on map">${TIERS_R.map((t) => `<button type="button" data-t="${t.n}" aria-pressed="${t.n === sel}">${esc(t.name)}</button>`).join("")}</div>
-          <div class="cov-map"><div id="covSvg"></div><div class="cov-tip" id="covTip" role="tooltip"></div><div class="cov-legend"><span><i class="a"></i>Premium · live</span><span><i class="b"></i><span id="covLegSel"></span></span><span><i class="c"></i>Other tiers</span><span><i class="d"></i>Covered across India</span></div></div>
+          <div class="cov-map"><div id="covSvg"></div><div class="cov-tip" id="covTip" role="tooltip"></div><div class="cov-legend"><span><i class="a"></i>Premium · live</span><span><i class="b"></i><span id="covLegSel"></span></span><span><i class="c"></i>Other tiers</span><span><i class="d"></i>Covered across India</span>${briefSlugs().length ? `<span><i class="e"></i>City brief · click</span>` : ""}</div></div>
         </div>
       </div>
       <div class="cov-t4" id="covTiers" role="group" aria-label="Upgrade schedule by tier. Select a tier to see its cities.">${TIERS_R.map((t) => `<button type="button" class="cov-tb" data-t="${t.n}" aria-expanded="false" aria-controls="covDrop"><span class="n">${esc(t.name)}</span><b>${esc(t.kind)}</b><small>${countIn(t.n)} cities</small><span class="by">Premium by <strong>${esc(t.by)}</strong></span><i class="chev" aria-hidden="true"></i></button>`).join("")}</div>
@@ -181,11 +192,17 @@
     // hover / tap a point: elegant tooltip
     const showTip = (t) => {
       const c = ALL[+t.dataset.i], ti = tierInfo(c.t), a = t.getBoundingClientRect(), m = mapBox.getBoundingClientRect();
-      tip.innerHTML = `<b>${esc(c.n)}</b>${esc(c.s)}<em>${norm(c.n) === norm(LIVE) ? "Premium · live" : esc(ti.name) + " · premium by " + esc(ti.by)}</em>`;
+      tip.innerHTML = `<b>${esc(c.n)}</b>${esc(c.s)}<em>${norm(c.n) === norm(LIVE) ? "Premium · live" : esc(ti.name) + " · premium by " + esc(ti.by)}</em>${t.dataset.brief ? `<em class="bf">City brief available — click to open →</em>` : ""}`;
       tip.style.left = (a.left + a.width / 2 - m.left) + "px"; tip.style.top = (a.top + a.height / 2 - m.top) + "px"; tip.classList.add("on");
     };
     mapBox.addEventListener("pointerover", (e) => { const t = e.target.closest(".cov-pt"); if (t) showTip(t); });
     mapBox.addEventListener("pointerout", (e) => { if (e.target.closest(".cov-pt")) tip.classList.remove("on"); });
+    // a city with a brief opens it on click (or Enter / Space when focused)
+    const openBrief = (e) => { const t = e.target.closest(".cov-pt[data-brief]"); if (t) location.href = "city.html?c=" + t.dataset.brief; };
+    mapBox.addEventListener("click", openBrief);
+    mapBox.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openBrief(e); } });
+    mapBox.addEventListener("focusin", (e) => { const t = e.target.closest(".cov-pt[data-brief]"); if (t) showTip(t); });
+    mapBox.addEventListener("focusout", () => tip.classList.remove("on"));
     draw();
     const sl = el.querySelector("#covCity"), oth = el.querySelector("#covOther"), msg = el.querySelector("#covMsg");
     sl.addEventListener("change", () => { oth.hidden = sl.value !== "__other"; if (!oth.hidden) oth.focus(); });

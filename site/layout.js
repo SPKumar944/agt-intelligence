@@ -25,6 +25,17 @@
   const LOGO = `<svg viewBox="0 0 40 24" aria-hidden="true"><path d="M2 12 L10 4 L18 12 L10 20 Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><path d="M16 12 L24 4 L32 12 L24 20 Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" opacity=".5"/><circle cx="35.5" cy="12" r="2.4" fill="currentColor"/></svg>`;
   const onPlatform = page === "platform" || PLATFORM.some((p) => p.id === page);
 
+  // City briefs (site/briefs.js): the menu lists every published brief, so adding a city there is all that is needed.
+  const BRIEFS = Array.isArray(window.AGT_BRIEFS) ? window.AGT_BRIEFS : [];
+  const BRIEFS_MENU = !BRIEFS.length ? "" : `<li class="has-menu" id="briefMenu">
+          <button type="button" aria-expanded="false" aria-haspopup="true" class="${page === "city" ? "active" : ""}">City briefs
+            <svg class="chev" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5 5 6.5 8 3.5"/></svg></button>
+          <div class="mega mega-sm" role="menu">
+            ${BRIEFS.map((b) => `<a href="city.html?c=${b.slug}" role="menuitem"><svg class="ico" data-icon="map"></svg><b>${b.name}</b><span>${b.state} · Tier ${b.tier} · ${b.line}</span></a>`).join("")}
+            <div class="mega-foot"><span>KPI briefs for more cities are on the way.</span><a href="home.html#coverage">Coverage plan →</a></div>
+          </div>
+        </li>`;
+
   const head = $("#site-header");
   if (head) head.outerHTML = `
   <header class="site-header" id="siteHeader">
@@ -39,7 +50,7 @@
             <div class="mega-foot"><span>One engine, four questions, every answer explained.</span><a href="platform.html">Platform overview →</a></div>
           </div>
         </li>
-        ${NAV.map((n) => `<li><a href="${n.href}" class="${page === n.id ? "active" : ""}">${n.t}</a></li>`).join("")}
+        ${NAV.map((n) => (n.id === "pricing" ? BRIEFS_MENU : "") + `<li><a href="${n.href}" class="${page === n.id ? "active" : ""}">${n.t}</a></li>`).join("")}
         <li class="menu-cta"><a class="btn btn-primary" href="request-report.html">Request a report</a></li>
       </ul>
       <div class="head-cta">
@@ -101,17 +112,20 @@
   });
 
   // ---------------------------------------------------------------- menus
-  const hdr = $("#siteHeader"), plat = $("#platMenu");
-  if (plat) {
-    const btn = plat.querySelector("button");
-    const set = (o) => { plat.classList.toggle("open", o); btn.setAttribute("aria-expanded", o); };
+  const hdr = $("#siteHeader"), menus = $$(".has-menu");
+  menus.forEach((m) => {                                   // Platform and City briefs share the same dropdown behaviour
+    const btn = m.querySelector("button");
+    const set = (o) => {
+      if (o) menus.forEach((x) => { if (x !== m) { x.classList.remove("open"); x.querySelector("button").setAttribute("aria-expanded", false); } });
+      m.classList.toggle("open", o); btn.setAttribute("aria-expanded", o);
+    };
     let t;
-    plat.addEventListener("mouseenter", () => { if (innerWidth > 960) { clearTimeout(t); set(true); } });
-    plat.addEventListener("mouseleave", () => { if (innerWidth > 960) t = setTimeout(() => set(false), 120); });
-    btn.addEventListener("click", () => set(!plat.classList.contains("open")));
+    m.addEventListener("mouseenter", () => { if (innerWidth > 960) { clearTimeout(t); set(true); } });
+    m.addEventListener("mouseleave", () => { if (innerWidth > 960) t = setTimeout(() => set(false), 120); });
+    btn.addEventListener("click", () => set(!m.classList.contains("open")));
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") set(false); });
-    document.addEventListener("click", (e) => { if (!plat.contains(e.target)) set(false); });
-  }
+    document.addEventListener("click", (e) => { if (!m.contains(e.target)) set(false); });
+  });
   const mb = $("#menuBtn");
   if (mb) mb.addEventListener("click", () => {
     const o = !hdr.classList.contains("open"); hdr.classList.toggle("open", o);
