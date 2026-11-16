@@ -24,8 +24,8 @@
   ];
 
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  // Published city briefs (site/briefs.js). A city has one when its slug is listed.
-  const briefSlugs = () => (Array.isArray(window.AGT_BRIEFS) ? window.AGT_BRIEFS.map((b) => b.slug) : (R.briefs || []));
+  // Cities with a published snapshot (site/snapshots-registry.js). Clicking one opens it on the City snapshots page.
+  const briefSlugs = () => (Array.isArray(window.AGT_SNAPSHOTS) ? window.AGT_SNAPSHOTS.map((b) => b.slug) : []);
   const slugOf = (c) => norm(c.n).replace(/\s+/g, "-");
   const hasBrief = (c) => briefSlugs().includes(slugOf(c));
   const tierOf = (city) => (norm(city) === norm(LIVE) ? "high" : "std");
@@ -137,7 +137,7 @@
     ALL.filter((c) => c.t === sel).forEach((c) => (by[c.s] = by[c.s] || []).push(c));
     const states = Object.keys(by).sort();
     return `<div class="hd"><h3>${esc(ti.name)} · ${esc(ti.kind)}</h3><span>${countIn(sel)} cities across ${states.length} states and territories · premium upgrade by <strong>${esc(ti.by)}</strong></span></div>
-      <div class="cov-sg">${states.map((s) => `<div><h4>${esc(s)}</h4><div class="cs">${by[s].map((c) => `${hasBrief(c) ? `<a class="brief" href="city.html?c=${slugOf(c)}" title="Open the ${esc(c.n)} city brief">${esc(c.n)} <em>city brief ↗</em></a>` : `<span class="${norm(c.n) === norm(LIVE) ? "live" : ""}">${esc(c.n)}${norm(c.n) === norm(LIVE) ? " · live" : ""}</span>`}`).join("")}</div></div>`).join("")}</div>`;
+      <div class="cov-sg">${states.map((s) => `<div><h4>${esc(s)}</h4><div class="cs">${by[s].map((c) => `${hasBrief(c) ? `<a class="brief" href="city-snapshots.html#${slugOf(c)}" title="Open the ${esc(c.n)} city snapshot">${esc(c.n)} <em>snapshot ↗</em></a>` : `<span class="${norm(c.n) === norm(LIVE) ? "live" : ""}">${esc(c.n)}${norm(c.n) === norm(LIVE) ? " · live" : ""}</span>`}`).join("")}</div></div>`).join("")}</div>`;
   }
 
 
@@ -160,7 +160,7 @@
         </div>
         <div>
           <div class="cov-tabs" id="covTabs" role="group" aria-label="Show tier on map">${TIERS_R.map((t) => `<button type="button" data-t="${t.n}" aria-pressed="${t.n === sel}">${esc(t.name)}</button>`).join("")}</div>
-          <div class="cov-map"><div id="covSvg"></div><div class="cov-tip" id="covTip" role="tooltip"></div><div class="cov-legend"><span><i class="a"></i>Premium · live</span><span><i class="b"></i><span id="covLegSel"></span></span><span><i class="c"></i>Other tiers</span><span><i class="d"></i>Covered across India</span>${briefSlugs().length ? `<span><i class="e"></i>City brief · click</span>` : ""}</div></div>
+          <div class="cov-map"><div id="covSvg"></div><div class="cov-tip" id="covTip" role="tooltip"></div><div class="cov-legend"><span><i class="a"></i>Premium · live</span><span><i class="b"></i><span id="covLegSel"></span></span><span><i class="c"></i>Other tiers</span><span><i class="d"></i>Covered across India</span>${briefSlugs().length ? `<span><i class="e"></i>City snapshot · click</span>` : ""}</div></div>
         </div>
       </div>
       <div class="cov-t4" id="covTiers" role="group" aria-label="Upgrade schedule by tier. Select a tier to see its cities.">${TIERS_R.map((t) => `<button type="button" class="cov-tb" data-t="${t.n}" aria-expanded="false" aria-controls="covDrop"><span class="n">${esc(t.name)}</span><b>${esc(t.kind)}</b><small>${countIn(t.n)} cities</small><span class="by">Premium by <strong>${esc(t.by)}</strong></span><i class="chev" aria-hidden="true"></i></button>`).join("")}</div>
@@ -192,13 +192,13 @@
     // hover / tap a point: elegant tooltip
     const showTip = (t) => {
       const c = ALL[+t.dataset.i], ti = tierInfo(c.t), a = t.getBoundingClientRect(), m = mapBox.getBoundingClientRect();
-      tip.innerHTML = `<b>${esc(c.n)}</b>${esc(c.s)}<em>${norm(c.n) === norm(LIVE) ? "Premium · live" : esc(ti.name) + " · premium by " + esc(ti.by)}</em>${t.dataset.brief ? `<em class="bf">City brief available — click to open →</em>` : ""}`;
+      tip.innerHTML = `<b>${esc(c.n)}</b>${esc(c.s)}<em>${norm(c.n) === norm(LIVE) ? "Premium · live" : esc(ti.name) + " · premium by " + esc(ti.by)}</em>${t.dataset.brief ? `<em class="bf">City snapshot available — click to open →</em>` : ""}`;
       tip.style.left = (a.left + a.width / 2 - m.left) + "px"; tip.style.top = (a.top + a.height / 2 - m.top) + "px"; tip.classList.add("on");
     };
     mapBox.addEventListener("pointerover", (e) => { const t = e.target.closest(".cov-pt"); if (t) showTip(t); });
     mapBox.addEventListener("pointerout", (e) => { if (e.target.closest(".cov-pt")) tip.classList.remove("on"); });
     // a city with a brief opens it on click (or Enter / Space when focused)
-    const openBrief = (e) => { const t = e.target.closest(".cov-pt[data-brief]"); if (t) location.href = "city.html?c=" + t.dataset.brief; };
+    const openBrief = (e) => { const t = e.target.closest(".cov-pt[data-brief]"); if (t) location.href = "city-snapshots.html#" + t.dataset.brief; };
     mapBox.addEventListener("click", openBrief);
     mapBox.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openBrief(e); } });
     mapBox.addEventListener("focusin", (e) => { const t = e.target.closest(".cov-pt[data-brief]"); if (t) showTip(t); });

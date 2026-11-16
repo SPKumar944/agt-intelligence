@@ -19,22 +19,12 @@
     { href: "technology.html", id: "technology", t: "Technology" },
     { href: "methodology.html", id: "methodology", t: "Methodology" },
     { href: "industries.html", id: "industries", t: "Industries" },
+    { href: "city-snapshots.html", id: "snapshots", t: "City snapshots" },
     { href: "pricing.html", id: "pricing", t: "Pricing" },
     { href: "trust.html", id: "trust", t: "Trust & data" },
   ];
   const LOGO = `<svg viewBox="0 0 40 24" aria-hidden="true"><path d="M2 12 L10 4 L18 12 L10 20 Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><path d="M16 12 L24 4 L32 12 L24 20 Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" opacity=".5"/><circle cx="35.5" cy="12" r="2.4" fill="currentColor"/></svg>`;
   const onPlatform = page === "platform" || PLATFORM.some((p) => p.id === page);
-
-  // City briefs (site/briefs.js): the menu lists every published brief, so adding a city there is all that is needed.
-  const BRIEFS = Array.isArray(window.AGT_BRIEFS) ? window.AGT_BRIEFS : [];
-  const BRIEFS_MENU = !BRIEFS.length ? "" : `<li class="has-menu" id="briefMenu">
-          <button type="button" aria-expanded="false" aria-haspopup="true" class="${page === "city" ? "active" : ""}">City briefs
-            <svg class="chev" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5 5 6.5 8 3.5"/></svg></button>
-          <div class="mega mega-sm" role="menu">
-            ${BRIEFS.map((b) => `<a href="city.html?c=${b.slug}" role="menuitem"><svg class="ico" data-icon="map"></svg><b>${b.name}</b><span>${b.state} · Tier ${b.tier} · ${b.line}</span></a>`).join("")}
-            <div class="mega-foot"><span>KPI briefs for more cities are on the way.</span><a href="home.html#coverage">Coverage plan →</a></div>
-          </div>
-        </li>`;
 
   const head = $("#site-header");
   if (head) head.outerHTML = `
@@ -50,7 +40,7 @@
             <div class="mega-foot"><span>One engine, four questions, every answer explained.</span><a href="platform.html">Platform overview →</a></div>
           </div>
         </li>
-        ${NAV.map((n) => (n.id === "pricing" ? BRIEFS_MENU : "") + `<li><a href="${n.href}" class="${page === n.id ? "active" : ""}">${n.t}</a></li>`).join("")}
+        ${NAV.map((n) => `<li><a href="${n.href}" class="${page === n.id ? "active" : ""}">${n.t}</a></li>`).join("")}
         <li class="menu-cta"><a class="btn btn-primary" href="request-report.html">Request a report</a></li>
       </ul>
       <div class="head-cta">

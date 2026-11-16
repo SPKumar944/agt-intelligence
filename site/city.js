@@ -27,7 +27,7 @@
     const mil = (n) => n >= 1e6 ? N(n / 1e6, 1) + "M" : n >= 1e3 ? N(n / 1e3, 0) + "k" : N(n);
     const hero = `
     <section class="cp-hero"><div class="bgmap" id="bgmap" aria-hidden="true"></div><div class="cp-wrap in">
-      <div class="mono crumbs"><a href="home.html#coverage">Coverage</a><span>/</span><span>${esc(D.state)}</span><span>/</span><span>${tier ? esc(tier.name) : "City"} brief</span></div>
+      <div class="mono crumbs"><a href="city-snapshots.html#${esc(D.slug)}">City snapshots</a><span>/</span><span>${esc(D.state)}</span><span>/</span><span>${tier ? esc(tier.name) : "City"} full brief</span></div>
       <h1>${esc(D.name)}<em>.</em></h1>
       <p class="lead">${E.thesis || ""}</p>
       <div class="cp-pills"><span class="cp-pill live"><i></i>Pan-India insights · live</span>${tier ? `<span class="cp-pill"><i></i>Premium by ${esc(tier.by)}</span>` : ""}<span class="cp-pill">${esc(D.radius_km)} km core · data ${esc(D.asof)}</span></div>
