@@ -925,6 +925,12 @@ async function loadSite(id, isNewBusiness = false) {
   if (isNewBusiness) applyBusinessDefaults(site);
   D.tierRGB = {}; site.tiers.forEach((t) => { D.tierRGB[t.level] = hex2rgb(t.color); });
   prepStreets(); prepHexes(); prepPois(); await initWeights(); buildHexScale();
+  { // coverage tier badge (high-precision = locally calibrated city; otherwise standard coverage)
+    const hi = /^Electoral roll/.test(site.provenance.population_counts_source || "");
+    let cb = $("covBadge"); if (!cb) { cb = document.createElement("div"); cb.id = "covBadge"; cb.className = "badge"; $("snapshotBadge").before(cb); }
+    cb.textContent = hi ? "High-precision coverage" : "Standard coverage"; cb.title = hi ? "Built on our high-precision, locally calibrated models for this city." : "Built on city-wide datasets. High-precision coverage for more cities is being added in phases.";
+    cb.style.fontWeight = "600"; if (hi) { cb.style.background = "var(--ink, #1d1d1f)"; cb.style.color = "var(--bg, #fff)"; }
+  }
   $("snapshotBadge").textContent = `OSM ${String(site.provenance.osm_snapshot_utc || "").slice(0, 10)} · Overture ${site.provenance.overture_release || ""}`;
   document.querySelector(".brand-text span").textContent = (site.business || {}).display_name || "Site Footfall Intelligence";
   document.title = `AGT Intelligence · ${(site.business || {}).display_name || "Site intelligence"}`;

@@ -66,7 +66,7 @@
     const btn = $("#submitBtn"); btn.disabled = true; btn.textContent = "Sending…";
     try {
       const j = await AGT.api("/api/me/requests", { body: { name: v("name"), phone: v("phone"), role: $("#role").value, company: v("company"), website: v("website"), format: $("#format").value,
-        city: v("city"), description: v("description"), locations: L, consent: true } });
+        city: (window.AGT_COVERAGE ? AGT_COVERAGE.cityValue() : v("city")), description: v("description"), locations: L, consent: true } });
       $("#refOut").textContent = "Reference " + j.ref; $("#emailOut").textContent = v("email");
       $("#formCard").hidden = true; $("#done").style.display = "block"; window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (x) {

@@ -49,7 +49,7 @@
             <li><b>2 locations</b> in total, as one request or two</li>
             <li>Full interactive dashboard for each location</li>
             <li>Footfall, competitors, demographics and expansion candidates</li>
-            <li>Bengaluru</li>
+            <li>Bengaluru at high precision · other cities at standard coverage</li>
           </ul>
           <a class="btn btn-secondary" href="login.html">Sign in to claim</a>
         </article>
@@ -79,6 +79,14 @@
         </article>
       </div>
       <p class="small muted" style="margin-top:22px">Prices are per location and exclude applicable taxes. Enterprise pricing is confirmed in a written proposal before any work starts.</p>
+    </div>
+  </section>
+
+  <section class="section" id="coverage">
+    <div class="wrap">
+      <div class="sec-head"><p class="eyebrow">Where reports are delivered</p><h2 class="h2">Every plan, in every city — at the right level of detail.</h2>
+        <p class="lede">Bengaluru has our high-precision data and models. Other cities are available at standard coverage while we build each one in phases.</p></div>
+      <div data-coverage="tiers" style="margin-top:40px"></div>
     </div>
   </section>
 
@@ -121,6 +129,7 @@
 <script src="site/config.js?v=1"></script>
 <script src="site/api.js?v=1"></script>
 <script src="site/layout.js?v=6"></script>
+<script src="site/coverage.js?v=1"></script>
 <script>
   // keep the numbers on this page in step with the server's pricing settings
   if (window.AGT) AGT.api("/api/config").then((c) => {
