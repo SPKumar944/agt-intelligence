@@ -1,4 +1,4 @@
-/* Coverage & rollout: one source of truth for which cities are live, plus the components that show it. (No map is drawn on purpose.)
+/* Coverage & rollout: one source of truth for which cities are live, plus the components that show it. The India outline lives in site/india-map.js (official Survey of India boundary).
  *   [data-coverage="band"]   full section: map, what "high-precision" means, phases, "Which city next?" form  (home)
  *   [data-coverage="tiers"]  three-column tier comparison                                                      (pricing, methodology)
  *   [data-coverage="strip"]  one-line reminder                                                                 (sign-in)
@@ -7,16 +7,16 @@
 (function () {
   "use strict";
   const LIVE = "Bengaluru";
-  // phase: 1 live, 2 in build, 3 planned.
+  // phase: 1 live, 2 in build, 3 planned. lon/lat only place the dot on the map; label = side the name sits on.
   const CITIES = [
-    { name: "Bengaluru", phase: 1 },
-    { name: "Hyderabad", phase: 2 },
-    { name: "Chennai", phase: 2 },
-    { name: "Pune", phase: 2 },
-    { name: "Mumbai", phase: 3 },
-    { name: "Delhi NCR", phase: 3 },
-    { name: "Kolkata", phase: 3 },
-    { name: "Ahmedabad", phase: 3 },
+    { name: "Bengaluru", lon: 77.59, lat: 12.97, label: "l", phase: 1 },
+    { name: "Hyderabad", lon: 78.49, lat: 17.39, label: "r", phase: 2 },
+    { name: "Chennai", lon: 80.27, lat: 13.08, label: "r", phase: 2 },
+    { name: "Pune", lon: 73.86, lat: 18.52, label: "r", phase: 2 },
+    { name: "Mumbai", lon: 72.88, lat: 19.08, label: "l", phase: 3 },
+    { name: "Delhi NCR", lon: 77.21, lat: 28.61, label: "r", phase: 3 },
+    { name: "Kolkata", lon: 88.36, lat: 22.57, label: "r", phase: 3 },
+    { name: "Ahmedabad", lon: 72.57, lat: 23.02, label: "l", phase: 3 },
   ];
   const PHASES = [
     { n: 1, status: "Live", text: "Bengaluru — high-precision data and models." },
@@ -42,6 +42,17 @@
   // ---------------------------------------------------------------- styles (self-contained, theme-aware)
   const css = `
   .cov-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:56px;align-items:center}
+  .cov-map{position:relative;max-width:440px;width:100%;margin:0 auto}
+  .cov-map svg{width:100%;height:auto;display:block;overflow:visible}
+  .cov-india{fill:var(--bg-2);stroke:var(--line-2);stroke-width:1.1;stroke-linejoin:round}
+  .cov-dot-live{fill:var(--ink)} .cov-pulse{fill:none;stroke:var(--ink);stroke-width:1.2;transform-box:fill-box;transform-origin:center;animation:covp 2.6s ease-out infinite}
+  .cov-dot-2{fill:var(--bg);stroke:var(--ink);stroke-width:1.6;stroke-dasharray:3 2.4} .cov-dot-3{fill:var(--bg);stroke:var(--ink-3);stroke-width:1.4;stroke-dasharray:2.4 2.4}
+  .cov-lab{font:600 11px/1 var(--sans,system-ui);fill:var(--ink)} .cov-lab.dim{fill:var(--ink-3);font-weight:500}
+  @keyframes covp{0%{transform:scale(1);opacity:.7}100%{transform:scale(4.2);opacity:0}}
+  @media (prefers-reduced-motion:reduce){.cov-pulse{animation:none;opacity:.25}}
+  .cov-legend{display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:center;margin:20px 0 0;font-size:12.5px;color:var(--ink-2)}
+  .cov-legend span{display:inline-flex;align-items:center;gap:8px} .cov-legend i{width:11px;height:11px;border-radius:50%;display:inline-block;box-sizing:border-box}
+  .cov-legend .a{background:var(--ink)} .cov-legend .b{border:1.6px dashed var(--ink)} .cov-legend .c{border:1.4px dashed var(--ink-3)}
   .cov-roll{display:grid;border-top:1px solid var(--line)}
   .cov-row{padding:20px 0;border-bottom:1px solid var(--line);display:grid;gap:12px}
   .cov-row .rh{display:flex;justify-content:space-between;align-items:center;gap:10px} .cov-row .rh b{font-size:15px;font-weight:600;color:var(--ink)}
@@ -69,6 +80,19 @@
   `;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
 
+  // ---------------------------------------------------------------- map (official boundary from site/india-map.js; Albers equal-area)
+  function mapSvg() {
+    const M = window.AGT_INDIA_MAP; if (!M) return "";
+    const q = M.proj, rad = Math.PI / 180;
+    const at = (lon, lat) => { const r = Math.sqrt(q.C - 2 * q.n * Math.sin(lat * rad)) / q.n, th = q.n * (lon - q.lon0) * rad; return [((r * Math.sin(th) - q.minx) * q.sc).toFixed(1), ((q.maxy - (q.rho0 - r * Math.cos(th))) * q.sc).toFixed(1)]; };
+    const dots = CITIES.slice().sort((a, b) => b.phase - a.phase).map((c) => {
+      const [x, y] = at(c.lon, c.lat), left = c.label === "l", tx = left ? +x - 11 : +x + 11;
+      const mark = c.phase === 1 ? `<circle class="cov-pulse" cx="${x}" cy="${y}" r="5"/><circle class="cov-dot-live" cx="${x}" cy="${y}" r="5.5"/>` : `<circle class="cov-dot-${c.phase}" cx="${x}" cy="${y}" r="5"/>`;
+      return `<g>${mark}<text class="cov-lab ${c.phase === 1 ? "" : "dim"}" x="${tx}" y="${+y + 4}" text-anchor="${left ? "end" : "start"}">${esc(c.name)}</text></g>`;
+    }).join("");
+    return `<svg viewBox="-12 -8 ${M.viewBox.split(" ")[2] * 1 + 24} ${M.viewBox.split(" ")[3] * 1 + 16}" role="img" aria-label="Map of India showing coverage: Bengaluru is live with high-precision coverage; Hyderabad, Chennai and Pune are in build; Mumbai, Delhi NCR, Kolkata and Ahmedabad are planned."><path class="cov-india" d="${M.path}"/>${dots}</svg>`;
+  }
+
   // ---------------------------------------------------------------- rollout (deliberately no map: no geography is drawn)
   function roll() {
     const cityOf = (n) => CITIES.filter((c) => c.phase === n);
@@ -84,9 +108,10 @@
         <h2 class="h2">Built deep in Bengaluru.<br /><span class="dim">Expanding city by city.</span></h2>
         <p class="lede" style="font-size:18px">High-precision data and models for Bengaluru are live today. We are building the same depth for other Indian cities in phases — and reports for other cities are already available at standard coverage.</p>
         <ul class="cov-pts">${TIERS[0].points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul>
+        <div style="margin-top:26px">${roll()}</div>
       </div>
       <div>
-        ${roll()}
+        <div class="cov-map">${mapSvg()}<div class="cov-legend"><span><i class="a"></i>High-precision · live</span><span><i class="b"></i>Next phase · in build</span><span><i class="c"></i>Planned</span></div></div>
         <div class="cov-ask"><h3>Which city should be next?</h3><p>Tell us where you need high-precision coverage. It helps us decide the order — and we'll email you when it's ready.</p>
           <form id="covForm" novalidate>
             <select id="covCity" aria-label="City">${others.map((c) => `<option>${esc(c)}</option>`).join("")}<option value="__other">Another city…</option></select>
