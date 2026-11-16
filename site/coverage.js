@@ -54,13 +54,17 @@
   .cov-box .tg{font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)} .cov-box.prem .tg{color:var(--ink)}
   .cov-box ul{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:8px} .cov-box li{font-size:13.5px;color:var(--ink-2);line-height:1.45;padding-left:14px;position:relative} .cov-box li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:1px;background:var(--ink-3)}
   .cov-sched{display:grid;margin-top:26px;border-top:1px solid var(--line)}
-  .cov-sched button{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:1fr auto;gap:2px 14px;padding:14px 10px;border-bottom:1px solid var(--line);align-items:center;border-radius:0}
-  .cov-sched button:hover{background:var(--bg-2)} .cov-sched button[aria-pressed="true"]{background:var(--bg-2);box-shadow:inset 3px 0 0 var(--ink)}
-  .cov-sched b{font-size:15px;font-weight:600;color:var(--ink)} .cov-sched small{grid-column:1;font-size:13px;color:var(--ink-3)} .cov-sched .by{grid-column:2;grid-row:1/3;text-align:right;font-size:13px;color:var(--ink-2);line-height:1.4} .cov-sched .by strong{display:block;color:var(--ink);font-weight:600}
-  .cov-sched button:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
-  .cov-states{margin-top:44px;border-top:1px solid var(--line);padding-top:30px}
-  .cov-states h3{margin:0 0 6px;font-size:22px;letter-spacing:-.015em} .cov-states .sub{color:var(--ink-2);font-size:15px;margin:0 0 22px}
-  .cov-sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px 28px}
+  .cov-acc{border-bottom:1px solid var(--line)}
+  .cov-hd{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:1fr auto 22px;gap:2px 14px;padding:14px 10px;align-items:center;width:100%}
+  .cov-hd:hover{background:var(--bg-2)} .cov-acc.sel .cov-hd{box-shadow:inset 3px 0 0 var(--ink)} .cov-hd:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+  .cov-hd b{font-size:15px;font-weight:600;color:var(--ink)} .cov-hd small{grid-column:1;font-size:13px;color:var(--ink-3)}
+  .cov-hd .by{grid-column:2;grid-row:1/3;text-align:right;font-size:13px;color:var(--ink-2);line-height:1.4} .cov-hd .by strong{display:block;color:var(--ink);font-weight:600}
+  .cov-hd .chev{grid-column:3;grid-row:1/3;width:10px;height:10px;border-right:1.6px solid var(--ink-2);border-bottom:1.6px solid var(--ink-2);transform:rotate(45deg) translate(-2px,-2px);transition:transform .3s;justify-self:center}
+  .cov-acc.open .chev{transform:rotate(-135deg) translate(-2px,-2px)}
+  .cov-pane{display:grid;grid-template-rows:0fr;transition:grid-template-rows .38s cubic-bezier(.2,.7,.2,1)} .cov-acc.open .cov-pane{grid-template-rows:1fr}
+  .cov-pane-in{overflow:hidden;min-height:0} .cov-pane-pad{padding:6px 10px 22px} .cov-pane .sub{color:var(--ink-2);font-size:14px;margin:0 0 16px}
+  @media (prefers-reduced-motion:reduce){.cov-pane,.cov-hd .chev{transition:none}}
+  .cov-sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px 22px}
   .cov-sg h4{margin:0 0 7px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
   .cov-sg .cs{display:flex;flex-wrap:wrap;gap:6px} .cov-sg .cs span{font-size:13.5px;border:1px solid var(--line-2);border-radius:980px;padding:4px 12px;color:var(--ink);background:var(--bg)} .cov-sg .cs span.live{background:var(--ink);color:var(--bg);border-color:var(--ink)}
   @media (max-width:600px){.cov-two{grid-template-columns:1fr}}
@@ -116,7 +120,7 @@
     const ti = tierInfo(sel), by = {};
     ALL.filter((c) => c.t === sel).forEach((c) => (by[c.s] = by[c.s] || []).push(c));
     const states = Object.keys(by).sort();
-    return `<h3>${esc(ti.name)} · ${esc(ti.kind)}</h3><p class="sub">${countIn(sel)} cities across ${states.length} states and territories — premium upgrade by <b>${esc(ti.by)}</b>.</p>
+    return `<p class="sub">${countIn(sel)} cities across ${states.length} states and territories — premium upgrade by <b>${esc(ti.by)}</b>.</p>
       <div class="cov-sg">${states.map((s) => `<div><h4>${esc(s)}</h4><div class="cs">${by[s].map((c) => `<span class="${norm(c.n) === norm(LIVE) ? "live" : ""}">${esc(c.n)}${norm(c.n) === norm(LIVE) ? " · live" : ""}</span>`).join("")}</div></div>`).join("")}</div>`;
   }
 
@@ -135,7 +139,7 @@
           <div class="cov-box prem"><span class="tg">Premium · Bengaluru</span><ul>${TIERS[0].points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>
           <div class="cov-box"><span class="tg">Pan-India · other cities</span><ul>${TIERS[1].points.map((p) => `<li>${esc(p)}</li>`).join("")}</ul></div>
         </div>
-        <div class="cov-sched" id="covSched" role="group" aria-label="Upgrade schedule by tier">${TIERS_R.map((t) => `<button type="button" data-t="${t.n}" aria-pressed="${t.n === sel}"><b>${esc(t.name)} · ${esc(t.kind)}</b><small>${countIn(t.n)} cities</small><span class="by">Premium by<strong>${esc(t.by)}</strong></span></button>`).join("")}</div>
+        <div class="cov-sched" id="covSched" role="group" aria-label="Upgrade schedule by tier. Select a tier to see its cities.">${TIERS_R.map((t) => `<div class="cov-acc" data-t="${t.n}"><button type="button" class="cov-hd" aria-expanded="false" aria-controls="covp${t.n}"><b>${esc(t.name)} · ${esc(t.kind)}</b><small>${countIn(t.n)} cities · tap to see them</small><span class="by">Premium by<strong>${esc(t.by)}</strong></span><i class="chev" aria-hidden="true"></i></button><div class="cov-pane" id="covp${t.n}" role="region"><div class="cov-pane-in"><div class="cov-pane-pad">${statesPanel(t.n)}</div></div></div></div>`).join("")}</div>
       </div>
       <div>
         <div class="cov-tabs" id="covTabs" role="group" aria-label="Show tier on map">${TIERS_R.map((t) => `<button type="button" data-t="${t.n}" aria-pressed="${t.n === sel}">${esc(t.name)}</button>`).join("")}</div>
@@ -147,15 +151,22 @@
             <button type="submit" id="covGo">Notify me</button>
             <input id="covOther" class="oth" placeholder="City name" aria-label="City name" hidden />
           </form><p class="cov-msg" id="covMsg" role="status" aria-live="polite"></p></div>
-      </div></div>
-      <div class="cov-states" id="covStates" aria-live="polite"></div></div>`;
+      </div></div></div>`;
+    let open = 0;
     const draw = () => {
       el.querySelector("#covSvg").innerHTML = mapSvg(sel);
       el.querySelector("#covLegSel").textContent = `${tierInfo(sel).name} · by ${tierInfo(sel).short}`;
-      el.querySelector("#covStates").innerHTML = statesPanel(sel);
-      el.querySelectorAll("[data-t]").forEach((b) => b.setAttribute("aria-pressed", +b.dataset.t === sel));
+      el.querySelectorAll("#covTabs [data-t]").forEach((b) => b.setAttribute("aria-pressed", +b.dataset.t === sel));
+      el.querySelectorAll(".cov-acc").forEach((a) => { const n = +a.dataset.t, isOpen = n === open; a.classList.toggle("open", isOpen); a.classList.toggle("sel", n === sel); a.querySelector(".cov-hd").setAttribute("aria-expanded", isOpen); a.querySelector(".cov-hd small").textContent = `${countIn(n)} cities · ${isOpen ? "tap to hide" : "tap to see them"}`; });
     };
-    el.querySelectorAll("#covSched [data-t], #covTabs [data-t]").forEach((b) => b.addEventListener("click", () => { sel = +b.dataset.t; draw(); }));
+    // a schedule row selects the tier on the map and steps its city list down (tap again to fold it away)
+    el.querySelectorAll(".cov-acc .cov-hd").forEach((b) => b.addEventListener("click", () => { const n = +b.closest(".cov-acc").dataset.t; open = open === n ? 0 : n; sel = n; draw(); }));
+    // a tab above the map does the same, and brings the list into view
+    el.querySelectorAll("#covTabs [data-t]").forEach((b) => b.addEventListener("click", () => {
+      sel = open = +b.dataset.t; draw();
+      const row = el.querySelector(`.cov-acc[data-t="${sel}"] .cov-hd`), r = row.getBoundingClientRect();
+      if (r.top < 70 || r.bottom > innerHeight - 40) row.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+    }));
     draw();
     const sl = el.querySelector("#covCity"), oth = el.querySelector("#covOther"), msg = el.querySelector("#covMsg");
     sl.addEventListener("change", () => { oth.hidden = sl.value !== "__other"; if (!oth.hidden) oth.focus(); });
