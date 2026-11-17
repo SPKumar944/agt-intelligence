@@ -8,7 +8,7 @@
   const root = $("#cp");
   const CELL_KM2 = 0.1053;
 
-  fetch(`site/city-${slug}.json?v=1`).then((r) => { if (!r.ok) throw new Error("missing"); return r.json(); }).then(render).catch(() => {
+  fetch(`site/city-${slug}.json?v=2`).then((r) => { if (!r.ok) throw new Error("missing"); return r.json(); }).then(render).catch(() => {
     root.innerHTML = `<div class="cp-loading"><span>No city brief for “${esc(slug)}” yet. <a href="home.html#coverage" style="color:var(--hot)">See the coverage plan →</a></span></div>`;
   });
 
@@ -51,8 +51,8 @@
       { l: "Density", v: N(K.density), s: "/km²", d: `${vs(K.density, B.density, bn)} People per square kilometre across the core.`, bars: bars(K.density, B.density, D.name, bn) },
       { l: "Mapped places", v: N(K.places_total), s: "", d: `${esc(bn)}'s core is mapped far more completely (${N(B.places_total)} places), so we compare <b>shares and mix</b>, not raw counts per resident.`, bars: "" },
       { l: "Branded chains", v: K.chains.per_lakh, s: "per lakh", d: `${vs(K.chains.per_lakh, B.chains.per_lakh, bn)} ${K.chains.brands_present} of ${D.chains.reduce((a, s) => a + s.brands.length, 0)} tracked national brands have a mapped outlet.`, bars: bars(K.chains.per_lakh, B.chains.per_lakh, D.name, bn, (x) => N(x, 1)) },
-      { l: "Food &amp; drink share", v: N(fk, 1), s: "%", d: `Of all mapped places (${esc(bn)}: ${N(fb, 1)}%). ${fk < fb ? "Thinner" : "Stronger"} than Bengaluru's mix.`, bars: bars(fk, fb, D.name, bn, (x) => N(x, 1) + "%") },
-      { l: "Education share", v: N(ek, 1), s: "%", d: `Of all mapped places (${esc(bn)}: ${N(eb, 1)}%). Schools, colleges and coaching make Kanpur a learning city.`, bars: bars(ek, eb, D.name, bn, (x) => N(x, 1) + "%") },
+      { l: "Food &amp; drink share", v: N(fk, 1), s: "%", d: `Of all mapped places (${esc(bn)}: ${N(fb, 1)}%). ${fk < fb ? "Thinner" : "Stronger"} than ${esc(bn)}'s mix.`, bars: bars(fk, fb, D.name, bn, (x) => N(x, 1) + "%") },
+      { l: "Education share", v: N(ek, 1), s: "%", d: `Of all mapped places (${esc(bn)}: ${N(eb, 1)}%). Schools, colleges and coaching are a large part of the local economy.`, bars: bars(ek, eb, D.name, bn, (x) => N(x, 1) + "%") },
       { l: "Thin-zone residents", v: D.gap_res_pct, s: "%", d: `${D.gap_zones} zones hold this share of residents with under 60% of the city's average retail depth.`, bars: "" },
       { l: "Rail &amp; metro reach", v: N(K.transit.rail_metro_served_pct_1km, 0), s: "%", d: `Residents within 1 km of a mapped rail or metro stop (${esc(bn)}: ${N(B.transit.rail_metro_served_pct_1km, 0)}%). ${K.transit.rail_metro_stops} stops mapped.`, bars: bars(K.transit.rail_metro_served_pct_1km, B.transit.rail_metro_served_pct_1km, D.name, bn, (x) => N(x, 0) + "%") },
     ];
@@ -80,7 +80,7 @@
       .map(([l, ks, sub]) => { const k = shareOf(K, ks), b = shareOf(B, ks); return { l, sub, k, b, adj: k / Math.max(b, 0.01) * 100 }; }).sort((a, b) => a.adj - b.adj);
     const mixRow = (m) => { const x = Math.max(-2, Math.min(2, Math.log2(m.adj / 100))), w = Math.abs(x) / 2 * 50; return `<div class="row"><div class="l"><b>${m.l}</b><span>${m.sub}</span></div><div class="axis" role="img" aria-label="${m.l}: ${Math.round(m.adj)} on a scale where 100 matches ${esc(bn)}'s mix"><i class="${x < 0 ? "dn" : "up"}" style="width:${w}%"></i></div><div class="v">${Math.round(m.adj)}<small>${N(m.k, 1)}% vs ${N(m.b, 1)}% of places</small></div></div>`; };
     const c4 = `<section class="cp-ch" id="c4">${head("Retail mix", "04", (ch.mix && ch.mix.title) || `What the retail layer is <em>made of</em>`, (ch.mix && ch.mix.deck) || `Each category's share of all mapped places, relative to ${esc(bn)}'s. 100 means the same share; below 100 is thinner, above is stronger.`)}
-      <div class="mix-key"><span>← thinner than Bengaluru's mix</span><span>100 = same share</span><span>stronger →</span></div>
+      <div class="mix-key"><span>← thinner than ${esc(bn)}'s mix</span><span>100 = same share</span><span>stronger →</span></div>
       <div class="mix">${MIX.map(mixRow).join("")}</div>${(ch.mix && ch.mix.note) ? `<p class="ex-cap">${ch.mix.note}</p>` : ""}</section>`;
 
     // ---- 05 chains
@@ -94,7 +94,7 @@
     const FM = [...D.formats].sort((a, b) => a.adj - b.adj);
     const fmRow = (f) => { const v = verdict(f.adj), notes = (E.formats || {})[f.key] || {}, zs = f.zones.map((z) => `<li><b>${esc(z.label)}</b> — ${N(z.rpo)} residents per outlet (city: ${N(f.city_rpo)})</li>`).join("");
       return `<details><summary><div class="t"><b>${esc(f.label)}</b><span>${f.kc} mapped outlets · ${N(f.ks, 1)}% of places (${esc(bn)}: ${N(f.bs, 1)}%)</span></div>
-        <div class="ix"><div class="tr" role="img" aria-label="Index ${f.adj}"><b style="width:${Math.min(100, f.adj / 2)}%"></b><u></u></div><span>Index ${f.adj} · 100 = Bengaluru's share</span></div>
+        <div class="ix"><div class="tr" role="img" aria-label="Index ${f.adj}"><b style="width:${Math.min(100, f.adj / 2)}%"></b><u></u></div><span>Index ${f.adj} · 100 = ${esc(bn)}'s share</span></div>
         <div class="vd"><span class="chip ${v[1]}">${v[0]}</span></div><i class="chev" aria-hidden="true"></i></summary>
         <div class="body"><div><h5>Read</h5><p>${notes.read || `${esc(f.label)} make up ${N(f.ks, 1)}% of mapped places in ${esc(D.name)} against ${N(f.bs, 1)}% in ${esc(bn)}.`}</p></div>
         <div><h5>Where to look</h5><ol>${zs}</ol></div>

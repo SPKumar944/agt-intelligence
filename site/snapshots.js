@@ -168,7 +168,7 @@
     if (!sn) { panel.innerHTML = soonHTML(c); wireSoon(c); return; }
     panel.innerHTML = `<div class="sn-panel"><div class="cp-loading" style="min-height:240px"><span>Loading ${esc(c.n)}…</span></div></div>`;
     try {
-      const D = cache[sel] || (cache[sel] = await fetch(sn.data + "?v=1").then((r) => { if (!r.ok) throw new Error("x"); return r.json(); }));
+      const D = cache[sel] || (cache[sel] = await fetch(sn.data + "?v=2").then((r) => { if (!r.ok) throw new Error("x"); return r.json(); }));
       if (mine !== sel) return;                                   // a different city was picked meanwhile
       panel.innerHTML = snapshotHTML(c, sn, D);
     } catch (e) { panel.innerHTML = `<div class="sn-panel"><div class="cp-loading" style="min-height:200px"><span>Could not load the ${esc(c.n)} snapshot.</span></div></div>`; }
