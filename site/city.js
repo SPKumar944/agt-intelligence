@@ -64,8 +64,8 @@
     const c2 = `<section class="cp-ch" id="c2">${head("The map", "02", (ch.map && ch.map.title) || "Where people live, <em>where shops are</em>", (ch.map && ch.map.deck) || "")}
       <div class="ex"><div>
         <div class="ex-tabs" id="exTabs" role="group" aria-label="Map layer"></div>
-        <div class="ex-map" id="exMap"><div id="exSvg"></div><div class="ex-tip" id="exTip"></div></div>
-        <div class="ex-legend" id="exLeg"></div><p class="ex-cap" id="exCap"></p></div>
+        <div class="ex-map" id="exMap"><div id="exSvg"></div></div>
+        <div class="ex-legend" id="exLeg"></div><p class="ex-cap" id="exCap"></p><p class="ex-src">Hexagons of about 0.1 km² over a live street map. Drag to pan, scroll or pinch to zoom, click a hexagon for its zone. Map data © Esri, HERE, Garmin, OpenStreetMap contributors.</p></div>
         <aside class="ex-side"><h3>Most under-served zones</h3><div class="zl" id="zlGap"></div><h3>Commercial cores</h3><div class="zl" id="zlCore"></div><div class="zcard" id="zcard"></div></aside></div></section>`;
 
     // ---- 03 zones
@@ -165,21 +165,19 @@
     const scale = {}; Object.entries(LAYERS).forEach(([k, L]) => { if (!L.div) scale[k] = sorted(L.key); });
     const fillOf = (c, k) => { const L = LAYERS[k]; if (L.div) { const g = c.g; if (!g) return "color-mix(in srgb,var(--ink) 7%,transparent)"; return g > 0 ? `color-mix(in srgb,var(--hot) ${Math.min(100, g * 1.05).toFixed(0)}%,color-mix(in srgb,var(--ink) 8%,transparent))` : `color-mix(in srgb,var(--cold) ${Math.min(100, -g * 1.05).toFixed(0)}%,color-mix(in srgb,var(--ink) 8%,transparent))`; }
       const v = L.key(c); if (v <= 0) return "color-mix(in srgb,var(--ink) 4%,transparent)"; const t = Math.min(1, Math.sqrt(v / scale[k])); return `color-mix(in srgb,var(--hot) ${(8 + t * 92).toFixed(0)}%,color-mix(in srgb,var(--ink) 8%,transparent))`; };
-    const svg = `<svg viewBox="${vb.join(" ")}" role="img" aria-label="Hexagon map of ${esc(D.name)} within ${D.radius_km} km"><g id="exCells">${D.cells.map((c, i) => `<path class="c" data-i="${i}" d="${d[i]}" style="fill:${fillOf(c, layer)}"/>`).join("")}</g>
-      <circle class="ring" cx="0" cy="0" r="${R}"/><circle class="ctr" cx="0" cy="0" r="3"/><text x="${R * 0.707 + 4}" y="${-R * 0.707 - 6}">${D.radius_km} km</text></svg>`;
-    $("#exSvg").innerHTML = svg;
+    const mapFill = (c, k) => { const L = LAYERS[k]; if (L.div) { const g = c.g; if (!g) return ""; const a = Math.min(78, 14 + Math.abs(g) * .62).toFixed(0); return `color-mix(in srgb,var(${g > 0 ? "--hot" : "--cold"}) ${a}%,transparent)`; }
+      const v = L.key(c); if (v <= 0) return ""; const t = Math.min(1, Math.sqrt(v / scale[k])); return `color-mix(in srgb,var(--hot) ${(10 + t * 75).toFixed(0)}%,transparent)`; };
     const tabs = $("#exTabs"); tabs.innerHTML = Object.entries(LAYERS).map(([k, L]) => `<button type="button" data-l="${k}" aria-pressed="${k === layer}">${L.label}</button>`).join("");
     const legend = () => { const L = LAYERS[layer]; $("#exLeg").innerHTML = L.div ? `<span>blue · ${L.lo}</span><i style="background:linear-gradient(90deg,var(--cold),color-mix(in srgb,var(--ink) 10%,transparent),var(--hot))"></i><span>amber · ${L.hi}</span>` : `<span>${L.lo}</span><i style="background:linear-gradient(90deg,color-mix(in srgb,var(--hot) 8%,color-mix(in srgb,var(--ink) 8%,transparent)),var(--hot))"></i><span>${L.hi} · ${L.unit}</span>`; $("#exCap").innerHTML = capsE[layer] || caps[layer]; };
-    const paint = () => { $$("#exCells path").forEach((p) => { const c = D.cells[+p.dataset.i]; p.style.fill = fillOf(c, layer); p.classList.toggle("hz", !!hz && c.z === hz); }); $$("#exTabs button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.l === layer)); legend(); };
+    let live = null;
+    const paint = () => { if (live) { live.paint((c) => mapFill(c, layer)); live.highlight(hz); } $$("#exTabs button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.l === layer)); legend(); };
     tabs.addEventListener("click", (e) => { const b = e.target.closest("[data-l]"); if (b) { layer = b.dataset.l; paint(); } });
-    // hover
-    const tip = $("#exTip"), box = $("#exMap");
-    box.addEventListener("pointermove", (e) => { const p = e.target.closest("path.c"); if (!p) { tip.classList.remove("on"); return; } const c = D.cells[+p.dataset.i], z = D.zones.find((z) => z.pin === c.z), r = box.getBoundingClientRect();
-      tip.innerHTML = `<b>${z ? esc(z.label) : "Outer area"}</b><div><span>Residents</span><span>${N(c.p)}</span></div><div><span>Retail places</span><span>${c.c}</span></div><div><span>Food &amp; drink</span><span>${c.f}</span></div><div><span>Chain outlets</span><span>${c.h}</span></div><div><span>Education</span><span>${c.e}</span></div>`;
-      let x = e.clientX - r.left + 14, y = e.clientY - r.top + 14; if (x > r.width - 200) x = e.clientX - r.left - 200; if (y > r.height - 150) y = e.clientY - r.top - 150; tip.style.left = x + "px"; tip.style.top = y + "px"; tip.classList.add("on"); });
-    box.addEventListener("pointerleave", () => tip.classList.remove("on"));
-    window.__cpMap = { setZone(pin) { hz = pin; paint(); }, getZone: () => hz };
-    paint();
+    const tipHTML = (c) => { const z = D.zones.find((z) => z.pin === c.z); return `<b>${z ? esc(z.label) : "Outer area"}</b><div><span>Residents</span><span>${N(c.p)}</span></div><div><span>Retail places</span><span>${c.c}</span></div><div><span>Food &amp; drink</span><span>${c.f}</span></div><div><span>Chain outlets</span><span>${c.h}</span></div><div><span>Education</span><span>${c.e}</span></div>`; };
+    window.__cpMap = { setZone(pin) { hz = pin; if (live) live.highlight(hz); }, getZone: () => hz };
+    legend();
+    const mount = $("#exSvg");
+    if (window.AGTLiveMap) AGTLiveMap.create(mount, D, { fill: (c) => mapFill(c, layer), tip: tipHTML, onPick: (c) => { if (c.z) document.dispatchEvent(new CustomEvent("cp-pick", { detail: c.z })); } })
+      .then((a) => { live = a; paint(); }).catch(() => { mount.innerHTML = "<p style='padding:24px;color:var(--ink-3)'>The interactive map could not load. Check your connection and reload.</p>"; });
     // hero backdrop
     const bg = $("#bgmap"); if (bg) { const k = LAYERS.residents; bg.innerHTML = `<svg viewBox="${vb.join(" ")}" preserveAspectRatio="xMidYMid slice">${D.cells.map((c, i) => `<path d="${d[i]}" style="fill:${fillOf(c, "residents")}"/>`).join("")}</svg>`; }
   }
@@ -199,6 +197,7 @@
       card.classList.add("on");
     };
     $("#c2").addEventListener("click", (e) => { const b = e.target.closest("[data-z]"); if (b) show(b.dataset.z); });
+    document.addEventListener("cp-pick", (e) => { if (window.__cpMap.getZone() !== e.detail) show(e.detail); });
     // table
     let sort = { k: "residents", dir: -1 };
     const draw = () => { const rows = [...D.zones].sort((a, b) => (typeof a[sort.k] === "string" ? a[sort.k].localeCompare(b[sort.k]) : a[sort.k] - b[sort.k]) * sort.dir);

@@ -123,6 +123,13 @@
     return `<svg viewBox="${-R0 - pad} ${-R0 - pad} ${2 * R0 + 2 * pad} ${2 * R0 + 2 * pad}" role="img" aria-label="Demand–supply gap map of ${esc(D.name)}">${paths}<circle cx="0" cy="0" r="${R0}" fill="none" stroke="var(--ink-3)" stroke-width="1" stroke-dasharray="3 5" opacity=".6"/></svg>`;
   }
 
+  function mountGap(D) {
+    const el = document.getElementById("snGapMap"); if (!el || !window.AGTLiveMap) return;
+    const fill = (c) => { const g = c.g; if (!g) return ""; return `color-mix(in srgb,var(${g > 0 ? "--hot" : "--cold"}) ${Math.min(78, 14 + Math.abs(g) * .62).toFixed(0)}%,transparent)`; };
+    const tip = (c) => { const z = D.zones.find((z) => z.pin === c.z); return `<b>${z ? esc(z.label) : "Outer area"}</b><div><span>Residents</span><span>${N(c.p)}</span></div><div><span>Retail places</span><span>${c.c}</span></div><div><span>Gap score</span><span>${c.g > 0 ? "+" : ""}${Math.round(c.g)}</span></div>`; };
+    AGTLiveMap.create(el, D, { fill, tip }).catch(() => { el.innerHTML = "<p style='padding:18px;color:var(--ink-3)'>The interactive map could not load.</p>"; });
+  }
+
   function snapshotHTML(c, sn, D) {
     const K = D.k, B = D.bench, bn = B.name, ti = tier(c.t), E = D.editorial || {};
     const fk = shareOf(K, ["food_beverage", "desserts_sweets"]), fb = shareOf(B, ["food_beverage", "desserts_sweets"]);
@@ -140,7 +147,7 @@
         <div class="acts">${sn.full ? `<a class="cp-btn" href="${sn.full}">Open the full brief →</a>` : ""}<a class="cp-btn ${sn.full ? "ghost" : ""}" href="request-report.html?city=${encodeURIComponent(c.n)}">Request a ${esc(c.n)} report →</a></div></div>
       <div class="sn-k">${kp.map(([l, v, s]) => `<div><span class="mono">${l}</span><b>${v}</b><small>${s}</small></div>`).join("")}</div>
       <div class="sn-cols"><div class="sn-sub" style="display:block;border:0;margin:0;padding:0"><h3>What stands out</h3><ul class="sn-ins">${insights(D).map((t) => `<li>${t}</li>`).join("")}</ul></div>
-        <div><h3>Demand–supply gap</h3><div class="sn-gm">${gapSvg(D)}</div><div class="sn-gmk"><span>retail-rich</span><i></i><span>under-served</span></div></div></div>
+        <div><h3>Demand–supply gap</h3><div class="sn-gm" id="snGapMap" role="group" aria-label="Interactive demand–supply gap map of ${esc(D.name)}"></div><p class="ex-src" style="margin-top:8px">Drag and zoom. Amber: many residents, little retail. Blue: retail-rich. Map data © Esri, HERE, Garmin, OpenStreetMap contributors.</p><div class="sn-gmk"><span>retail-rich</span><i></i><span>under-served</span></div></div></div>
       <div class="sn-sub">
         <div><h3>Retail mix vs ${esc(bn)}</h3><div class="sn-rows">${strong.map((m) => mrow(m, true)).join("")}${thin.map((m) => mrow(m, false)).join("")}</div></div>
         <div><h3>Organised retail</h3><div class="sn-bp has">${present.slice(0, 8).map((b) => `<span>${esc(b.n)}<em>${b.k}</em></span>`).join("")}</div>
@@ -171,6 +178,7 @@
       const D = cache[sel] || (cache[sel] = await fetch(sn.data + "?v=2").then((r) => { if (!r.ok) throw new Error("x"); return r.json(); }));
       if (mine !== sel) return;                                   // a different city was picked meanwhile
       panel.innerHTML = snapshotHTML(c, sn, D);
+      mountGap(D);
     } catch (e) { panel.innerHTML = `<div class="sn-panel"><div class="cp-loading" style="min-height:200px"><span>Could not load the ${esc(c.n)} snapshot.</span></div></div>`; }
   }
   function wireSoon(c) {
