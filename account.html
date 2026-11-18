@@ -254,7 +254,7 @@
     if (s.role === "admin") { location.replace("admin.html"); return; }
     if (s.role !== "user") { try { P = (await AGT.api("/api/config")).pricing; fillPrices(); } catch (e) {} $("#gate").hidden = false; return; }
     $("#app").hidden = false;
-    if (s.level === "manager") { $("#tabReq").hidden = false; $("#tabReq").addEventListener("click", () => { if (!$("#paneReq").dataset.m) { $("#paneReq").dataset.m = 1; AGTInbox.mount($("#paneReq")); } }); }
+    if (s.can_inbox) { $("#tabReq").hidden = false; $("#tabReq").addEventListener("click", () => { if (!$("#paneReq").dataset.m) { $("#paneReq").dataset.m = 1; AGTInbox.mount($("#paneReq")); } }); }
     try { await load(); } catch (e) { toast(e.message); }
     const h = (location.hash || "").slice(1); tab(["overview", "reports", "credits", "history"].includes(h) ? h : h === "enterprise" ? "credits" : "overview");
     if (h === "enterprise") setTimeout(() => $("#enterprise").scrollIntoView({ behavior: "smooth" }), 100);
