@@ -47,6 +47,23 @@
     .desc { white-space: pre-wrap; background: var(--bg-2); border-radius: 12px; padding: 14px 16px; font-size: 14px; line-height: 1.55; }
     .locrow { display: grid; grid-template-columns: 28px 1fr auto; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px; } .locrow:first-of-type { border-top: 0; }
     .locrow .n { color: var(--ink-3); } .locrow code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; background: var(--bg-2); padding: 2px 7px; border-radius: 6px; }
+
+    .live .lh { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; margin: 0 0 14px; font-size: 13px; color: var(--ink-2); }
+    .live .tag { display: inline-flex; align-items: center; gap: 7px; font: 600 11px/1 var(--mono, ui-monospace, monospace); letter-spacing: .08em; text-transform: uppercase; padding: 6px 10px; border-radius: 999px; background: var(--bg-3); color: var(--ink-2); }
+    .live .tag.on { background: #e3f6ea; color: #17673a; } .live .tag.wait { background: #fff1d6; color: #8a5a00; } .live .tag.bad { background: #fde3e0; color: #98231a; }
+    .live .tag i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; } .live .tag.on i { animation: lp 1.4s ease-in-out infinite; }
+    @keyframes lp { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .3; transform: scale(.7); } }
+    .live .lh b { color: var(--ink); font-variant-numeric: tabular-nums; }
+    .lsite { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 0 0 14px; } .lsite h4 { margin: 0 0 2px; font-size: 14px; } .lsite .w { font-size: 12px; color: var(--ink-3); margin: 0 0 10px; }
+    .lstep { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; padding: 6px 0; font-size: 13.5px; color: var(--ink-3); } .lstep.done { color: var(--ink); } .lstep.running { color: var(--ink); font-weight: 600; } .lstep.failed { color: #98231a; }
+    .lstep .ic { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--line); display: grid; place-items: center; font-size: 10px; line-height: 1; }
+    .lstep.done .ic { background: #17673a; border-color: #17673a; color: #fff; } .lstep.failed .ic { background: #b42318; border-color: #b42318; color: #fff; }
+    .lstep.running .ic { border-color: var(--ink); border-top-color: transparent; animation: sp 0.9s linear infinite; } @keyframes sp { to { transform: rotate(360deg); } }
+    .lstep .tm { font: 12px/1 var(--mono, ui-monospace, monospace); color: var(--ink-3); font-variant-numeric: tabular-nums; } .lstep .nt { display: block; font-weight: 400; font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+    .lfeed { border: 1px solid var(--line); border-radius: 12px; max-height: 260px; overflow: auto; font-size: 12.5px; } .lfeed .f { display: grid; grid-template-columns: 62px 56px 1fr; gap: 8px; padding: 6px 12px; border-bottom: 1px solid var(--line); } .lfeed .f:last-child { border: 0; }
+    .lfeed .ts { font: 11.5px/1.5 var(--mono, ui-monospace, monospace); color: var(--ink-3); } .lfeed .k { font: 600 10px/1.9 var(--mono, ui-monospace, monospace); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+    .lfeed .f-ok .k { color: #17673a; } .lfeed .f-warn .k { color: #8a5a00; } .lfeed .f-error .k { color: #b42318; } .lfeed .f-step .k, .lfeed .f-site .k { color: var(--ink); } .lfeed .f-step, .lfeed .f-site { background: color-mix(in srgb, var(--ink) 3%, transparent); font-weight: 600; }
+    :root[data-theme="dark"] .live .tag.on { background: #12301f; color: #7fd6a0; } :root[data-theme="dark"] .live .tag.wait { background: #3a2d0c; color: #f0c36a; } :root[data-theme="dark"] .live .tag.bad { background: #3a1511; color: #f19a92; }
     .bar { height: 8px; border-radius: 4px; background: var(--bg-3); overflow: hidden; margin: 10px 0 8px; } .bar i { display: block; height: 100%; background: var(--ink); border-radius: 4px; transition: width .6s; }
     pre.log { margin: 12px 0 0; background: #111; color: #ddd; border-radius: 12px; padding: 12px 14px; font-size: 11.5px; max-height: 240px; overflow: auto; white-space: pre-wrap; word-break: break-word; line-height: 1.5; }
     textarea.prof { width: 100%; min-height: 300px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; line-height: 1.5; border: 1px solid var(--line-2); border-radius: 12px; padding: 12px; background: var(--bg); color: var(--ink); }
@@ -207,11 +224,48 @@
     try { await loadList(); if (sel && DET && ["approved", "processing"].includes(DET.status) && !profileDirty) await open(sel, true); else if (sel && DET && DET.status !== (LIST.find((r) => r.ref === sel) || {}).status && !profileDirty) await open(sel, true); } catch (e) { /* signed out */ }
   }
 
+
+  // ---------------------------------------------------------------- live job view (polls /live every 2 s, updates only its own box)
+  let LIVE = null, liveTimer = null, tickTimer = null, liveRef = null, liveSkew = 0;
+  const hm = (t) => t ? new Date(t * 1000).toLocaleTimeString("en-GB", { hour12: false }) : "";
+  const dur = (sec) => { sec = Math.max(0, Math.round(sec)); const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), x = sec % 60; return (h ? h + "h " : "") + (h || m ? m + "m " : "") + x + "s"; };
+  const KIND = { site: "Site", step: "Step", ok: "Done", warn: "Notice", error: "Error", info: "" };
+  function paintLive() {
+    const box = document.getElementById("liveBox"); if (!box || !LIVE) return;
+    const L = LIVE, now = Date.now() / 1000 + liveSkew, working = L.status === "processing";
+    const idle = L.last_output ? now - L.last_output : null;
+    const tag = L.status === "failed" ? `<span class="tag bad"><i></i>Failed</span>` : !working ? `<span class="tag wait"><i></i>Queued</span>`
+      : idle != null && idle > 180 ? `<span class="tag wait"><i></i>Waiting on a data server</span>` : `<span class="tag on"><i></i>Live · working</span>`;
+    const feed = box.querySelector(".lfeed"), atEnd = !feed || feed.scrollTop + feed.clientHeight >= feed.scrollHeight - 24;
+    box.innerHTML = `<div class="lh">${tag}
+        ${working && L.started ? `<span>Running for <b>${dur(now - L.started)}</b></span>` : ""}
+        <span><b>${L.done}</b> of <b>${L.total}</b> location${L.total === 1 ? "" : "s"} finished</span>
+        ${idle != null && working ? `<span>Last activity <b>${dur(idle)}</b> ago</span>` : ""}</div>
+      ${working && idle != null && idle > 90 ? `<div class="small muted" style="margin:-4px 0 12px">No new output for ${dur(idle)}. This step is downloading from an external map server, which can be slow or retry on its own. The job is still running.</div>` : ""}
+      ${(L.sites || []).map((si) => `<div class="lsite"><h4>${esc(si.label || si.serial)} <span class="small muted">· ${esc(si.serial)}</span></h4><div class="w">${esc(si.where || "")}${si.seconds ? " · finished in " + dur(si.seconds) : ""}</div>
+        ${si.steps.map((st) => `<div class="lstep ${st.state}"><span class="ic">${st.state === "done" ? "✓" : st.state === "failed" ? "✕" : ""}</span><span>${esc(st.n + ". " + st.name)}${st.note ? `<span class="nt">${esc(st.note)}</span>` : ""}</span>
+          <span class="tm">${st.state === "done" && st.seconds != null ? dur(st.seconds) : st.state === "running" && st.started ? dur(now - st.started) : ""}</span></div>`).join("")}</div>`).join("") || (working ? '<div class="small muted">Starting up…</div>' : "")}
+      ${L.feed && L.feed.length ? `<div class="small" style="font-weight:600;margin:6px 0 8px">Activity</div><div class="lfeed">${L.feed.map((f) => `<div class="f f-${f.kind}"><span class="ts">${hm(f.t)}</span><span class="k">${KIND[f.kind] || ""}</span><span>${esc(f.text)}</span></div>`).join("")}</div>` : ""}`;
+    const nf = box.querySelector(".lfeed"); if (nf && atEnd) nf.scrollTop = nf.scrollHeight;
+  }
+  async function liveFetch() {
+    if (!sel || document.hidden) return;
+    const ref = sel;
+    try { const j = await api("requests/" + ref + "/live"); if (ref !== sel) return; LIVE = j; liveSkew = j.now - Date.now() / 1000; paintLive();
+      if (!["processing", "approved"].includes(j.status)) liveStop(true); } catch (e) { /* signed out or offline */ }
+  }
+  function liveStop(keep) { clearInterval(liveTimer); clearInterval(tickTimer); liveTimer = tickTimer = null; if (!keep) { LIVE = null; liveRef = null; } }
+  function liveStart() {
+    if (!DET || !document.getElementById("liveBox")) return liveStop();
+    if (liveRef !== DET.ref) { LIVE = null; liveRef = DET.ref; }
+    paintLive(); liveFetch();
+    if (!liveTimer && ["processing", "approved"].includes(DET.status)) { liveTimer = setInterval(liveFetch, 2000); tickTimer = setInterval(paintLive, 1000); }
+  }
   // ---------------------------------------------------------------- detail
   async function open(ref, quiet) {
     sel = ref; if (!quiet) { location.hash = ref; profileDirty = false; }
     try { DET = await api("requests/" + ref); } catch (e) { return; }
-    renderList(); renderDetail();
+    renderList(); renderDetail(); liveStart();
   }
   function actions(d) {
     const b = (id, label, cls = "btn-secondary") => `<button class="btn ${cls} btn-sm" id="${id}">${label}</button>`;
@@ -227,10 +281,8 @@
       <div class="d-head"><div><h2>${esc(d.company)}</h2><div class="sub">${d.ref} · submitted ${fdt(d.created_at)} · <span class="pill ${d.status}">${esc(d.status_label || LABEL[d.status])}</span></div></div><div class="acts">${actions(d)}</div></div>
       <div class="stepper">${STEPS.map((s, i) => `<div class="${d.status === "failed" && i === 2 ? "bad" : d.status === "rejected" && i === 0 ? "bad" : i < si ? "done" : i === si ? "cur" : ""}">${s}${d.status === "rejected" && i === 0 ? " — rejected" : ""}${d.status === "failed" && i === 2 ? " — failed" : ""}</div>`).join("")}</div>
 
-      ${["approved", "processing", "failed"].includes(d.status) && pr ? `<div class="sec"><h3>Analysis</h3>
-        <div class="small"><b>${pr.done} of ${pr.total}</b> location${pr.total === 1 ? "" : "s"} analysed${pr.failed ? ` · <span style="color:#b42318">${pr.failed} failed</span>` : ""}</div>
-        <div class="bar"><i style="width:${pct}%"></i></div><div class="small muted">${esc(pr.current || "Starting…")}${pr.step ? " — " + esc(pr.step) : ""}</div>
-        <details class="fold" style="margin-top:12px"><summary>Log</summary><pre class="log">${esc((pr.log || []).join("\n"))}</pre></details></div>` : ""}
+      ${["approved", "processing", "failed"].includes(d.status) && pr ? `<div class="sec"><h3>Analysis</h3><div id="liveBox" class="live"><div class="small muted">Connecting to the job…</div></div>
+        <details class="fold" style="margin-top:12px"><summary>Raw log</summary><pre class="log">${esc((pr.log || []).join("\n"))}</pre></details></div>` : ""}
 
       ${["results_ready", "released"].includes(d.status) ? `<div class="sec"><h3>Review the results</h3>
         <p class="small muted" style="margin:0 0 12px">Open the dashboard exactly as the client will see it (${(d.sites || []).length} location${(d.sites || []).length === 1 ? "" : "s"}). Nothing is visible to the client until you release it.</p>
