@@ -75,7 +75,10 @@
           <button type="button" data-t="reports" aria-pressed="false">My reports</button>
           <button type="button" data-t="credits" aria-pressed="false">Credits &amp; plans</button>
           <button type="button" data-t="history" aria-pressed="false">History</button>
+          <button type="button" data-t="requests" id="tabReq" aria-pressed="false" hidden>Feature requests</button>
         </div>
+
+        <div class="pane" data-pane="requests" id="paneReq" style="margin-top:28px" hidden></div>
 
         <!-- ================= OVERVIEW -->
         <div class="pane" data-pane="overview" style="margin-top:28px">
@@ -163,6 +166,7 @@
 <script src="site/config.js?v=1"></script>
 <script src="site/api.js?v=1"></script>
 <script src="site/snapshots-registry.js?v=3"></script>
+<script src="site/feedback-inbox.js?v=1"></script>
 <script src="site/layout.js?v=10"></script>
 <script>
 (() => {
@@ -250,6 +254,7 @@
     if (s.role === "admin") { location.replace("admin.html"); return; }
     if (s.role !== "user") { try { P = (await AGT.api("/api/config")).pricing; fillPrices(); } catch (e) {} $("#gate").hidden = false; return; }
     $("#app").hidden = false;
+    if (s.level === "manager") { $("#tabReq").hidden = false; $("#tabReq").addEventListener("click", () => { if (!$("#paneReq").dataset.m) { $("#paneReq").dataset.m = 1; AGTInbox.mount($("#paneReq")); } }); }
     try { await load(); } catch (e) { toast(e.message); }
     const h = (location.hash || "").slice(1); tab(["overview", "reports", "credits", "history"].includes(h) ? h : h === "enterprise" ? "credits" : "overview");
     if (h === "enterprise") setTimeout(() => $("#enterprise").scrollIntoView({ behavior: "smooth" }), 100);
