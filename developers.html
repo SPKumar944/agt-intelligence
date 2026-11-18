@@ -100,6 +100,8 @@
         <div class="pane" data-pane="explore" style="margin-top:28px" hidden>
           <div class="pane-h"><h2>Data catalogue</h2><span class="small muted" id="exNote"></span></div>
           <div id="exBody"></div>
+          <div class="pane-h" style="margin-top:44px"><h2>Coverage</h2><span class="small muted" id="covNote"></span></div>
+          <div class="card" style="padding:22px"><table class="t"><thead><tr><th>City</th><th>State</th><th>Snapshot</th><th>Yours</th></tr></thead><tbody id="exCov"></tbody></table></div>
           <div class="pane-h" style="margin-top:44px"><h2>Plans</h2></div>
           <div class="stat4" id="exPlans"></div>
           <p class="small muted" style="margin-top:18px" id="exLic"></p>
@@ -178,7 +180,7 @@ print(r.json()["data"][:3], r.headers["X-Credits-Remaining"])</pre></div>
     $("#oBars").innerHTML = days.map((d) => `<i title="${d}: ${N(by[d] || 0)} credits" style="height:${Math.max(2, (by[d] || 0) / mx * 100)}%"></i>`).join("");
     $("#oBarNote").textContent = O.series.length ? `Busiest day: ${N(mx)} credits` : "No calls yet. Create a key and try a query.";
     $("#oAccess").innerHTML = `<table class="t"><tbody>
-      <tr><td style="width:150px" class="muted">Cities</td><td>${e.cities.map((c) => `<span class="pill">${esc(c)}</span>`).join(" ") || "—"}</td></tr>
+      <tr><td style="width:150px" class="muted">Cities</td><td>${e.cities.map((c) => `<span class="pill">${esc(c)}</span>`).join(" ") || "—"}${e.states.length ? `<div class="small muted" style="margin-top:6px">Regions: ${e.states.map(esc).join(", ")} — new cities there are added automatically</div>` : e.grows ? `<div class="small muted" style="margin-top:6px">Covers every city we scan, including new ones</div>` : ""}</td></tr>
       <tr><td class="muted">Layers</td><td>${e.layers.map((c) => `<span class="pill">${esc(c)}</span>`).join(" ")}</td></tr>
       <tr><td class="muted">Attributes</td><td>${Object.entries(e.attrs).map(([l, a]) => `<div style="margin-bottom:6px"><b>${esc(l)}</b> · ${a.map(esc).join(", ")}</div>`).join("")}</td></tr>
       <tr><td class="muted">Bulk export</td><td>${e.export ? "Included" : "Not in your plan"}</td></tr>
@@ -203,10 +205,13 @@ print(r.json()["data"][:3], r.headers["X-Credits-Remaining"])</pre></div>
       <table class="t" style="margin-top:12px"><thead><tr><th>Attribute</th><th>What it is</th><th>Tier</th><th style="text-align:right">Weight</th><th>Yours</th></tr></thead><tbody>${Object.entries(L.attributes).map(([a, m]) =>
         `<tr><td><code>${a}</code><div class="small muted">${esc(m.label)}</div></td><td>${esc(m.desc || m.label)}<div class="small muted">${esc(m.source)}${m.unit ? " · " + esc(m.unit) : ""}</div></td><td><span class="pill ${m.tier}">${m.tier}</span></td><td style="text-align:right">${m.weight}</td><td>${(have[ln] || []).includes(a) ? "✓" : "—"}</td></tr>`).join("")}</tbody></table></div>`).join("");
     $("#exPlans").innerHTML = Object.entries(CAT.plans).map(([k, p]) => `<div class="card stat"><div class="k">${esc(p.label)}</div><div class="v" style="font-size:30px;margin-top:14px">${N(p.credits)}<small>credits / month</small></div><p>${esc(p.blurb)}</p><p class="small muted" style="margin-top:10px">${p.rps} req/s · ${N(p.rows_per_call)} rows per call · ${p.export ? "bulk export" : "no export"}</p></div>`).join("");
+    const mine = new Set(O && O.entitlements ? O.entitlements.cities : []);
+    $("#covNote").textContent = O && O.entitlements && O.entitlements.grows ? "Your access grows automatically as we add cities." : "New cities are added to your access by arrangement.";
+    $("#exCov").innerHTML = CAT.cities.map((c) => `<tr><td><b>${esc(c.name)}</b> ${c.new ? '<span class="pill ok">new</span>' : ""}</td><td>${esc(c.state)}</td><td>${esc(c.snapshot || "—")}</td><td>${mine.has(c.slug) ? "✓" : "—"}</td></tr>`).join("");
     $("#exLic").textContent = CAT.excluded + " " + CAT.licence;
   }
   function paintDocs() {
-    $("#dEndpoints").innerHTML = [["GET /v1/catalogue", "Layers and attributes your key can read, with weights (free)"], ["GET /v1/cities", "Cities your key can read (free)"], ["GET /v1/usage", "Credits and calls this month (free)"],
+    $("#dEndpoints").innerHTML = [["GET /v1/catalogue", "Layers and attributes your key can read, with weights (free)"], ["GET /v1/cities", "Cities your key can read (free)"], ["GET /v1/coverage", "All cities in the data, which you can read, what is new (free)"], ["GET /v1/usage", "Credits and calls this month (free)"],
       ["GET /v1/{city}/summary", "Headline totals"], ["GET /v1/{city}/zones?pin=&role=", "PIN-code zones"], ["GET /v1/{city}/cells?lat=&lng=&radius_m=", "Hexagon grid by point and radius (max 10 km)"],
       ["GET /v1/{city}/brands?sector=&brand=", "Brand outlet counts"], ["GET /v1/{city}/formats?key=", "Retail format indices"], ["GET /v1/{city}/export?layer=&format=csv", "Bulk export of a whole layer"]]
       .map(([a, b]) => `<tr><td style="white-space:nowrap"><code>${esc(a)}</code></td><td>${esc(b)}</td></tr>`).join("");

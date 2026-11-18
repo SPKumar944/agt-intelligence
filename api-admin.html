@@ -50,7 +50,7 @@
   <div class="card p"><h3>Credits used, last 30 days</h3><div class="bars" id="bars"></div></div>
 
   <div class="card p"><h3>Clients <span class="muted" style="font-weight:400;font-size:13px">· click a row to edit access</span></h3>
-    <table class="t"><thead><tr><th>Client</th><th>Plan</th><th>Credits this month</th><th>Last 24 h</th><th>Keys</th><th>Status</th></tr></thead><tbody id="clients"></tbody></table></div>
+    <table class="t"><thead><tr><th>Client</th><th>Plan</th><th>Credits this month</th><th>Last 24 h</th><th>Access</th><th>Status</th></tr></thead><tbody id="clients"></tbody></table></div>
 
   <div class="card p" id="editCard" hidden><h3 id="eTitle">Client access</h3>
     <div class="err-banner" id="eErr"></div>
@@ -59,7 +59,8 @@
       <div><label>Company</label><input id="eCompany" /></div>
       <div><label>Plan</label><select id="ePlan"></select></div>
       <div><label>Status</label><select id="eStatus"><option value="active">Active</option><option value="suspended">Suspended</option></select></div>
-      <div class="wide"><label>Cities <span class="muted">(blank = plan default; comma separated slugs)</span></label><input id="eCities" placeholder="e.g. jaipur,pune,mumbai" /><div class="small muted" id="cityHint" style="margin-top:4px"></div></div>
+      <div class="wide"><label>Cities <span class="muted">(blank cities and regions = every city on the plan, today and later; comma separated slugs)</span></label><input id="eCities" placeholder="e.g. jaipur,pune,mumbai" /><div class="small muted" id="cityHint" style="margin-top:4px"></div></div>
+      <div class="wide"><label>Regions (states) <span class="muted">· every city in these states, including cities we add later</span></label><input id="eStates" placeholder="e.g. Maharashtra,Rajasthan" /><div class="small muted" id="stateHint" style="margin-top:4px"></div></div>
       <div class="wide"><label>Layers <span class="muted">(blank = plan default: zones, cells, brands, formats, summary)</span></label><input id="eLayers" /></div>
       <div class="wide"><label>Hidden attributes <span class="muted">(comma separated layer.attribute, e.g. zones.residents)</span></label><input id="eDeny" /></div>
       <div><label>Monthly credits override</label><input id="eCredits" type="number" min="0" /></div>
@@ -74,6 +75,8 @@
   </div>
   <div style="margin:-6px 0 20px"><button class="btn btn-secondary btn-sm" id="newClient" type="button">+ Add a client</button></div>
 
+  <div class="card p"><h3>Data coverage in the API <span class="muted" style="font-weight:400;font-size:13px">· read live from the same city files the website uses; new cities appear here automatically</span></h3>
+    <table class="t"><thead><tr><th>City</th><th>State</th><th>Snapshot</th><th>Data version</th><th>Residents</th><th>Clients with access</th></tr></thead><tbody id="cov"></tbody></table></div>
   <div class="two">
     <div class="card p"><h3>Credits by layer</h3><table class="t"><tbody id="byLayer"></tbody></table></div>
     <div class="card p"><h3>Credits by city</h3><table class="t"><tbody id="byCity"></tbody></table></div>
@@ -104,7 +107,7 @@
     $("#bars").innerHTML = days.map((d) => `<i title="${d}: ${N(by[d] || 0)} credits" style="height:${Math.max(2, (by[d] || 0) / mx * 100)}%"></i>`).join("");
     $("#clients").innerHTML = D.clients.length ? D.clients.map((c) => `<tr data-e="${esc(c.email)}" style="cursor:pointer"><td><b>${esc(c.email)}</b><div class="small muted">${esc(c.company || "")}</div></td><td>${esc(D.plans[c.plan].label)}</td>
       <td>${N(c.credits_used)} / ${N(c.credits_month)}<div class="meter"><i style="width:${Math.min(100, c.credits_used / c.credits_month * 100)}%"></i></div></td><td>${N(c.rows_24h)}</td>
-      <td>${c.keys.filter((k) => k.status === "active").length} active</td><td><span class="pill ${c.status === "active" ? "ok" : "bad"}">${c.status}</span></td></tr>`).join("") : `<tr><td colspan="6" class="muted">No clients yet. Clients appear when someone starts the sandbox at developers.html, or add one below.</td></tr>`;
+      <td>${c.n_cities} cities${c.states.length ? " · " + esc(c.states.join(", ")) : ""}<div class="small muted">${c.keys.filter((k) => k.status === "active").length} key(s) active</div></td><td><span class="pill ${c.status === "active" ? "ok" : "bad"}">${c.status}</span></td></tr>`).join("") : `<tr><td colspan="6" class="muted">No clients yet. Clients appear when someone starts the sandbox at developers.html, or add one below.</td></tr>`;
     document.querySelectorAll("[data-e]").forEach((r) => r.onclick = () => edit(D.clients.find((c) => c.email === r.dataset.e)));
     const rowsOf = (a, k) => a.length ? a.map((r) => `<tr><td>${esc(r[k])}</td><td style="text-align:right">${N(r.credits)} credits</td></tr>`).join("") : `<tr><td class="muted">Nothing yet</td></tr>`;
     $("#byLayer").innerHTML = rowsOf(D.by_layer, "layer"); $("#byCity").innerHTML = rowsOf(D.by_city, "city");
@@ -113,13 +116,15 @@
     $("#recent").innerHTML = D.recent.length ? D.recent.map((r) => `<tr><td>${dt(r.at)}</td><td>${esc(r.email || "—")}</td><td>${esc(r.endpoint)} ${esc(r.city || "")}</td><td style="text-align:right">${N(r.rows)}</td><td><span class="pill ${r.status < 400 ? "ok" : "bad"}">${r.status}</span></td></tr>`).join("") : `<tr><td class="muted">No calls yet</td></tr>`;
     $("#ePlan").innerHTML = Object.entries(D.plans).map(([k, p]) => `<option value="${k}">${esc(p.label)} · ${N(p.credits)} credits</option>`).join("");
     $("#cityHint").textContent = "Available: " + D.cities.join(", ");
+    const sts = [...new Set(D.coverage.map((x) => x.state))].sort(); $("#stateHint").textContent = "Available: " + sts.join(", ");
+    $("#cov").innerHTML = D.coverage.map((x) => `<tr><td><b>${esc(x.name)}</b> ${x.new ? '<span class="pill warn">new</span>' : ""}<div class="small muted">${esc(x.slug)}</div></td><td>${esc(x.state)}</td><td>${esc(x.snapshot || "—")}<div class="small muted">OSM ${esc((x.osm_snapshot || "").slice(0, 10))} · Overture ${esc(x.overture_release || "—")}</div></td><td><code>${esc(x.data_version)}</code></td><td>${N(x.residents)}</td><td>${x.clients}</td></tr>`).join("");
   }
   function edit(c) {
     cur = c; $("#editCard").hidden = false; $("#eErr").classList.remove("on");
     $("#eTitle").textContent = c ? "Edit " + c.email : "New client";
     $("#eEmail").value = c ? c.email : ""; $("#eEmail").readOnly = !!c;
     $("#eCompany").value = c ? c.company || "" : ""; $("#ePlan").value = c ? c.plan : "starter"; $("#eStatus").value = c ? c.status : "active";
-    $("#eCities").value = c ? csv(c.cities) : ""; $("#eLayers").value = c ? csv(c.layers) : ""; $("#eDeny").value = c ? csv(c.deny_attrs) : "";
+    $("#eCities").value = c ? csv(c.cities) : ""; $("#eStates").value = c ? csv(c.states) : ""; $("#eLayers").value = c ? csv(c.layers) : ""; $("#eDeny").value = c ? csv(c.deny_attrs) : "";
     $("#eCredits").value = c && c.credits != null ? c.credits : ""; $("#eExtra").value = c ? c.extra_credits || "" : ""; $("#eRps").value = c && c.rps ? c.rps : "";
     $("#eRows").value = c && c.rows_per_call ? c.rows_per_call : ""; $("#eDay").value = c && c.daily_rows ? c.daily_rows : ""; $("#eNotes").value = c ? c.notes || "" : "";
     $("#eKeys").innerHTML = c ? `<b>Keys</b><table class="t"><tbody>${c.keys.map((k) => `<tr><td><b>${esc(k.name)}</b> <code>${esc(k.prefix)}</code></td><td>${k.last_used ? "used " + dt(k.last_used) + " from " + esc(k.last_ip || "?") : "never used"}</td><td><span class="pill ${k.status === "active" ? "ok" : "bad"}">${k.status}</span></td>
@@ -135,7 +140,7 @@
   $("#eSave").onclick = async () => {
     const e = $("#eErr"); e.classList.remove("on");
     try {
-      await AGT.api("/api/admin/dataapi/clients", { body: { email: $("#eEmail").value, company: $("#eCompany").value, plan: $("#ePlan").value, status: $("#eStatus").value, cities: $("#eCities").value, layers: $("#eLayers").value, deny_attrs: $("#eDeny").value,
+      await AGT.api("/api/admin/dataapi/clients", { body: { email: $("#eEmail").value, company: $("#eCompany").value, plan: $("#ePlan").value, status: $("#eStatus").value, cities: $("#eCities").value, states: $("#eStates").value, layers: $("#eLayers").value, deny_attrs: $("#eDeny").value,
         credits: $("#eCredits").value, extra_credits: $("#eExtra").value, rps: $("#eRps").value, rows_per_call: $("#eRows").value, daily_rows: $("#eDay").value, notes: $("#eNotes").value } });
       toast("Saved"); const em = $("#eEmail").value.trim().toLowerCase(); await load(); edit(D.clients.find((c) => c.email === em));
     } catch (x) { e.textContent = x.message; e.classList.add("on"); }
