@@ -29,7 +29,7 @@
     let items = [], counts = {}, filter = "new", err = "";
     const draw = () => {
       const shown = items.filter((r) => filter === "all" || r.status === filter);
-      el.innerHTML = `<div class="fi"><div class="fi-bar">${[["new", "New"], ["replied", "Replied"], ["closed", "Closed"], ["all", "All"]].map(([k, l]) => `<button type="button" data-f="${k}" aria-pressed="${k === filter}">${l}${k !== "all" ? " · " + (counts[k] || 0) : " · " + items.length}</button>`).join("")}</div>
+      el.innerHTML = `<div class="fi"><div class="fi-bar">${[["new", "New"], ["replied", "Replied"], ["closed", "Closed"], ["all", "All"]].map(([k, l]) => `<button type="button" data-f="${k}" aria-pressed="${k === filter}">${l}${k !== "all" ? " · " + (counts[k] || 0) : " · " + items.length}</button>`).join("")}<button type="button" data-new="1" style="margin-left:auto;background:var(--ink,#fff);color:var(--bg,#000);border-color:var(--ink,#fff)">+ New request</button></div>
         ${err ? `<div class="fi-e">${esc(err)}</div>` : shown.length ? shown.map((r) => `<div class="fi-c" data-id="${r.id}">
           <div class="fi-h"><span class="fi-p ${r.status}">${esc(r.status)}</span><span class="fi-p">${KIND[r.kind] || "Other"}</span><b>${r.email ? esc(r.email) : "No email left"}</b><span>${when(r.created_at)}${r.page ? " · from " + esc(r.page) : ""}</span></div>
           <div class="fi-m">${esc(r.message)}</div>
@@ -40,6 +40,7 @@
     };
     async function load() { try { const j = await AGT.api("/api/staff/feedback"); items = j.items; counts = j.counts; err = ""; } catch (e) { err = e.message; } draw(); }
     el.addEventListener("click", async (e) => {
+      if (e.target.closest("[data-new]")) { if (window.AGTFeedback) window.AGTFeedback.open("feature"); return; }
       const f = e.target.closest("[data-f]"); if (f) { filter = f.dataset.f; draw(); return; }
       const b = e.target.closest("[data-a]"); if (!b) return;
       const card = b.closest(".fi-c"), id = card.dataset.id, note = card.querySelector(".t"); b.disabled = true;
