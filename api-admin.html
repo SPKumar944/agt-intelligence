@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>(function(){var t=null;try{t=localStorage.getItem("agt.theme")}catch(e){}if(t!=="light")document.documentElement.dataset.theme="dark"})()</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Data API admin · AGT Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M2 12 L10 4 L18 12 L10 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link href="site/site.css?v=27" rel="stylesheet" />
+  <style>
+    [hidden] { display: none !important; }
+    body { font-size: 14.5px; background: var(--bg-2); }
+    .a-head { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid var(--line); }
+    .a-head .in { max-width: 1300px; margin: 0 auto; padding: 0 24px; height: 56px; display: flex; align-items: center; gap: 22px; } .a-head .sp { flex: 1; }
+    .a-head a.lnk { color: var(--ink-2); font-size: 13.5px; text-decoration: none; } .a-head a.lnk:hover { color: var(--ink); }
+    .shell { max-width: 1300px; margin: 0 auto; padding: 24px 24px 70px; }
+    .login { max-width: 420px; margin: 14vh auto 0; padding: 36px; text-align: center; }
+    .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+    .tile { padding: 20px 22px; } .tile .k { font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; } .tile .v { font-size: 34px; font-weight: 700; letter-spacing: -.04em; margin-top: 8px; }
+    .card.p { padding: 22px 24px; margin-bottom: 20px; } .card.p h3 { margin: 0 0 14px; font-size: 17px; letter-spacing: -.02em; }
+    table.t { width: 100%; border-collapse: collapse; font-size: 13.5px; } table.t th { text-align: left; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; padding: 8px 10px; } table.t td { padding: 10px; border-top: 1px solid var(--line); vertical-align: top; }
+    .pill { display: inline-block; border-radius: 980px; padding: 3px 10px; font-size: 11.5px; font-weight: 600; background: var(--bg-3); color: var(--ink-2); }
+    .pill.ok { background: #dcf3e4; color: #17653a; } .pill.bad { background: #fde3e0; color: #98231a; } .pill.warn { background: #fff3d6; color: #8a5a00; }
+    :root[data-theme="dark"] .pill.ok { background: #12301f; color: #7fd6a2; } :root[data-theme="dark"] .pill.bad { background: #3a1613; color: #ffb4ab; } :root[data-theme="dark"] .pill.warn { background: #3a2f10; color: #f3c969; }
+    .meter { height: 6px; background: var(--bg-3); border-radius: 3px; overflow: hidden; margin-top: 6px; width: 140px; } .meter i { display: block; height: 100%; background: var(--ink); }
+    .bars { display: flex; align-items: end; gap: 3px; height: 110px; } .bars i { flex: 1; background: var(--ink); border-radius: 3px 3px 0 0; min-height: 2px; opacity: .85; }
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .form3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px 16px; } .form3 .wide { grid-column: 1 / -1; }
+    .form3 label { display: block; font-size: 12px; color: var(--ink-3); margin-bottom: 4px; font-weight: 600; } .form3 input, .form3 select, .form3 textarea { width: 100%; }
+    .err-banner { display: none; border-radius: 12px; background: #fdecea; color: #8a1c13; padding: 10px 14px; margin-bottom: 12px; } .err-banner.on { display: block; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 11px 18px; border-radius: 980px; font-size: 13.5px; z-index: 80; opacity: 0; pointer-events: none; transition: opacity .2s; } .toast.on { opacity: 1; }
+    @media (max-width: 900px) { .tiles, .two, .form3 { grid-template-columns: 1fr; } .shell { padding: 16px; } }
+  </style>
+</head>
+<body>
+<div class="a-head"><div class="in"><a class="logo" href="home.html" style="font-weight:600;color:var(--ink);text-decoration:none">AGT Intelligence</a><b>Data API</b><span class="sp"></span><a class="lnk" href="admin.html">← Super admin</a><a class="lnk" href="developers.html">Client portal</a></div></div>
+
+<div id="loginView" hidden><div class="card login"><h1 style="font-size:28px;margin:0 0 8px">Super admin only</h1><p class="muted" id="loginNote" style="margin:0 0 20px">Sign in with the super-admin email address.</p><a class="btn btn-primary" href="login.html?next=api-admin.html">Sign in with email code</a></div></div>
+
+<div class="shell" id="appView" hidden>
+  <div class="tiles">
+    <div class="card tile"><div class="k">Clients</div><div class="v" id="tClients">0</div></div>
+    <div class="card tile"><div class="k">Calls this month</div><div class="v" id="tCalls">0</div></div>
+    <div class="card tile"><div class="k">Credits used</div><div class="v" id="tCredits">0</div></div>
+    <div class="card tile"><div class="k">Rows served</div><div class="v" id="tRows">0</div></div>
+  </div>
+
+  <div class="card p"><h3>Credits used, last 30 days</h3><div class="bars" id="bars"></div></div>
+
+  <div class="card p"><h3>Clients <span class="muted" style="font-weight:400;font-size:13px">· click a row to edit access</span></h3>
+    <table class="t"><thead><tr><th>Client</th><th>Plan</th><th>Credits this month</th><th>Last 24 h</th><th>Keys</th><th>Status</th></tr></thead><tbody id="clients"></tbody></table></div>
+
+  <div class="card p" id="editCard" hidden><h3 id="eTitle">Client access</h3>
+    <div class="err-banner" id="eErr"></div>
+    <div class="form3">
+      <div><label>Email</label><input id="eEmail" type="email" /></div>
+      <div><label>Company</label><input id="eCompany" /></div>
+      <div><label>Plan</label><select id="ePlan"></select></div>
+      <div><label>Status</label><select id="eStatus"><option value="active">Active</option><option value="suspended">Suspended</option></select></div>
+      <div class="wide"><label>Cities <span class="muted">(blank = plan default; comma separated slugs)</span></label><input id="eCities" placeholder="e.g. jaipur,pune,mumbai" /><div class="small muted" id="cityHint" style="margin-top:4px"></div></div>
+      <div class="wide"><label>Layers <span class="muted">(blank = plan default: zones, cells, brands, formats, summary)</span></label><input id="eLayers" /></div>
+      <div class="wide"><label>Hidden attributes <span class="muted">(comma separated layer.attribute, e.g. zones.residents)</span></label><input id="eDeny" /></div>
+      <div><label>Monthly credits override</label><input id="eCredits" type="number" min="0" /></div>
+      <div><label>Extra credits (top-up)</label><input id="eExtra" type="number" min="0" /></div>
+      <div><label>Requests per second</label><input id="eRps" type="number" min="1" step="1" /></div>
+      <div><label>Rows per call</label><input id="eRows" type="number" min="1" /></div>
+      <div><label>Rows per day</label><input id="eDay" type="number" min="1" /></div>
+      <div class="wide"><label>Internal notes</label><textarea id="eNotes" rows="2"></textarea></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px"><button class="btn btn-primary" id="eSave" type="button">Save</button><button class="btn btn-secondary" id="eClose" type="button">Close</button></div>
+    <div id="eKeys" style="margin-top:20px"></div>
+  </div>
+  <div style="margin:-6px 0 20px"><button class="btn btn-secondary btn-sm" id="newClient" type="button">+ Add a client</button></div>
+
+  <div class="two">
+    <div class="card p"><h3>Credits by layer</h3><table class="t"><tbody id="byLayer"></tbody></table></div>
+    <div class="card p"><h3>Credits by city</h3><table class="t"><tbody id="byCity"></tbody></table></div>
+  </div>
+  <div class="two">
+    <div class="card p"><h3>Alerts <span class="muted" style="font-weight:400;font-size:13px">· last 7 days</span></h3><table class="t"><tbody id="alerts"></tbody></table><div class="small muted" id="errNote" style="margin-top:10px"></div></div>
+    <div class="card p"><h3>Recent calls</h3><table class="t"><tbody id="recent"></tbody></table></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script src="site/config.js?v=1"></script>
+<script src="site/api.js?v=1"></script>
+<script>
+(() => {
+  "use strict";
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const N = (n) => Number(n || 0).toLocaleString("en-IN");
+  const dt = (t) => t ? new Date(t * 1000).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—";
+  const toast = (t) => { const el = $("#toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 2600); };
+  let D = null, cur = null;
+  const csv = (v) => (v || []).join(",");
+
+  function paint() {
+    $("#tClients").textContent = D.clients.length; $("#tCalls").textContent = N(D.totals.calls); $("#tCredits").textContent = N(D.totals.credits); $("#tRows").textContent = N(D.totals.rows);
+    const days = []; for (let i = 29; i >= 0; i--) days.push(new Date(Date.now() - i * 864e5).toLocaleDateString("en-CA"));
+    const by = Object.fromEntries(D.series.map((r) => [r.d, r.credits])), mx = Math.max(1, ...days.map((d) => by[d] || 0));
+    $("#bars").innerHTML = days.map((d) => `<i title="${d}: ${N(by[d] || 0)} credits" style="height:${Math.max(2, (by[d] || 0) / mx * 100)}%"></i>`).join("");
+    $("#clients").innerHTML = D.clients.length ? D.clients.map((c) => `<tr data-e="${esc(c.email)}" style="cursor:pointer"><td><b>${esc(c.email)}</b><div class="small muted">${esc(c.company || "")}</div></td><td>${esc(D.plans[c.plan].label)}</td>
+      <td>${N(c.credits_used)} / ${N(c.credits_month)}<div class="meter"><i style="width:${Math.min(100, c.credits_used / c.credits_month * 100)}%"></i></div></td><td>${N(c.rows_24h)}</td>
+      <td>${c.keys.filter((k) => k.status === "active").length} active</td><td><span class="pill ${c.status === "active" ? "ok" : "bad"}">${c.status}</span></td></tr>`).join("") : `<tr><td colspan="6" class="muted">No clients yet. Clients appear when someone starts the sandbox at developers.html, or add one below.</td></tr>`;
+    document.querySelectorAll("[data-e]").forEach((r) => r.onclick = () => edit(D.clients.find((c) => c.email === r.dataset.e)));
+    const rowsOf = (a, k) => a.length ? a.map((r) => `<tr><td>${esc(r[k])}</td><td style="text-align:right">${N(r.credits)} credits</td></tr>`).join("") : `<tr><td class="muted">Nothing yet</td></tr>`;
+    $("#byLayer").innerHTML = rowsOf(D.by_layer, "layer"); $("#byCity").innerHTML = rowsOf(D.by_city, "city");
+    $("#alerts").innerHTML = D.alerts.length ? D.alerts.map((a) => `<tr><td>${dt(a.at)}</td><td><span class="pill warn">${esc(a.flag.replaceAll("_", " "))}</span></td><td>${esc(a.email)}</td><td class="muted">${esc(a.endpoint)} ${esc(a.city || "")}</td></tr>`).join("") : `<tr><td class="muted">No alerts. Flags appear when a client nears its daily row cap or is rate limited.</td></tr>`;
+    $("#errNote").textContent = D.errors.length ? "Failed calls this month: " + D.errors.map((e) => `${e.status} × ${e.n}`).join(", ") : "";
+    $("#recent").innerHTML = D.recent.length ? D.recent.map((r) => `<tr><td>${dt(r.at)}</td><td>${esc(r.email || "—")}</td><td>${esc(r.endpoint)} ${esc(r.city || "")}</td><td style="text-align:right">${N(r.rows)}</td><td><span class="pill ${r.status < 400 ? "ok" : "bad"}">${r.status}</span></td></tr>`).join("") : `<tr><td class="muted">No calls yet</td></tr>`;
+    $("#ePlan").innerHTML = Object.entries(D.plans).map(([k, p]) => `<option value="${k}">${esc(p.label)} · ${N(p.credits)} credits</option>`).join("");
+    $("#cityHint").textContent = "Available: " + D.cities.join(", ");
+  }
+  function edit(c) {
+    cur = c; $("#editCard").hidden = false; $("#eErr").classList.remove("on");
+    $("#eTitle").textContent = c ? "Edit " + c.email : "New client";
+    $("#eEmail").value = c ? c.email : ""; $("#eEmail").readOnly = !!c;
+    $("#eCompany").value = c ? c.company || "" : ""; $("#ePlan").value = c ? c.plan : "starter"; $("#eStatus").value = c ? c.status : "active";
+    $("#eCities").value = c ? csv(c.cities) : ""; $("#eLayers").value = c ? csv(c.layers) : ""; $("#eDeny").value = c ? csv(c.deny_attrs) : "";
+    $("#eCredits").value = c && c.credits != null ? c.credits : ""; $("#eExtra").value = c ? c.extra_credits || "" : ""; $("#eRps").value = c && c.rps ? c.rps : "";
+    $("#eRows").value = c && c.rows_per_call ? c.rows_per_call : ""; $("#eDay").value = c && c.daily_rows ? c.daily_rows : ""; $("#eNotes").value = c ? c.notes || "" : "";
+    $("#eKeys").innerHTML = c ? `<b>Keys</b><table class="t"><tbody>${c.keys.map((k) => `<tr><td><b>${esc(k.name)}</b> <code>${esc(k.prefix)}</code></td><td>${k.last_used ? "used " + dt(k.last_used) + " from " + esc(k.last_ip || "?") : "never used"}</td><td><span class="pill ${k.status === "active" ? "ok" : "bad"}">${k.status}</span></td>
+      <td>${k.status === "active" ? `<button class="btn btn-secondary btn-sm" data-rv="${k.id}" type="button">Revoke</button>` : ""}</td></tr>`).join("") || `<tr><td class="muted">No keys</td></tr>`}</tbody></table>` : "";
+    document.querySelectorAll("[data-rv]").forEach((b) => b.onclick = async () => {
+      if (!confirm("Revoke this key? The client's integration stops working immediately.")) return;
+      await AGT.api(`/api/admin/dataapi/keys/${b.dataset.rv}/revoke`, { body: {} }); toast("Key revoked"); await load(); edit(D.clients.find((x) => x.email === c.email));
+    });
+    $("#editCard").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+  $("#eClose").onclick = () => { $("#editCard").hidden = true; };
+  $("#newClient").onclick = () => edit(null);
+  $("#eSave").onclick = async () => {
+    const e = $("#eErr"); e.classList.remove("on");
+    try {
+      await AGT.api("/api/admin/dataapi/clients", { body: { email: $("#eEmail").value, company: $("#eCompany").value, plan: $("#ePlan").value, status: $("#eStatus").value, cities: $("#eCities").value, layers: $("#eLayers").value, deny_attrs: $("#eDeny").value,
+        credits: $("#eCredits").value, extra_credits: $("#eExtra").value, rps: $("#eRps").value, rows_per_call: $("#eRows").value, daily_rows: $("#eDay").value, notes: $("#eNotes").value } });
+      toast("Saved"); const em = $("#eEmail").value.trim().toLowerCase(); await load(); edit(D.clients.find((c) => c.email === em));
+    } catch (x) { e.textContent = x.message; e.classList.add("on"); }
+  };
+  async function load() { D = await AGT.api("/api/admin/dataapi/overview"); paint(); }
+  (async () => {
+    const s = await AGT.session();
+    if (s.role !== "admin") { $("#loginView").hidden = false; if (s.role === "user") $("#loginNote").textContent = "You're signed in, but this page is for the super admin only."; return; }
+    $("#appView").hidden = false;
+    try { await load(); } catch (e) { toast(e.message); }
+    setInterval(() => load().catch(() => {}), 20000);
+  })();
+})();
+</script>
+</body>
+</html>

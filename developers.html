@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>(function(){var t=null;try{t=localStorage.getItem("agt.theme")}catch(e){}if(t!=="light")document.documentElement.dataset.theme="dark"})()</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>Data API · AGT Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M2 12 L10 4 L18 12 L10 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round'/%3E%3C/svg%3E" />
+  <link href="site/site.css?v=27" rel="stylesheet" />
+  <style>
+    [hidden] { display: none !important; }
+    .tabs { display: flex; gap: 4px; background: var(--bg-2); border-radius: 980px; padding: 4px; width: fit-content; max-width: 100%; overflow-x: auto; }
+    .tabs button { border: 0; background: none; padding: 9px 18px; border-radius: 980px; font-size: 14px; color: var(--ink-2); cursor: pointer; font-weight: 500; white-space: nowrap; }
+    .tabs button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+    .stat4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .stat { padding: 24px; } .stat .k { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+    .stat .v { font-size: 40px; font-weight: 700; letter-spacing: -.045em; line-height: 1; margin: 12px 0 8px; } .stat .v small { font-size: 15px; font-weight: 500; letter-spacing: 0; color: var(--ink-3); margin-left: 6px; }
+    .stat p { margin: 0; color: var(--ink-2); font-size: 14px; }
+    .meter { height: 8px; background: var(--bg-3); border-radius: 4px; overflow: hidden; margin: 14px 0 6px; } .meter i { display: block; height: 100%; background: var(--ink); border-radius: 4px; }
+    .pill { display: inline-block; border-radius: 980px; padding: 3px 11px; font-size: 12px; font-weight: 600; background: var(--bg-3); color: var(--ink-2); white-space: nowrap; }
+    .pill.ok { background: #dcf3e4; color: #17653a; } .pill.bad { background: #fde3e0; color: #98231a; } .pill.base { background: var(--bg-3); } .pill.derived { background: #e1ecff; color: #1d4ea0; } .pill.decision { background: #e8e1ff; color: #4a2fa0; }
+    :root[data-theme="dark"] .pill.ok { background: #12301f; color: #7fd6a2; } :root[data-theme="dark"] .pill.bad { background: #3a1613; color: #ffb4ab; } :root[data-theme="dark"] .pill.derived { background: #14253f; color: #9fc2ff; } :root[data-theme="dark"] .pill.decision { background: #251a47; color: #c0adff; }
+    table.t { width: 100%; border-collapse: collapse; font-size: 14px; } table.t th { text-align: left; font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; padding: 8px 10px; } table.t td { padding: 11px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+    .pane-h { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin: 0 0 18px; } .pane-h h2 { margin: 0; font-size: 28px; letter-spacing: -.03em; }
+    pre.code { background: var(--bg-2); border-radius: 14px; padding: 16px 18px; font-size: 12.5px; line-height: 1.55; overflow: auto; max-height: 440px; margin: 0; white-space: pre; }
+    .keyrow { display: grid; grid-template-columns: 1fr auto; gap: 8px 16px; padding: 18px 24px; align-items: center; } .keyrow + .keyrow { border-top: 1px solid var(--line); }
+    .newkey { background: var(--bg-2); border-radius: 14px; padding: 18px; margin-bottom: 18px; } .newkey code { display: block; word-break: break-all; font-size: 14px; margin: 8px 0 12px; font-weight: 600; }
+    .err-banner { display: none; border-radius: 12px; background: #fdecea; color: #8a1c13; padding: 12px 14px; font-size: 14px; margin-bottom: 14px; } .err-banner.on { display: block; }
+    :root[data-theme="dark"] .err-banner { background: #3a1613; color: #ffb4ab; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 11px 18px; border-radius: 980px; font-size: 13.5px; z-index: 80; opacity: 0; pointer-events: none; transition: opacity .2s; } .toast.on { opacity: 1; }
+    .gate { text-align: center; max-width: 540px; margin: 40px auto; padding: 44px; }
+    .bars { display: flex; align-items: end; gap: 3px; height: 120px; } .bars i { flex: 1; background: var(--ink); border-radius: 3px 3px 0 0; min-height: 2px; opacity: .85; }
+    .tools { display: flex; gap: 10px; flex-wrap: wrap; } .tools input[type=text] { flex: 1; min-width: 260px; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; } .chips button { border: 1px solid var(--line-2); background: var(--bg); color: var(--ink-2); border-radius: 980px; padding: 6px 12px; font-size: 12.5px; cursor: pointer; }
+    @media (max-width: 960px) { .stat4 { grid-template-columns: 1fr 1fr; } .keyrow { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body data-page="developers">
+<div id="site-header"></div>
+<main>
+  <section class="page-hero" style="padding:48px 0 36px">
+    <div class="wrap">
+      <p class="eyebrow">Data API</p>
+      <h1 class="h1" style="font-size:clamp(34px,5vw,56px);margin:6px 0 12px">City data, by key.</h1>
+      <p class="lede" style="max-width:720px">Read the same zone, hexagon, brand and retail-format data behind our city snapshots from your own systems. Every attribute is metered in credits, and each key only sees what your plan includes.</p>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:36px">
+    <div class="wrap">
+      <div class="card gate" id="gate" hidden>
+        <h2 class="h2" style="font-size:30px">Sign in to get your API key.</h2>
+        <p class="lede" style="margin:12px auto 24px">Use your Gmail address. The free sandbox gives you two demo cities and 300 credits a month.</p>
+        <a class="btn btn-primary" href="login.html?next=developers.html">Sign in with Gmail</a>
+      </div>
+
+      <div class="card gate" id="join" hidden>
+        <h2 class="h2" style="font-size:30px">Start your free sandbox.</h2>
+        <p class="lede" style="margin:12px auto 18px">Two demo cities (Jaipur and Kanpur), base attributes, values rounded, 300 credits a month. Upgrade any time by contacting us.</p>
+        <div class="err-banner" id="joinErr"></div>
+        <div class="field" style="max-width:340px;margin:0 auto 18px;text-align:left"><label for="jCo">Company <span class="muted" style="font-weight:400">(optional)</span></label><input id="jCo" /></div>
+        <button class="btn btn-primary" id="joinBtn" type="button">Create sandbox access</button>
+      </div>
+
+      <div id="app" hidden>
+        <div class="tabs" role="tablist" id="tabs">
+          <button type="button" data-t="overview" aria-pressed="true">Overview</button>
+          <button type="button" data-t="keys" aria-pressed="false">API keys</button>
+          <button type="button" data-t="explore" aria-pressed="false">Data catalogue</button>
+          <button type="button" data-t="try" aria-pressed="false">Try it</button>
+          <button type="button" data-t="docs" aria-pressed="false">Docs</button>
+        </div>
+
+        <div class="pane" data-pane="overview" style="margin-top:28px">
+          <div class="stat4">
+            <div class="card stat"><div class="k">Plan</div><div class="v" style="font-size:30px;margin-top:16px" id="oPlan">—</div><p id="oPlanNote"></p></div>
+            <div class="card stat"><div class="k">Credits this month</div><div class="v"><span id="oLeft">0</span><small>left</small></div><div class="meter"><i id="oFill" style="width:0"></i></div><p id="oUsed"></p></div>
+            <div class="card stat"><div class="k">Calls this month</div><div class="v" id="oCalls">0</div><p id="oRows"></p></div>
+            <div class="card stat"><div class="k">Limits</div><div class="v" style="font-size:26px;margin-top:20px" id="oRps">—</div><p id="oLim"></p></div>
+          </div>
+          <div class="card" style="padding:26px;margin-top:22px"><p class="eyebrow" style="margin:0 0 14px">Credits used, last 30 days</p><div class="bars" id="oBars"></div><div class="small muted" id="oBarNote" style="margin-top:8px"></div></div>
+          <div class="card" style="padding:26px;margin-top:22px"><p class="eyebrow" style="margin:0 0 6px">Your access</p><div id="oAccess"></div></div>
+          <div class="card" style="padding:26px;margin-top:22px"><p class="eyebrow" style="margin:0 0 10px">Recent calls</p>
+            <table class="t"><thead><tr><th>When</th><th>Endpoint</th><th>City</th><th style="text-align:right">Rows</th><th style="text-align:right">Credits</th><th>Status</th></tr></thead><tbody id="oRecent"></tbody></table></div>
+        </div>
+
+        <div class="pane" data-pane="keys" style="margin-top:28px" hidden>
+          <div class="pane-h"><h2>API keys</h2><span class="small muted">Up to 3 active keys · stored only as a hash</span></div>
+          <div class="err-banner" id="keyErr"></div>
+          <div class="newkey" id="newKey" hidden><b>Copy your new key now.</b> It is shown only once.<code id="newKeyVal"></code><button class="btn btn-secondary btn-sm" id="copyKey" type="button">Copy key</button></div>
+          <div class="card" style="padding:22px 24px;margin-bottom:18px">
+            <div class="tools"><input type="text" id="kName" placeholder="Name, e.g. Production" maxlength="40" /><input type="text" id="kIps" placeholder="Allowed IPs, comma separated (optional)" /><button class="btn btn-primary" id="mkKey" type="button">Create key</button></div>
+          </div>
+          <div class="card" style="padding:0;overflow:hidden" id="keyList"></div>
+        </div>
+
+        <div class="pane" data-pane="explore" style="margin-top:28px" hidden>
+          <div class="pane-h"><h2>Data catalogue</h2><span class="small muted" id="exNote"></span></div>
+          <div id="exBody"></div>
+          <div class="pane-h" style="margin-top:44px"><h2>Plans</h2></div>
+          <div class="stat4" id="exPlans"></div>
+          <p class="small muted" style="margin-top:18px" id="exLic"></p>
+        </div>
+
+        <div class="pane" data-pane="try" style="margin-top:28px" hidden>
+          <div class="pane-h"><h2>Try a query</h2><span class="small muted">Runs on your plan and uses real credits</span></div>
+          <div class="card" style="padding:24px">
+            <div class="tools"><input type="text" id="tPath" value="/v1/jaipur/zones?limit=5&attrs=residents,places,retail" /><button class="btn btn-primary" id="tRun" type="button">Run</button></div>
+            <div class="chips" style="margin-top:14px" id="tChips"></div>
+            <div class="err-banner" id="tErr" style="margin-top:14px"></div>
+            <pre class="code" id="tOut" style="margin-top:16px">Press Run to see a response.</pre>
+            <p class="small muted" style="margin:14px 0 6px">The same call from a terminal:</p>
+            <pre class="code" id="tCurl" style="max-height:120px"></pre>
+          </div>
+        </div>
+
+        <div class="pane" data-pane="docs" style="margin-top:28px" hidden>
+          <div class="pane-h"><h2>Docs</h2><span class="small muted">REST · JSON · read-only</span></div>
+          <div class="card" style="padding:26px"><p class="eyebrow" style="margin:0 0 10px">Authentication</p>
+            <pre class="code" style="max-height:none">curl -H "Authorization: Bearer agt_live_YOUR_KEY" \
+  "BASE/v1/jaipur/zones?limit=10"</pre>
+            <p class="small muted" style="margin:10px 0 0">Or send the key as <code>X-API-Key</code>. Rate limits, row caps and credits come back in the response and headers (<code>X-Credits-Remaining</code>).</p></div>
+          <div class="card" style="padding:26px;margin-top:20px"><p class="eyebrow" style="margin:0 0 10px">Endpoints</p><table class="t"><tbody id="dEndpoints"></tbody></table></div>
+          <div class="card" style="padding:26px;margin-top:20px"><p class="eyebrow" style="margin:0 0 10px">Python</p>
+            <pre class="code" style="max-height:none">import requests
+r = requests.get("BASE/v1/jaipur/cells",
+                 params={"lat": 26.92, "lng": 75.79, "radius_m": 1500, "attrs": "residents,retail_places"},
+                 headers={"Authorization": "Bearer agt_live_YOUR_KEY"})
+print(r.json()["data"][:3], r.headers["X-Credits-Remaining"])</pre></div>
+          <div class="card" style="padding:26px;margin-top:20px"><p class="eyebrow" style="margin:0 0 10px">Credits and errors</p>
+            <ul class="ticks"><li><b>Credits</b> = rows × weight ÷ 10, rounded up. Weight: base 1, derived 3, decision 5. Exports are half price.</li>
+              <li><b>401</b> bad key · <b>402</b> out of credits · <b>403</b> not in your plan (city, layer or attribute) · <b>429</b> rate or daily limit.</li>
+              <li>Page with <code>limit</code> and <code>offset</code>; <code>meta.next_offset</code> is null on the last page.</li>
+              <li>Every response carries a <code>licence</code> field. Attribution is required; resale is not permitted.</li>
+              <li>Voter-roll, booth-level and person-level data are never offered.</li></ul></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<div id="site-footer"></div>
+<div class="toast" id="toast" role="status"></div>
+<script src="icons.js?v=2"></script>
+<script src="site/config.js?v=1"></script>
+<script src="site/api.js?v=1"></script>
+<script src="site/snapshots-registry.js?v=3"></script>
+<script src="site/layout.js?v=10"></script>
+<script>
+(() => {
+  "use strict";
+  const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const N = (n) => Number(n || 0).toLocaleString("en-IN");
+  const dt = (t) => t ? new Date(t * 1000).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : "—";
+  const toast = (t) => { const el = $("#toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 2600); };
+  const BASE = (AGT.base || location.origin).replace(/\/$/, "");
+  let CAT = null, O = null;
+
+  function tab(name) {
+    $$("#tabs button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.t === name));
+    $$(".pane").forEach((p) => { p.hidden = p.dataset.pane !== name; });
+    history.replaceState(null, "", "#" + name);
+  }
+  $$("#tabs button").forEach((b) => b.addEventListener("click", () => tab(b.dataset.t)));
+
+  function paintOverview() {
+    const e = O.entitlements, left = Math.max(0, e.credits_month - O.credits_used);
+    $("#oPlan").textContent = e.plan_label; $("#oPlanNote").textContent = O.client.status === "active" ? "Active" : "Suspended";
+    $("#oLeft").textContent = N(left); $("#oFill").style.width = Math.min(100, O.credits_used / e.credits_month * 100) + "%";
+    $("#oUsed").textContent = `${N(O.credits_used)} of ${N(e.credits_month)} used · resets on the 1st`;
+    $("#oCalls").textContent = N(O.calls); $("#oRows").textContent = `${N(O.rows_24h)} rows in the last 24 hours`;
+    $("#oRps").textContent = `${e.rps} / sec`; $("#oLim").textContent = `${N(e.rows_per_call)} rows per call · ${N(e.daily_rows)} rows a day`;
+    const days = []; for (let i = 29; i >= 0; i--) { const d = new Date(Date.now() - i * 864e5); days.push(d.toLocaleDateString("en-CA")); }
+    const by = Object.fromEntries(O.series.map((r) => [r.d, r.credits])), mx = Math.max(1, ...days.map((d) => by[d] || 0));
+    $("#oBars").innerHTML = days.map((d) => `<i title="${d}: ${N(by[d] || 0)} credits" style="height:${Math.max(2, (by[d] || 0) / mx * 100)}%"></i>`).join("");
+    $("#oBarNote").textContent = O.series.length ? `Busiest day: ${N(mx)} credits` : "No calls yet. Create a key and try a query.";
+    $("#oAccess").innerHTML = `<table class="t"><tbody>
+      <tr><td style="width:150px" class="muted">Cities</td><td>${e.cities.map((c) => `<span class="pill">${esc(c)}</span>`).join(" ") || "—"}</td></tr>
+      <tr><td class="muted">Layers</td><td>${e.layers.map((c) => `<span class="pill">${esc(c)}</span>`).join(" ")}</td></tr>
+      <tr><td class="muted">Attributes</td><td>${Object.entries(e.attrs).map(([l, a]) => `<div style="margin-bottom:6px"><b>${esc(l)}</b> · ${a.map(esc).join(", ")}</div>`).join("")}</td></tr>
+      <tr><td class="muted">Bulk export</td><td>${e.export ? "Included" : "Not in your plan"}</td></tr>
+      <tr><td class="muted">Hexagon geometry</td><td>${e.geometry ? "Included" : "Not in your plan"}</td></tr></tbody></table>`;
+    $("#oRecent").innerHTML = O.recent.length ? O.recent.map((r) => `<tr><td>${dt(r.at)}</td><td>${esc(r.endpoint)}</td><td>${esc(r.city || "—")}</td><td style="text-align:right">${N(r.rows)}</td><td style="text-align:right">${N(r.credits)}</td><td><span class="pill ${r.status < 400 ? "ok" : "bad"}">${r.status}</span></td></tr>`).join("") : `<tr><td colspan="6" class="muted">No calls yet.</td></tr>`;
+  }
+  function paintKeys() {
+    $("#keyList").innerHTML = O.keys.length ? O.keys.map((k) => `<div class="keyrow"><div><b>${esc(k.name)}</b> <span class="pill ${k.status === "active" ? "ok" : "bad"}">${k.status}</span>
+      <div class="small muted" style="margin-top:4px"><code>${esc(k.prefix)}</code> · created ${dt(k.created_at)} · last used ${k.last_used ? dt(k.last_used) + " from " + esc(k.last_ip || "?") : "never"}${k.ip_allow.length ? " · IPs: " + k.ip_allow.map(esc).join(", ") : ""}</div></div>
+      <div>${k.status === "active" ? `<button class="btn btn-secondary btn-sm" data-rv="${k.id}" type="button">Revoke</button>` : ""}</div></div>`).join("") : `<div style="padding:34px;text-align:center" class="muted">No keys yet. Create one above.</div>`;
+    $$("[data-rv]").forEach((b) => b.onclick = async () => {
+      if (!confirm("Revoke this key? Anything using it stops working immediately.")) return;
+      try { await AGT.api(`/api/dev/keys/${b.dataset.rv}/revoke`, { body: {} }); toast("Key revoked"); await load(); } catch (e) { toast(e.message); }
+    });
+  }
+  function paintCatalogue() {
+    const have = O && O.entitlements ? O.entitlements.attrs : {};
+    $("#exNote").textContent = "Pills show the credit weight tier. A tick means your plan includes it.";
+    $("#exBody").innerHTML = Object.entries(CAT.layers).map(([ln, L]) => `<div class="card" style="padding:24px;margin-bottom:18px">
+      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><b style="font-size:19px">${esc(L.label)}</b> <code class="small muted">${ln}</code><div class="muted small" style="margin-top:4px">${esc(L.about)} · ${esc(L.unit)}</div></div>
+      <code class="small muted">/v1/{city}/${ln}</code></div>
+      <table class="t" style="margin-top:12px"><thead><tr><th>Attribute</th><th>What it is</th><th>Tier</th><th style="text-align:right">Weight</th><th>Yours</th></tr></thead><tbody>${Object.entries(L.attributes).map(([a, m]) =>
+        `<tr><td><code>${a}</code><div class="small muted">${esc(m.label)}</div></td><td>${esc(m.desc || m.label)}<div class="small muted">${esc(m.source)}${m.unit ? " · " + esc(m.unit) : ""}</div></td><td><span class="pill ${m.tier}">${m.tier}</span></td><td style="text-align:right">${m.weight}</td><td>${(have[ln] || []).includes(a) ? "✓" : "—"}</td></tr>`).join("")}</tbody></table></div>`).join("");
+    $("#exPlans").innerHTML = Object.entries(CAT.plans).map(([k, p]) => `<div class="card stat"><div class="k">${esc(p.label)}</div><div class="v" style="font-size:30px;margin-top:14px">${N(p.credits)}<small>credits / month</small></div><p>${esc(p.blurb)}</p><p class="small muted" style="margin-top:10px">${p.rps} req/s · ${N(p.rows_per_call)} rows per call · ${p.export ? "bulk export" : "no export"}</p></div>`).join("");
+    $("#exLic").textContent = CAT.excluded + " " + CAT.licence;
+  }
+  function paintDocs() {
+    $("#dEndpoints").innerHTML = [["GET /v1/catalogue", "Layers and attributes your key can read, with weights (free)"], ["GET /v1/cities", "Cities your key can read (free)"], ["GET /v1/usage", "Credits and calls this month (free)"],
+      ["GET /v1/{city}/summary", "Headline totals"], ["GET /v1/{city}/zones?pin=&role=", "PIN-code zones"], ["GET /v1/{city}/cells?lat=&lng=&radius_m=", "Hexagon grid by point and radius (max 10 km)"],
+      ["GET /v1/{city}/brands?sector=&brand=", "Brand outlet counts"], ["GET /v1/{city}/formats?key=", "Retail format indices"], ["GET /v1/{city}/export?layer=&format=csv", "Bulk export of a whole layer"]]
+      .map(([a, b]) => `<tr><td style="white-space:nowrap"><code>${esc(a)}</code></td><td>${esc(b)}</td></tr>`).join("");
+    $$("pre.code").forEach((p) => { p.textContent = p.textContent.replaceAll("BASE", BASE); });
+  }
+  function curl() { $("#tCurl").textContent = `curl -H "Authorization: Bearer agt_live_YOUR_KEY" \\\n  "${BASE}${$("#tPath").value}"`; }
+  $("#tPath").addEventListener("input", curl);
+  $("#tChips").innerHTML = [["Zones", "/v1/jaipur/zones?limit=5&attrs=residents,places,retail"], ["Around a point", "/v1/jaipur/cells?lat=26.9196&lng=75.7878&radius_m=800&limit=5"], ["Brands", "/v1/kanpur/brands?sector=Quick%20service%20%26%20dining"], ["Formats", "/v1/jaipur/formats"], ["Summary", "/v1/kanpur/summary"]]
+    .map(([a, p]) => `<button type="button" data-p="${esc(p)}">${a}</button>`).join("");
+  $$("#tChips button").forEach((b) => b.onclick = () => { $("#tPath").value = b.dataset.p; curl(); });
+  $("#tRun").onclick = async () => {
+    const e = $("#tErr"); e.classList.remove("on");
+    try { const r = await AGT.api("/api/dev/try", { body: { path: $("#tPath").value } }); $("#tOut").textContent = JSON.stringify(r, null, 2); await load(true); }
+    catch (x) { $("#tOut").textContent = JSON.stringify(x.data || {}, null, 2); e.textContent = x.message; e.classList.add("on"); }
+  };
+  $("#mkKey").onclick = async () => {
+    const e = $("#keyErr"); e.classList.remove("on");
+    try { const r = await AGT.api("/api/dev/keys", { body: { name: $("#kName").value, ip_allow: $("#kIps").value } }); $("#newKeyVal").textContent = r.key; $("#newKey").hidden = false; $("#kName").value = ""; $("#kIps").value = ""; await load(true); }
+    catch (x) { e.textContent = x.message; e.classList.add("on"); }
+  };
+  $("#copyKey").onclick = async () => { try { await navigator.clipboard.writeText($("#newKeyVal").textContent); toast("Copied"); } catch (e) { toast("Select the key and copy it"); } };
+  $("#joinBtn").onclick = async () => {
+    const e = $("#joinErr"); e.classList.remove("on");
+    try { await AGT.api("/api/dev/join", { body: { company: $("#jCo").value } }); await boot(); } catch (x) { e.textContent = x.message; e.classList.add("on"); }
+  };
+  async function load(quiet) {
+    O = await AGT.api("/api/dev/overview");
+    if (!O.client) return false;
+    paintOverview(); paintKeys(); paintCatalogue(); return true;
+  }
+  async function boot() {
+    const s = await AGT.session();
+    if (s.role !== "user" && s.role !== "admin") { $("#gate").hidden = false; return; }
+    CAT = await AGT.api("/api/dev/catalogue");
+    paintDocs(); curl();
+    if (!(await load())) { $("#join").hidden = false; $("#app").hidden = true; return; }
+    $("#join").hidden = true; $("#app").hidden = false;
+    const h = (location.hash || "").slice(1); tab(["overview", "keys", "explore", "try", "docs"].includes(h) ? h : "overview");
+  }
+  boot().catch((e) => toast(e.message));
+})();
+</script>
+</body>
+</html>
