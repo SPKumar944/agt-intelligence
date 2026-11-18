@@ -4,7 +4,7 @@
   const $ = (s, r = document) => r.querySelector(s);
   const form = $("#reqForm"), locs = $("#locs");
   const PLUS = /^\s*[23456789CFGHJMPQRVWX]{2,8}\+[23456789CFGHJMPQRVWX]{2,3}(?:\s+.{2,60})?\s*$/i;
-  let MAX = 10, BAL = null;
+  let MAX = 10, BAL = null, ADMIN = false;
 
   function cost() { return [...locs.children].filter((r) => $(".c", r).value.trim()).length; }
   function credits() {
@@ -61,13 +61,13 @@
     if (!L.length) return fail("Add at least one location as a Google Plus code.", "locations");
     const badRow = [...locs.children].find((r) => $(".c", r).value.trim() && !PLUS.test($(".c", r).value));
     if (badRow) { badRow.querySelector(".field.code").classList.add("bad"); $(".c", badRow).focus(); return fail("One of the Plus codes isn't valid. It looks like WHHJ+JM Bengaluru (letters and digits, a “+”, then a place name)."); }
-    if (BAL != null && L.length > BAL) return fail(`This request needs ${L.length} credits and you have ${BAL}.`, null, { href: "account.html#credits", text: "Buy credits" });
-    if (!$("#consent").checked) return fail("Please tick the box to confirm you agree to us using these details to respond.", "consent");
+    if (!ADMIN && BAL != null && L.length > BAL) return fail(`This request needs ${L.length} credits and you have ${BAL}.`, null, { href: "account.html#credits", text: "Buy credits" });
+    if (!ADMIN && !$("#consent").checked) return fail("Please tick the box to confirm you agree to us using these details to respond.", "consent");
     const btn = $("#submitBtn"); btn.disabled = true; btn.textContent = "Sending…";
     try {
-      const j = await AGT.api("/api/me/requests", { body: { name: v("name"), phone: v("phone"), role: $("#role").value, company: v("company"), website: v("website"), format: $("#format").value,
+      const j = await AGT.api(ADMIN ? "/api/admin/requests" : "/api/me/requests", { body: { email: v("email"), name: v("name"), phone: v("phone"), role: $("#role").value, company: v("company"), website: v("website"), format: $("#format").value,
         city: (window.AGT_COVERAGE ? AGT_COVERAGE.cityValue() : v("city")), description: v("description"), locations: L, consent: true } });
-      $("#refOut").textContent = "Reference " + j.ref; $("#emailOut").textContent = v("email");
+      $("#refOut").textContent = "Reference " + j.ref; if (ADMIN) $("#done").querySelector(".hero-cta").innerHTML = '<a class="btn btn-primary" href="admin.html#' + j.ref + '">Open in admin</a><a class="btn btn-secondary" href="request-report.html">File another</a>'; $("#emailOut").textContent = v("email");
       $("#formCard").hidden = true; $("#done").style.display = "block"; window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (x) {
       btn.disabled = false; btn.textContent = "Submit request";
@@ -79,7 +79,16 @@
 
   // gate: only signed-in users can fill the form
   AGT.session().then(async (s) => {
-    if (s.role === "admin") { $("#gate").hidden = false; $("#gate").querySelector("h2").textContent = "Sign in with a Gmail address."; $("#gate").querySelector("p").textContent = "The super-admin sign-in can't submit requests."; return; }
+    if (s.role === "admin") {      // super admin: files a request for a client (or the studio) — no credits, no consent box
+      ADMIN = true; MAX = 100;
+      $("#formCard").hidden = false; $("#creditCard").hidden = true; $("#consent").closest(".checkrow").hidden = true;
+      const em = $("#email"); em.readOnly = false; em.required = true; em.placeholder = "client@gmail.com"; em.value = "";
+      em.closest(".field").querySelector("label").innerHTML = "Client's email <span class=\"opt\">(they get the sign-in link)</span>";
+      $("#name").value = "";
+      const nb = document.createElement("div"); nb.className = "callout"; nb.style.marginBottom = "18px";
+      nb.innerHTML = "<span><b>Super-admin request.</b> No credits are used and the client is not emailed until you approve it in the admin page.</span>"; form.prepend(nb);
+      row(); row(); credits(); return;
+    }
     if (s.role !== "user") { $("#gate").hidden = false; return; }
     try { const c = await AGT.api("/api/config"); MAX = c.pricing.standard_max_locations; } catch (e) { /* default */ }
     BAL = s.credits; $("#cBal").textContent = BAL; $("#creditCard").hidden = false;
