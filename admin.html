@@ -103,7 +103,7 @@
 <div id="appView" hidden>
   <header class="a-head"><div class="in">
     <a class="logo" href="home.html"><svg viewBox="0 0 40 24" aria-hidden="true"><path d="M2 12 L10 4 L18 12 L10 20 Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><path d="M16 12 L24 4 L32 12 L24 20 Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" opacity=".5"/><circle cx="35.5" cy="12" r="2.4" fill="currentColor"/></svg>AGT Intelligence <span style="font-weight:400;color:var(--ink-3);margin-left:6px">Super admin</span></a>
-    <div class="tabs"><button type="button" data-tab="req" aria-pressed="true">Requests</button><button type="button" data-tab="que" aria-pressed="false">Queue</button><button type="button" data-tab="usr" aria-pressed="false">Users</button><button type="button" data-tab="ord" aria-pressed="false">Orders &amp; enquiries</button><button type="button" data-tab="fbk" aria-pressed="false">Feature requests</button></div>
+    <div class="tabs"><button type="button" data-tab="req" aria-pressed="true">Requests</button><button type="button" data-tab="que" aria-pressed="false">Queue</button><button type="button" data-tab="usr" aria-pressed="false">Users</button><button type="button" data-tab="ord" aria-pressed="false">Orders &amp; enquiries</button><button type="button" data-tab="fbk" aria-pressed="false">Feature requests</button><button type="button" data-tab="cov" aria-pressed="false">Data coverage</button></div>
     <div class="sp"></div>
     <button class="icon-b" id="themeB" type="button" aria-label="Light / dark"></button>
     <button class="btn btn-secondary btn-sm" id="logoutB" type="button">Sign out</button>
@@ -124,6 +124,7 @@
   </main>
   <main id="ordView" class="wide" hidden></main>
   <main id="fbkView" class="wide" hidden></main>
+  <main id="covView" hidden></main>
 </div>
 <dialog id="apprDlg"><form method="dialog" id="apprForm"><h3>Approve request</h3><p class="small muted" id="apprSub" style="margin:0 0 6px"></p>
   <label class="opt"><input type="radio" name="when" value="now" checked /><span><b>Add to the queue now</b><br /><span class="small muted">Starts as soon as a slot is free.</span></span></label>
@@ -178,9 +179,9 @@
   const MOON = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 11.6A6.6 6.6 0 0 1 8.4 3.5a6.6 6.6 0 1 0 8.1 8.1Z"/></svg>';
   $("#themeB").innerHTML = dk() ? SUN : MOON;
   $("#themeB").addEventListener("click", () => { try { localStorage.setItem("agt.theme", dk() ? "light" : "dark"); } catch (e) {} location.reload(); });
-  const VIEWS = { req: "#reqView", que: "#queView", usr: "#usrView", ord: "#ordView", fbk: "#fbkView" };
+  const VIEWS = { req: "#reqView", que: "#queView", usr: "#usrView", ord: "#ordView", fbk: "#fbkView", cov: "#covView" };
   let tab = "req";
-  const LOADERS = { que: () => loadQueue(), usr: () => loadUsers(), ord: () => loadOrders(), fbk: () => { if (!window.__inbox) window.__inbox = AGTInbox.mount(document.getElementById("fbkView")); else window.__inbox.reload(); return Promise.resolve(); } };
+  const LOADERS = { que: () => loadQueue(), usr: () => loadUsers(), ord: () => loadOrders(), fbk: () => { if (!window.__inbox) window.__inbox = AGTInbox.mount(document.getElementById("fbkView")); else window.__inbox.reload(); return Promise.resolve(); }, cov: () => { if (!window.__cov) { window.__cov = true; CovDash.mount(document.getElementById("covView")); } return Promise.resolve(); } };
   function setTab(t) { tab = t; $$("[data-tab]").forEach((x) => x.setAttribute("aria-pressed", x.dataset.tab === t)); for (const k in VIEWS) $(VIEWS[k]).hidden = k !== t; if (LOADERS[t]) LOADERS[t]().catch(() => {}); }
   $$("[data-tab]").forEach((b) => b.addEventListener("click", () => setTab(b.dataset.tab)));
 
@@ -417,6 +418,8 @@
 })();
 </script>
 <script src="site/feedback-inbox.js?v=1"></script>
+<script src="site/livemap.js?v=7"></script>
+<script src="site/coverage-internal.js?v=1"></script>
 <script src="site/feedback.js?v=2"></script>
 </body>
 </html>

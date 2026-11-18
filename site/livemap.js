@@ -73,5 +73,5 @@
     style(); setTimeout(style, 0); map.once("load", style);
     return api;
   }
-  window.AGTLiveMap = { create };
+  window.AGTLiveMap = { create, load };
 })();
