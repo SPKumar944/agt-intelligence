@@ -31,9 +31,12 @@
     <div class="fb-m" id="fbM" role="status" aria-live="polite"></div>
     <div class="fb-r"><button type="button" class="fb-x" id="fbX">Close</button><button type="submit" class="fb-go" id="fbGo">Send request</button></div></form>`;
   document.body.appendChild(dlg);
-  let kind = "feature";
   const $ = (s) => dlg.querySelector(s);
-  btn.addEventListener("click", () => { $("#fbM").textContent = ""; if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", ""); $("#fbMsg").focus(); });
+  let kind = "feature";
+  const openForm = (k) => { if (k) { kind = k; dlg.querySelectorAll("[data-k]").forEach((x) => x.setAttribute("aria-pressed", x.dataset.k === k)); } $("#fbM").textContent = ""; if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", ""); $("#fbMsg").focus(); };
+  window.AGTFeedback = { open: openForm };
+  document.addEventListener("click", (e) => { const t = e.target.closest("[data-feedback]"); if (t) { e.preventDefault(); openForm(t.dataset.feedback); } });
+    btn.addEventListener("click", () => openForm());
   $("#fbX").addEventListener("click", () => dlg.close());
   dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg.close(); });
   $(".fb-k").addEventListener("click", (e) => { const b = e.target.closest("[data-k]"); if (!b) return; kind = b.dataset.k; dlg.querySelectorAll("[data-k]").forEach((x) => x.setAttribute("aria-pressed", x === b)); });
