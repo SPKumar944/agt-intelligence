@@ -11,6 +11,7 @@
   const ES = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/";
   const TILE = { dark: ES + "World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", light: ES + "World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}" };
   const LAB = { dark: ES + "World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}", light: ES + "World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}" };
+  const LAYER = { osm_places: "OSM places", overture_place: "Overture places", overture_building: "Overture buildings", hrsl: "Meta HRSL population", worldpop_ind: "WorldPop India population", osm_graph: "OSM road networks", osm_areas: "OSM wards and localities", overpass_query: "OSM free-form queries" };
   const HOT = "#e8a33d", COLD = "#5b9bd5";
 
   const CSS = `
@@ -104,7 +105,7 @@
 
       <div class="cv-sec"><h2>Where we have been</h2><p>Zoomed out, each covered place is a marker. Zoom in to see the real circles and, from city level, hexagons of about 0.7 km² coloured by how much we hold there.</p>
         <div class="cv-bar"><div class="g"><span class="gl">Show</span>
-          <button class="cv-ch" data-ly="hex" aria-pressed="true">Hexagons</button><button class="cv-ch" data-ly="city" aria-pressed="true">City scans</button><button class="cv-ch" data-ly="study" aria-pressed="true">Client studies</button><button class="cv-ch" data-ly="raw" aria-pressed="false">Raw downloads</button></div>
+          <button class="cv-ch" data-ly="hex" aria-pressed="true">Hexagons</button><button class="cv-ch" data-ly="city" aria-pressed="true">City scans</button><button class="cv-ch" data-ly="study" aria-pressed="true">Client studies</button><button class="cv-ch" data-ly="tiles" aria-pressed="false">Stored tiles</button><button class="cv-ch" data-ly="raw" aria-pressed="false">Raw downloads</button></div>
           <div class="g"><span class="gl">Colour hexagons by</span><button class="cv-ch" data-hm="depth" aria-pressed="true">Overlapping runs</button><button class="cv-ch" data-hm="n" aria-pressed="false">Mapped places</button><button class="cv-ch" data-hm="p" aria-pressed="false">Residents</button></div></div>
         <div class="cv-map"><div class="cv-mapbox"><div id="cvMap"></div><div class="cv-leg" id="cvLeg"></div></div>
           <aside class="cv-side"><h3>Jump to</h3><div class="cv-j">${jumps.map((j, i) => `<button type="button" data-j="${i}"><span>${esc(j.n)}</span><small>${j.st ? j.st + (j.st === 1 ? " study" : " studies") : ""}${j.st && j.sc ? " · " : ""}${j.sc ? "scan" : ""}</small></button>`).join("")}<button type="button" data-j="all"><span>All India</span><small>reset</small></button></div>
@@ -123,8 +124,13 @@
         <tr><td>Place records across all runs</td><td class="n">${N(K.records_places)}</td><td class="mut">Study and city-scan places, before removing overlaps.</td></tr>
         <tr><td>Building footprints (client studies)</td><td class="n">${N(K.records_buildings)}</td><td class="mut">Bengaluru only; overlapping studies repeat buildings.</td></tr>
         <tr><td>Street segments (client studies)</td><td class="n">${N(K.records_roads)}</td><td class="mut">Each carries a modelled footfall figure.</td></tr>
+        <tr><td>Data versions kept</td><td class="n">${N(D.store.versions_kept)}</td><td class="mut">${N(D.store.tiles_total)} stored tiles; ${N(D.store.stale_tiles)} due for refresh (older than ${D.store.fresh_days} days). Old versions are never deleted.</td></tr>
         <tr><td>Coverage hexagons (res 8)</td><td class="n">${N(K.hexagons)}</td><td class="mut">About 0.7 km² each.</td></tr></table></div>
 
+
+      <div class="cv-sec"><h2>Data versions and freshness</h2><p>Data is stored in tiles of about 5 km, one version per download, and old versions are kept. A request for a place reuses tiles younger than <b>${D.store.fresh_days} days</b> and refreshes older or missing ones on the spot, then uses the newest version. Each report records which versions it used.</p>
+        <table class="cv-t"><tr><th>Layer</th><th class="n">Tiles</th><th class="n">Fresh</th><th class="n">Due for refresh</th><th class="n">Versions kept</th><th>Current versions from</th><th class="n">Size</th></tr>
+        ${D.store.layers.map((l) => `<tr><td><b>${esc(LAYER[l.layer] || l.layer)}</b><small>${esc(l.layer)}${l.tiles ? "" : " · whole-area files, not tiled"}</small></td><td class="n">${l.tiles ? N(l.tiles) : N(l.files) + "<small>files</small>"}</td><td class="n">${N(l.fresh)}</td><td class="n">${l.stale ? `<span class="cv-p hot">${N(l.stale)}</span>` : "0"}</td><td class="n">${N(l.versions + (l.archived || 0))}${l.archived ? `<small>${N(l.archived)} archived</small>` : ""}</td><td>${l.oldest ? (l.oldest === l.newest ? dt(l.oldest) : dt(l.oldest) + " to " + dt(l.newest)) : "—"}</td><td class="n">${SIZE(l.mb)}</td></tr>`).join("")}</table></div>
       <div class="cv-sec"><h2>By client</h2><p>Names are the business ids recorded in the system.</p>
         <table class="cv-t"><tr><th>Client</th><th class="n">Studies</th><th>Sites</th><th class="n">Area</th><th class="n">Mapped places</th><th class="n">Street segments</th><th class="n">On disk</th><th>Last run</th></tr>
         ${D.clients.map((c) => `<tr><td><b>${esc(c.label)}</b><small>${esc(c.client)}</small></td><td class="n">${c.studies}</td><td>${c.sites.map(esc).join("<br>")}</td><td class="n">${F(c.area_km2)} km²</td><td class="n">${N(c.pois)}</td><td class="n">${N(c.roads)}</td><td class="n">${SIZE(c.size_mb)}</td><td>${dt(c.last)}</td></tr>`).join("")}</table></div>
@@ -164,7 +170,7 @@
         map.once("click", () => map.scrollWheelZoom.enable());
 
         const tip = (h) => ({ className: "cv-tip", sticky: true, direction: "auto", opacity: 1, offset: [12, 12] });
-        const hexL = L.layerGroup(), cityL = L.layerGroup(), studyL = L.layerGroup(), rawL = L.layerGroup(), dotL = L.layerGroup();
+        const tileL = L.layerGroup(), hexL = L.layerGroup(), cityL = L.layerGroup(), studyL = L.layerGroup(), rawL = L.layerGroup(), dotL = L.layerGroup();
         let mode = "depth", sel = null;
         const maxN = Math.max(...D.hexes.map((h) => h.n), 1), maxP = Math.max(...D.hexes.map((h) => h.p), 1);
         const hexStyle = (h) => {
@@ -195,23 +201,28 @@
           const m = L.circleMarker([c.lat, c.lng], { radius: 9, color: HOT, weight: 2, fill: false });
           m.bindTooltip(`<b>${esc(c.name)} city scan</b><br>${N(c.places)} places`, tip()); dotL.addLayer(m);
         });
+        D.store.tiles.forEach((t) => {
+          const col = t.stale ? HOT : COLD;
+          L.rectangle([[t.b[0], t.b[1]], [t.b[2], t.b[3]]], { color: col, weight: 1, dashArray: "1 3", fillColor: col, fillOpacity: 0.07 })
+            .bindTooltip(`<b>${t.stale ? "Due for refresh" : "Up to date"}</b> · oldest layer ${F(t.age, 0)} days old<br>${t.layers.map((x) => esc(LAYER[x] || x)).join(", ")}<br>${t.versions} ${t.versions === 1 ? "version" : "versions"} kept`, tip()).addTo(tileL);
+        });
         D.raw.forEach((r) => {
           const b = r.bbox; if (!b) return;
           L.rectangle([[b[0], b[1]], [b[2], b[3]]], { color: dark() ? "#9a9aa0" : "#666", weight: 1, dashArray: "2 4", fill: false, interactive: true })
             .bindTooltip(`<b>${esc(r.label)}</b><br>${N(r.rows)} rows · ${SIZE(r.size_mb)} · ${dt(r.updated)}`, tip()).addTo(rawL);
         });
-        const on = { hex: true, city: true, study: true, raw: false };
+        const on = { hex: true, city: true, study: true, tiles: false, raw: false };
         const sync = () => {
           const z = map.getZoom(), close = z >= 9;
           const want = (l, v) => { if (v && !map.hasLayer(l)) map.addLayer(l); if (!v && map.hasLayer(l)) map.removeLayer(l); };
-          want(hexL, on.hex && z >= 10); want(cityL, on.city && close); want(studyL, on.study && close); want(rawL, on.raw);
+          want(hexL, on.hex && z >= 10); want(cityL, on.city && close); want(studyL, on.study && close); want(rawL, on.raw); want(tileL, on.tiles && z >= 8);
           want(dotL, (on.city || on.study) && !close);
           legend();
         };
         const legend = () => {
           const z = map.getZoom(), pals = mode === "depth" ? `<div><i style="background:${COLD};opacity:.4"></i>one run</div><div><i style="background:${HOT};opacity:.55"></i>two runs</div><div><i style="background:${HOT};opacity:.8"></i>three or more</div>`
             : `<div><i style="background:linear-gradient(90deg,color-mix(in srgb,${mode === "n" ? HOT : COLD} 12%,transparent),${mode === "n" ? HOT : COLD})"></i>${mode === "n" ? "few → many places" : "few → many residents"}</div>`;
-          leg.innerHTML = `${z >= 10 ? pals : '<div style="color:var(--ink-3)">Zoom in to city level for hexagons</div>'}<div><span class="r" style="border:2px solid ${HOT};border-style:dashed"></span>city scan, 10 km</div><div><span class="r" style="border:2px solid ${COLD}"></span>client study, 5 km</div>${on.raw ? `<div><span class="r" style="border-radius:2px;border:1px dashed #888"></span>raw download area</div>` : ""}`;
+          leg.innerHTML = `${z >= 10 ? pals : '<div style="color:var(--ink-3)">Zoom in to city level for hexagons</div>'}<div><span class="r" style="border:2px solid ${HOT};border-style:dashed"></span>city scan, 10 km</div><div><span class="r" style="border:2px solid ${COLD}"></span>client study, 5 km</div>${on.raw ? `<div><span class="r" style="border-radius:2px;border:1px dashed #888"></span>raw download area</div>` : ""}${on.tiles ? `<div><span class="r" style="border-radius:2px;border:1px dotted ${COLD}"></span>stored tile, up to date</div><div><span class="r" style="border-radius:2px;border:1px dotted ${HOT}"></span>stored tile, due for refresh</div>` : ""}`;
         };
         map.on("zoomend", sync); sync();
         el.querySelectorAll("[data-ly]").forEach((b) => b.onclick = () => { on[b.dataset.ly] = !on[b.dataset.ly]; b.setAttribute("aria-pressed", on[b.dataset.ly]); sync(); });
