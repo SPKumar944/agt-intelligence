@@ -669,11 +669,3 @@ input[type="range"]::-moz-range-thumb { border: 0; background: #fff; box-shadow:
 .mega.mega-sm { width: 400px; grid-template-columns: 1fr; left: -60px; }
 @media (max-width: 960px) { .site-header.open .mega.mega-sm { width: auto; left: auto; } }
 
-/* Trust & data: technology white paper embedded as the first section */
-.wp-band { padding: 40px 0 24px; }
-.wp-bar { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; margin-bottom: 20px; }
-.wp-bar .crumbs { margin-bottom: 0; }
-.wp-sheet { background: var(--bg); border-radius: 24px; overflow: hidden; border: 1px solid var(--line); }
-.wp-sheet iframe { display: block; width: 100%; height: 1200px; border: 0; background: transparent; }
-:root[data-theme="dark"] .wp-sheet { border-color: #2c2c2e; }
-@media (max-width: 640px) { .wp-band { padding-top: 24px; } .wp-sheet { border-radius: 16px; margin-left: -4px; margin-right: -4px; } }

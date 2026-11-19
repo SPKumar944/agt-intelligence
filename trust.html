@@ -14,21 +14,29 @@
 <body data-page="trust">
 <div id="site-header"></div>
 <main>
-  <section class="wp-band" id="whitepaper" aria-label="Technology white paper">
+  <section class="page-hero">
     <div class="wrap">
-      <div class="wp-bar">
-        <div class="crumbs"><a href="home.html">Home</a><span>/</span>Trust &amp; data</div>
-        <a class="link-arrow" href="whitepaper.html" target="_blank" rel="noopener">Open the white paper on its own page</a>
-      </div>
-      <div class="wp-sheet">
-        <iframe id="wpFrame" src="whitepaper.html" title="AGT Intelligence Platform: technology white paper" loading="eager" scrolling="no"></iframe>
+      <div class="crumbs"><a href="home.html">Home</a><span>/</span>Trust &amp; data</div>
+      <div class="page-hero-grid">
+        <div>
+          <p class="eyebrow">Trust &amp; data</p>
+          <h1 class="h1">Aggregated people. Named sources. Labelled models.</h1>
+          <p class="lede">Location intelligence is only as trustworthy as the data behind it and the care taken with it. These are the principles we work to, the sources we use and the things we will not do.</p>
+          <div class="actions mt-m"><a class="btn btn-primary" href="whitepaper.html">Read the technology white paper</a></div>
+        </div>
+        <div class="keyfacts">
+          <div><b>0</b><span>individual movement traces handled — ever</span></div>
+          <div><b>Every</b><span>number carries its source, date and licence</span></div>
+          <div><b>Every</b><span>estimate is labelled as modelled</span></div>
+        </div>
       </div>
     </div>
   </section>
 
+
   <section class="section first" id="principles">
     <div class="wrap">
-      <div class="sec-head rv"><p class="eyebrow">Principles</p><h2 class="h2">Aggregated people. Named sources. Labelled models.</h2><p class="lede">Location intelligence is only as trustworthy as the data behind it and the care taken with it. Four commitments sit behind every engagement.</p></div>
+      <div class="sec-head rv"><p class="eyebrow">Principles</p><h2 class="h2">Four commitments behind every engagement.</h2></div>
       <div class="principles rv">
         <div><span class="num">01</span><h4>Aggregate only</h4><p>People enter our models only as counts — by hexagon, time window, age band or household type — never as individuals.</p></div>
         <div><span class="num">02</span><h4>Named sources</h4><p>Every dataset is catalogued with its origin, date, licence and the transformations applied.</p></div>
@@ -111,16 +119,6 @@
   <section class="cta-band"><div class="wrap"><h2 class="h2">Need our data-protection details for procurement?</h2>
     <div class="actions"><a class="btn btn-primary" href="contact.html">Contact us</a><a class="btn btn-secondary" href="methodology.html">Methodology →</a></div></div></section>
 </main>
-<script>
-(function(){
-  var f=document.getElementById('wpFrame'); if(!f) return;
-  window.addEventListener('message',function(e){
-    if(e.source!==f.contentWindow||!e.data) return;
-    if(e.data.agtWhitepaperHeight) f.style.height=Math.ceil(e.data.agtWhitepaperHeight)+'px';
-    if(e.data.agtWhitepaperScroll!=null){var top=f.getBoundingClientRect().top+window.scrollY+e.data.agtWhitepaperScroll-80;window.scrollTo({top:top,behavior:'smooth'});}
-  });
-})();
-</script>
 <div id="site-footer"></div>
 <script src="icons.js?v=2"></script>
 <script src="site/config.js?v=1"></script>
