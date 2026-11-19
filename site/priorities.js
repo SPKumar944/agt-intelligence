@@ -154,18 +154,37 @@
       card.querySelectorAll("[data-extra]").forEach((c) => { c.hidden = !open && c.getAttribute("aria-pressed") !== "true"; });
       moreBtn.textContent = open ? "Show fewer types" : `Show all ${CAT.length} types`;
     });
+    const PAGE = 24;
     function block(dom) {
       let b = blocks.querySelector(`[data-b="${dom.id}"]`);
-      if (!b) {
-        b = document.createElement("div"); b.className = "bp-dom"; b.dataset.b = dom.id;
-        b.innerHTML = `<div class="bp-dom-h"><b>${esc(dom.label)}</b><button type="button" data-all>Select all</button></div><div class="chips">${dom.brands.map((x) => `<button type="button" class="chip brand" data-n="${esc(x.name)}" title="Found in ${x.c} cities" aria-pressed="${st.brands.has(x.name)}">${esc(x.name)}</button>`).join("")}</div>`;
-        $("[data-all]", b).addEventListener("click", (e) => {
-          const all = dom.brands.every((x) => st.brands.has(x.name));
-          dom.brands.forEach((x) => { all ? st.brands.delete(x.name) : st.brands.set(x.name, dom.id); });
-          b.querySelectorAll(".chip.brand").forEach((c) => c.setAttribute("aria-pressed", String(!all))); e.target.textContent = all ? "Select all" : "Clear"; refresh();
-        });
-        b.addEventListener("click", (e) => { const c = e.target.closest(".chip.brand"); if (!c) return; const n = c.dataset.n, on = c.getAttribute("aria-pressed") !== "true"; c.setAttribute("aria-pressed", String(on)); on ? st.brands.set(n, dom.id) : st.brands.delete(n); refresh(); });
-      }
+      if (b) return b;
+      b = document.createElement("div"); b.className = "bp-dom"; b.dataset.b = dom.id;
+      const n = dom.brands.length, many = n > PAGE;
+      b.innerHTML = `<div class="bp-dom-h"><b>${esc(dom.label)}</b><span>${n} brand${n === 1 ? "" : "s"} in our database</span><button type="button" data-clear hidden>Clear</button></div>
+        ${many ? `<input class="bp-search" type="search" placeholder="Search ${n} brands" aria-label="Search ${esc(dom.label)} brands" autocomplete="off" />` : ""}
+        <div class="chips" data-list></div><button type="button" class="more-types" data-more hidden></button><div class="bp-none" hidden>No brand matches. Use “Add another brand” below.</div>`;
+      let shown = PAGE, q = "";
+      const list = $("[data-list]", b), more = $("[data-more]", b), none = $(".bp-none", b), clr = $("[data-clear]", b);
+      const render = () => {
+        const ql = q.trim().toLowerCase();
+        const match = dom.brands.filter((x) => !ql || x.name.toLowerCase().includes(ql));
+        const vis = ql ? match : match.slice(0, shown);
+        const extra = ql ? [] : match.slice(shown).filter((x) => st.brands.has(x.name));     // a chosen brand never hides behind "Show more"
+        list.innerHTML = [...vis, ...extra].map((x) => `<button type="button" class="chip brand" data-n="${esc(x.name)}" title="Found in ${x.c} cit${x.c === 1 ? "y" : "ies"}" aria-pressed="${st.brands.has(x.name)}">${esc(x.name)}</button>`).join("");
+        const left = ql ? 0 : match.length - shown;
+        more.hidden = left <= 0; more.textContent = `Show ${Math.min(PAGE, left)} more (${left} left)`;
+        none.hidden = match.length > 0;
+        clr.hidden = !dom.brands.some((x) => st.brands.get(x.name) === dom.id);
+      };
+      more.addEventListener("click", () => { shown += PAGE; render(); });
+      clr.addEventListener("click", () => { dom.brands.forEach((x) => { if (st.brands.get(x.name) === dom.id) st.brands.delete(x.name); }); render(); refresh(); });
+      const search = $(".bp-search", b); if (search) search.addEventListener("input", (e) => { q = e.target.value; render(); });
+      list.addEventListener("click", (e) => {
+        const c = e.target.closest(".chip.brand"); if (!c) return;
+        const nm = c.dataset.n, on = c.getAttribute("aria-pressed") !== "true"; c.setAttribute("aria-pressed", String(on));
+        on ? st.brands.set(nm, dom.id) : st.brands.delete(nm); clr.hidden = !dom.brands.some((x) => st.brands.get(x.name) === dom.id); refresh();
+      });
+      render();
       return b;
     }
     card.addEventListener("click", (e) => {
