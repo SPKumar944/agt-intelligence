@@ -11,7 +11,10 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 24'%3E%3Cpath d='M2 12 L10 4 L18 12 L10 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round'/%3E%3Cpath d='M16 12 L24 4 L32 12 L24 20 Z' fill='none' stroke='%231d1d1f' stroke-width='3' stroke-linejoin='round' opacity='.55'/%3E%3C/svg%3E" />
   <link href="site/site.css?v=29" rel="stylesheet" />
   <style>
-    .req-grid { display: grid; grid-template-columns: 5fr 7fr; gap: 72px; align-items: start; }
+    .req-grid { display: grid; grid-template-columns: minmax(280px, 4fr) minmax(0, 8fr); gap: 56px; align-items: start; }
+    .req-grid > aside { position: sticky; top: 92px; align-self: start; max-height: calc(100vh - 112px); overflow-y: auto; padding-right: 6px; scrollbar-width: thin; }
+    .aside-sum { border: 1px solid var(--line-2); border-radius: 14px; padding: 14px 18px; margin: 0 0 24px; font-size: 13.5px; color: var(--ink-2); }
+    .aside-sum b { display: block; color: var(--ink); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; }
     .fset { border: 0; padding: 0; margin: 0 0 34px; min-width: 0; }
     .fset legend { font-size: 17px; font-weight: 600; letter-spacing: -.02em; padding: 0; margin-bottom: 4px; }
     .fset .hint { font-size: 13.5px; color: var(--ink-3); margin: 0 0 16px; }
@@ -64,9 +67,32 @@
     .pri-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
     .pri-two .field input, .pri-two .field select { height: 44px; }
     .more-label { margin: 34px 0 10px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+
+    /* ---- main questions with their own closed fine-tune dropdown ---- */
+    .qgroup { padding: 0 0 24px; margin: 0 0 24px; border-bottom: 1px solid var(--line); }
+    .qgroup:last-of-type { border-bottom: 0; margin-bottom: 8px; }
+    .q.major label.q-l { font-size: 16.5px; }
+    .q .q-val { display: flex; align-items: baseline; gap: 6px; }
+    .q.minor label.q-l { font-size: 14.5px; font-weight: 500; }
+    .q.minor .q-h { font-size: 12.5px; }
+    .sub { margin-top: 12px; }
+    .sub > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--ink-2); padding: 6px 0; width: fit-content; }
+    .sub > summary::-webkit-details-marker { display: none; }
+    .sub > summary::before { content: ""; width: 7px; height: 7px; border-right: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor; transform: rotate(-45deg); transition: transform .2s; margin: 0 4px 0 2px; }
+    .sub[open] > summary::before { transform: rotate(45deg); }
+    .sub > summary span { font-weight: 600; color: var(--ink); }
+    .sub > summary em { font-style: normal; color: var(--ink-3); font-size: 12.5px; }
+    .sub > summary:hover span { text-decoration: underline; }
+    .sub-body { border-left: 2px solid var(--line-2); margin: 8px 0 0 5px; padding: 6px 0 4px 20px; display: grid; gap: 22px; }
+    .sub-note { font-size: 12.5px; color: var(--ink-3); margin: 0; display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .sub-note button { border: 0; background: none; color: var(--ink); text-decoration: underline; cursor: pointer; font: inherit; padding: 0; }
+    .sub-list { display: grid; gap: 22px; }
+    .sub.standalone { margin-top: 4px; padding-top: 18px; border-top: 1px solid var(--line); }
+    .sub.standalone > summary { font-size: 14.5px; }
     .bp { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .bp-card { border: 1px solid var(--line-2); border-radius: 16px; padding: 20px; background: var(--bg); display: grid; gap: 14px; align-content: start; min-width: 0; }
     .bp-card h4 { margin: 0; font-size: 16px; letter-spacing: -.015em; }
+    .bp-card .bp-h { margin: 4px 0 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.4; }
     .bp-card .q-h { margin: 4px 0 0; font-size: 13.5px; color: var(--ink-2); font-weight: 400; line-height: 1.4; }
     .chip[hidden] { display: none; }
     .more-types { border: 0; background: none; color: var(--ink-2); font: inherit; font-size: 12.5px; text-decoration: underline; cursor: pointer; padding: 2px 0 0; justify-self: start; }
@@ -107,7 +133,7 @@
     .done { text-align: left; }
     .done .big { font-size: 48px; font-weight: 700; letter-spacing: -.04em; line-height: 1.05; }
     .done .ref { display: inline-block; margin: 18px 0 8px; padding: 8px 16px; border-radius: 980px; background: var(--bg-2); font-weight: 600; letter-spacing: .02em; }
-    @media (max-width: 1000px) { .req-grid { grid-template-columns: 1fr; gap: 40px; } .loc { grid-template-columns: 1fr 1fr; } .loc .code { grid-column: 1 / -1; } .loc .rm { width: 100%; } }
+    @media (max-width: 1000px) { .req-grid { grid-template-columns: 1fr; gap: 40px; } .req-grid > aside { position: static; max-height: none; overflow: visible; } .loc { grid-template-columns: 1fr 1fr; } .loc .code { grid-column: 1 / -1; } .loc .rm { width: 100%; } }
   </style>
 </head>
 <body data-page="request">
@@ -132,6 +158,7 @@
           <div class="err-banner" id="cWarn" style="margin:0 0 12px"></div>
           <a class="link-arrow" href="account.html#credits">Buy credits</a> &nbsp;·&nbsp; <a class="link-arrow" href="pricing.html">How credits work</a>
         </div>
+        <div class="aside-sum"><b>Your answers</b><span id="priSummary">Optional. Answer what you can.</span></div>
         <p class="eyebrow">What happens next</p>
         <div class="steps">
           <div class="step"><div><h4>You send the request</h4><p>You receive a confirmation email straight away, and so do we.</p></div></div>
@@ -216,10 +243,8 @@
 
             <fieldset class="fset" id="priFs">
               <legend>What matters to you</legend>
-              <p class="hint">Optional, and quick. Slide each one from 0 (doesn't matter) to 10 (critical). If you're not sure, leave it and we'll decide. Your answers tune how we analyse and rank locations for <i>your</i> business.</p>
+              <p class="hint">Optional, and quick. Slide each one from 0 (doesn't matter) to 10 (critical). If you're not sure, leave it and we'll decide. Under each question, <b>Fine-tune</b> opens a few related questions, already suggested from your answer, which you can change if you like.</p>
               <div class="pri" id="priMajor"></div>
-              <p class="more-label">Fine-tune <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional, already suggested from your answers above; change anything you like)</span></p>
-              <div id="priMore"></div>
             </fieldset>
 
             <fieldset class="fset" id="brandFs">
@@ -255,8 +280,8 @@
 <script src="site/layout.js?v=10"></script>
 <script src="site/coverage-data.js?v=2"></script>
 <script src="site/coverage.js?v=11"></script>
-<script src="site/brands.js?v=1"></script>
-<script src="site/priorities.js?v=3"></script>
+<script src="site/brands.js?v=2"></script>
+<script src="site/priorities.js?v=4"></script>
 <script src="site/request.js?v=6"></script>
 </body>
 </html>
