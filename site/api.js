@@ -32,7 +32,7 @@
       if (!s || s.role !== "user" || !s.guard) return;
       window.__agtGuardSession = { email: s.email, id: s.id };
       const g = document.createElement("script");
-      g.src = me ? new URL("guard.js?v=2", me).href : "site/guard.js?v=2";
+      g.src = me ? new URL("guard.js?v=4", me).href : "site/guard.js?v=4";
       document.head.appendChild(g);
     });
   }

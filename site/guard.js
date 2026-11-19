@@ -32,8 +32,7 @@
     if (!document.body) return;
     if (!shield || !shield.isConnected) {
       shield = document.createElement("div"); shield.id = "agt-shield"; shield.setAttribute("role", "status");
-      shield.innerHTML = "Content hidden while this window is not in focus<small>Click here to continue. Screen capture and sharing of this dashboard are not permitted for this account.</small>";
-      shield.addEventListener("click", () => show());
+      shield.innerHTML = '<div style="max-width:520px"><span class="agt-m">Dashboard hidden while this window is not in focus</span><small>Tap or click anywhere to continue. Screen capture and sharing of this dashboard are not permitted for this account.</small></div>';
       document.body.appendChild(shield);
     }
     if (!pr || !pr.isConnected) { pr = document.createElement("div"); pr.id = "agt-print"; pr.textContent = "Printing is disabled for this account. Contact AGT Intelligence for an authorised copy."; document.body.appendChild(pr); }
@@ -43,19 +42,33 @@
   new MutationObserver(() => { if (!shield || !shield.isConnected || !css.isConnected) mount(); })
     .observe(document.documentElement, { childList: true, subtree: true });
 
-  /* ---------- hide content when the window is not in focus (screen share from another window, snipping tools) ---------- */
-  const hide = () => root.classList.add("agt-hidden");
-  const show = () => { if (document.hasFocus()) root.classList.remove("agt-hidden"); };
-  window.addEventListener("blur", hide);
-  window.addEventListener("focus", show);
-  document.addEventListener("visibilitychange", () => (document.hidden ? hide() : show()));
-  document.addEventListener("pointerdown", show, true);
-  if (!document.hasFocus()) hide();
+  /* ---------- cover the content when nobody is actively using it ----------
+     A web page cannot see screen sharing (Meet, Zoom, iPad screen broadcast), so the cover goes up whenever
+     the dashboard is not being actively used: window not in focus, app in the background, or no touch,
+     click, scroll or key for IDLE_MS. One tap or click brings it back. */
+  const IDLE_MS = 20000;
+  let idleTimer = 0;
+  const setMsg = (why) => {
+    if (!shield) return;
+    shield.querySelector(".agt-m").textContent = why === "idle" ? "Dashboard hidden after 20 seconds without activity" : "Dashboard hidden while this window is not in focus";
+  };
+  const hide = (why) => { setMsg(why); root.classList.add("agt-hidden"); };
+  const show = () => { root.classList.remove("agt-hidden"); arm(); };
+  function arm() { clearTimeout(idleTimer); idleTimer = setTimeout(() => hide("idle"), IDLE_MS); }
+  function activity() { if (!root.classList.contains("agt-hidden")) arm(); }
+  ["pointermove", "wheel", "keydown", "touchmove", "scroll"].forEach((ev) => document.addEventListener(ev, activity, { capture: true, passive: true }));
+  document.addEventListener("pointerdown", (e) => { if (root.classList.contains("agt-hidden")) { e.preventDefault(); e.stopPropagation(); show(); } else arm(); }, true);
+  window.addEventListener("blur", () => hide("focus"));
+  window.addEventListener("pagehide", () => hide("focus"));
+  document.addEventListener("visibilitychange", () => { if (document.hidden) hide("focus"); });
+  if (!document.hasFocus()) hide("focus"); else arm();
 
   /* ---------- audit trail ---------- */
   function log(kind) {
     try { window.AGT && AGT.api("/api/me/guard-event", { body: { kind, page: location.pathname.split("/").pop() + location.search } }).catch(() => {}); } catch (e) { /* ignore */ }
   }
+
+  log("active");   // one line per dashboard load, so the admin can confirm protection ran on that device
 
   /* ---------- block print, save, copy, right-click, drag ---------- */
   const editable = (el) => el && (el.closest("input, textarea, select, [contenteditable='true']"));
