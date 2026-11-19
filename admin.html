@@ -227,7 +227,7 @@
   }
   async function tick() {
     if (document.hidden) return;
-    try { await loadList(); if (sel && DET && ["approved", "processing"].includes(DET.status) && !profileDirty) await open(sel, true); else if (sel && DET && DET.status !== (LIST.find((r) => r.ref === sel) || {}).status && !profileDirty) await open(sel, true); } catch (e) { /* signed out */ }
+    try { await loadList(); if (sel && DET && (["approved", "processing"].includes(DET.status) || ["pending", "running"].includes(DET.ai_status)) && !profileDirty) await open(sel, true); else if (sel && DET && DET.status !== (LIST.find((r) => r.ref === sel) || {}).status && !profileDirty) await open(sel, true); } catch (e) { /* signed out */ }
   }
 
 
@@ -323,7 +323,7 @@
     on("aiSkip", async () => { if (!confirm("Start the analysis without Claude's rules? The built-in format preset will be used for competitors and demand hours.")) return; try { await api(`requests/${d.ref}/ai_skip`, {}); toast("Allowed to start without Claude"); } catch (e) { toast(e.message); } open(d.ref); });
     on("aiProf", async () => { const b = $("#aiProf"); b.disabled = true; $("#profNote").textContent = "Asking Claude… (up to a minute)"; try { const j = await api(`requests/${d.ref}/ai_profile`, {}); $("#prof").value = j.profile; profileDirty = false; $("#profNote").textContent = "Updated by Claude. " + (j.summary || "") + " Review, then Save."; } catch (e) { $("#profNote").textContent = e.message; } b.disabled = false; });
     on("saveNote", () => act("note", { note: $("#note").value }, "Note saved"));
-    on("aApprove", async () => { const w = await askWhen(`Approve ${d.company} · ${d.locations.length} location(s). The client will be emailed.`, "Approve"); if (!w) return; profileDirty = false; act("approve", { profile: $("#prof").value, note: $("#note").value, ...w }, w.start === "at" ? "Approved — scheduled" : "Approved — queued"); });
+    on("aApprove", async () => { const w = await askWhen(`Approve ${d.company} · ${d.locations.length} location(s). The client will be emailed.`, "Approve"); if (!w) return; const edited = profileDirty; profileDirty = false; act("approve", { ...(edited ? { profile: $("#prof").value } : {}), note: $("#note").value, ...w }, w.start === "at" ? "Approved — scheduled" : "Approved — queued"); });
     on("aSched", async () => { const w = await askWhen(`Choose when the analysis for ${d.company} should start.`, "Save", d.scheduled_for); if (w) act("schedule", { at: w.start === "at" ? w.at : null }, "Schedule updated"); });
     on("aTop", () => act("prioritise", { action: "top" }, "Moved to the front of the queue"));
     on("aReject", () => { const r = prompt("Reason to include in the email to the client (optional):", ""); if (r !== null) act("reject", { reason: r }, "Request rejected"); });
