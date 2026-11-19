@@ -46,6 +46,16 @@
     .err-banner { display: none; border-radius: 12px; background: #fdecea; color: #8a1c13; padding: 12px 14px; font-size: 14px; margin-bottom: 14px; } .err-banner.on { display: block; }
     :root[data-theme="dark"] .err-banner { background: #3a1613; color: #ffb4ab; }
     .gate { text-align: center; max-width: 520px; margin: 40px auto; padding: 44px; }
+    .notice { border-radius: 16px; background: var(--bg-2); padding: 18px 22px; margin: 0 0 24px; font-size: 15px; color: var(--ink-2); }
+    .notice b { color: var(--ink); }
+    .share-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; padding: 30px; }
+    .linkbox { display: flex; gap: 8px; align-items: center; margin-top: 14px; } .linkbox input { flex: 1; min-width: 0; font: inherit; font-size: 13px; padding: 10px 12px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--bg); color: var(--ink); }
+    dialog.warn { border: 1px solid var(--line-2); border-radius: 22px; padding: 30px; max-width: 440px; width: calc(100% - 32px); background: var(--bg-2); color: var(--ink); box-shadow: 0 30px 80px rgba(0,0,0,.35); }
+    dialog.warn::backdrop { background: rgba(0,0,0,.45); }
+    dialog.warn h3 { margin: 0 0 10px; font-size: 22px; letter-spacing: -.02em; } dialog.warn p { margin: 0 0 8px; color: var(--ink-2); font-size: 15px; line-height: 1.5; }
+    dialog.warn .cost { font-size: 34px; font-weight: 700; letter-spacing: -.04em; color: var(--ink); margin: 14px 0 4px; }
+    dialog.warn .acts { display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; flex-wrap: wrap; }
+    @media (max-width: 960px) { .share-grid { grid-template-columns: 1fr; } }
     @media (max-width: 960px) { .stat3, .plans3, .buy { grid-template-columns: 1fr; } .rq { grid-template-columns: 1fr; } .rq .a { justify-content: flex-start; } }
   </style>
 </head>
@@ -65,14 +75,16 @@
     <div class="wrap">
       <div class="card gate" id="gate" hidden>
         <h2 class="h2" style="font-size:32px">Sign in to see your account.</h2>
-        <p class="lede" style="margin:12px auto 24px">Use your Gmail address. New accounts include <b data-p="free">2</b> free credits.</p>
-        <a class="btn btn-primary" href="login.html?next=account.html">Sign in with Gmail</a>
+        <p class="lede" style="margin:12px auto 24px">Partner and client accounts sign in with an emailed code. Client accounts use a company email address.</p>
+        <a class="btn btn-primary" href="login.html?next=account.html">Sign in</a>
       </div>
 
       <div id="app" hidden>
+        <div class="notice" id="approvalNote" hidden></div>
         <div class="tabs" role="tablist" id="tabs">
           <button type="button" data-t="overview" aria-pressed="true">Overview</button>
           <button type="button" data-t="reports" aria-pressed="false">My reports</button>
+          <button type="button" data-t="share" id="tabShare" aria-pressed="false" hidden>Share with clients</button>
           <button type="button" data-t="credits" aria-pressed="false">Credits &amp; plans</button>
           <button type="button" data-t="history" aria-pressed="false">History</button>
           <button type="button" data-t="requests" id="tabReq" aria-pressed="false" hidden>Feature requests</button>
@@ -114,6 +126,32 @@
           <div class="card list" id="reqList"></div>
         </div>
 
+        <!-- ================= SHARE WITH CLIENTS (partners) -->
+        <div class="pane" data-pane="share" style="margin-top:28px" hidden>
+          <div class="pane-h"><h2>Share a dashboard with your client</h2><span class="small muted" id="shareCostNote"></span></div>
+          <div class="card share-grid">
+            <form class="form" id="shareForm" novalidate>
+              <div class="err-banner" id="shareErr"></div>
+              <div class="field"><label for="sRef">Report</label><select id="sRef"></select></div>
+              <div class="two"><div class="field"><label for="sEmail">Client’s email</label><input id="sEmail" type="email" placeholder="name@client.com" /></div><div class="field"><label for="sName">Client’s name <span class="muted" style="font-weight:400">(optional)</span></label><input id="sName" /></div></div>
+              <div class="field"><label for="sNote">Note to your client <span class="muted" style="font-weight:400">(optional)</span></label><textarea id="sNote" placeholder="A line or two that goes in the email"></textarea></div>
+              <button class="btn btn-primary" type="submit" style="justify-self:start">Create share link</button>
+            </form>
+            <div>
+              <p class="eyebrow">How sharing works</p>
+              <ul class="ticks">
+                <li>Your client gets an email with a personal link to the same dashboard you see. No sign-up needed.</li>
+                <li>Activating a link uses <b id="shareCostTxt">1 credit</b>. We ask you to confirm before anything is charged.</li>
+                <li>Your client can view the dashboard but can’t change the model weights.</li>
+                <li>Switch a link off at any time below. Credits for links already activated are not returned.</li>
+              </ul>
+              <div id="shareDone"></div>
+            </div>
+          </div>
+          <div class="pane-h" style="margin-top:44px"><h2>Your share links</h2></div>
+          <div class="card" style="padding:26px"><table class="t"><thead><tr><th>Client</th><th>Report</th><th>Opened</th><th>Status</th><th></th></tr></thead><tbody id="shares"></tbody></table></div>
+        </div>
+
         <!-- ================= CREDITS & PLANS -->
         <div class="pane" data-pane="credits" style="margin-top:28px" hidden>
           <div class="pane-h"><h2>Buy credits</h2><span class="small muted">1 credit = 1 location · <span data-p="std-price">₹1,000</span> each</span></div>
@@ -153,6 +191,10 @@
           <div class="card" style="padding:26px"><table class="t"><thead><tr><th>Date</th><th>What happened</th><th style="text-align:right">Credits</th></tr></thead><tbody id="ledger"></tbody></table></div>
           <div class="pane-h" style="margin-top:44px"><h2>Orders</h2></div>
           <div class="card" style="padding:26px"><table class="t"><thead><tr><th>Order</th><th>Credits</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody id="orders"></tbody></table></div>
+          <div id="usageWrap" hidden>
+            <div class="pane-h" style="margin-top:44px"><h2>API usage</h2><span class="small muted" id="usageNote"></span></div>
+            <div class="card" style="padding:26px"><table class="t"><thead><tr><th>Date</th><th>What used it</th><th>Reference</th><th style="text-align:right">Credits</th></tr></thead><tbody id="usage"></tbody></table></div>
+          </div>
           <div class="pane-h" style="margin-top:44px"><h2>Enterprise enquiries</h2></div>
           <div class="card" style="padding:26px"><table class="t"><thead><tr><th>Enquiry</th><th>Locations</th><th>Cities</th><th>Status</th></tr></thead><tbody id="enqs"></tbody></table></div>
         </div>
@@ -161,6 +203,13 @@
   </section>
 </main>
 <div id="site-footer"></div>
+<dialog class="warn" id="shareDlg">
+  <h3>This will use your credits</h3>
+  <p id="shareDlgTxt"></p>
+  <div class="cost" id="shareDlgCost"></div>
+  <p class="small" id="shareDlgBal"></p>
+  <div class="acts"><button class="btn btn-secondary btn-sm" type="button" id="shareNo">Cancel</button><button class="btn btn-primary btn-sm" type="button" id="shareYes">Use credits and send link</button></div>
+</dialog>
 <div class="toast" id="toast" role="status"></div>
 <script src="icons.js?v=2"></script>
 <script src="site/config.js?v=1"></script>
@@ -199,16 +248,22 @@
     return `<div class="rq"><div><b>${esc(r.company)}</b> <span class="pill ${r.status}" style="margin-left:8px">${esc(r.status_label)}</span>
       <div class="m">${r.ref} · ${r.n_locations} location${r.n_locations === 1 ? "" : "s"} · ${r.credits_used} credit${r.credits_used === 1 ? "" : "s"} · submitted ${dt(r.created_at)}${r.scheduled_for && r.status === "approved" ? " · scheduled " + new Date(r.scheduled_for * 1000).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}</div>
       ${r.status === "released" && r.release_message ? `<div class="m" style="color:var(--ink-2)">“${esc(r.release_message)}”</div>` : ""}</div>
-      <div class="a">${r.status === "released" ? `<button class="btn btn-primary btn-sm" data-open="${r.business_id}">Open dashboard</button>` : ""}${r.can_withdraw ? `<button class="btn btn-secondary btn-sm" data-wd="${r.ref}">Withdraw</button>` : ""}</div></div>`;
+      <div class="a">${r.status === "released" ? `<button class="btn btn-primary btn-sm" data-open="${r.business_id}">Open dashboard</button>` : ""}${r.status === "released" && ME && ME.user.can_share ? `<button class="btn btn-secondary btn-sm" data-share="${r.ref}">Share with client</button>` : ""}${r.can_withdraw ? `<button class="btn btn-secondary btn-sm" data-wd="${r.ref}">Withdraw</button>` : ""}</div></div>`;
   }
   function render() {
     const u = ME.user, bal = u.credits, free = P.free_credits;
     $("#avatar").innerHTML = u.picture ? `<img src="${esc(u.picture)}" alt="" referrerpolicy="no-referrer" />` : esc((u.name || u.email)[0].toUpperCase());
     $("#uName").textContent = u.name || u.email; $("#uEmail").textContent = u.email;
-    $("#cBal").textContent = bal;
-    const paid = u.plan === "paid" || ME.orders.some((o) => o.status === "paid");
-    $("#planName").textContent = paid ? "Standard" : "Free";
-    $("#planNote").textContent = paid ? `${money(P.standard_per_location)} per location. Buy more credits any time.` : `${free} free credits to start. Upgrade when you need more locations.`;
+    $("#cBal").textContent = fmtC(bal);
+    const isPartner = u.account_type === "partner";
+    const paid = isPartner || u.plan === "paid" || ME.orders.some((o) => o.status === "paid");
+    $("#planName").textContent = isPartner ? "Partner" : paid ? "Standard" : "Free";
+    $("#planNote").textContent = isPartner ? (u.approval === "approved" ? "Approved partner. Share dashboards with your clients." : u.approval === "rejected" ? "Partner application not approved." : "Waiting for approval by AGT Intelligence.")
+      : paid ? `${money(P.credit_value || P.standard_per_location)} per credit. Buy more credits any time.` : `${free} free credits to start. Upgrade when you need more locations.`;
+    const an = $("#approvalNote");
+    an.hidden = !(isPartner && u.approval !== "approved");
+    an.innerHTML = u.approval === "rejected" ? "<b>Your partner application was not approved.</b> Contact us if you think this is a mistake." : "<b>Your partner account is waiting for approval.</b> Our team checks every partner account. We’ll email you when it’s approved; until then you can’t request reports or share dashboards.";
+    $("#tabShare").hidden = !u.can_share;
     const fm = $("#freeMeter"); fm.hidden = paid;
     if (!paid) { $("#freeFill").style.width = Math.max(0, Math.min(100, bal / free * 100)) + "%"; }
     $("#cNote").textContent = paid ? "1 credit = 1 location. Credits stay in your account until used." : (bal > 0 ? `${bal} of your ${free} free credits left — 1 credit = 1 location.` : "You have used your free credits. Buy more to request another report.");
@@ -218,11 +273,17 @@
     $("#recent").innerHTML = REQS.length ? REQS.slice(0, 3).map(reqRow).join("") : `<div style="padding:12px 26px 26px;color:var(--ink-3)">No reports yet. <a href="request-report.html">Request your first report</a> with your free credits.</div>`;
     $("#reqList").innerHTML = REQS.length ? REQS.map(reqRow).join("") : `<div style="padding:40px 26px;text-align:center;color:var(--ink-3)">No requests yet. <a href="request-report.html">Request a report</a>.</div>`;
     $$("[data-open]").forEach((b) => b.onclick = () => openDashboard(b.dataset.open));
+    $$("[data-share]").forEach((b) => b.onclick = () => { tab("share"); $("#sRef").value = b.dataset.share; $("#sEmail").focus(); });
+    renderShare();
+    const us = ME.usage || [];
+    $("#usageWrap").hidden = !us.length && !ME.usage_billing;
+    $("#usageNote").textContent = ME.usage_billing ? `1 credit = ${money(P.credit_value || 1000)} · charged as used` : "Not charged at the moment";
+    $("#usage").innerHTML = us.length ? us.map((x) => `<tr><td>${dt(x.at)}</td><td>${esc(x.feature)}</td><td>${esc(x.ref || "—")}</td><td style="text-align:right">${x.billed ? "−" + fmtC(x.credits) : "—"}</td></tr>`).join("") : `<tr><td colspan="4" class="muted">No API usage yet.</td></tr>`;
     $$("[data-wd]").forEach((b) => b.onclick = async () => {
       if (!confirm("Withdraw this request? Its credits will be returned to your account.")) return;
       try { const r = await AGT.api(`/api/me/requests/${b.dataset.wd}/withdraw`, { body: {} }); toast(`Withdrawn — ${r.refunded} credit(s) returned`); await load(); } catch (e) { toast(e.message); }
     });
-    $("#ledger").innerHTML = ME.ledger.length ? ME.ledger.map((l) => `<tr><td>${dt(l.at)}</td><td>${esc(l.reason)}</td><td style="text-align:right;font-weight:600;color:${l.delta > 0 ? "#17653a" : "var(--ink)"}">${l.delta > 0 ? "+" : ""}${l.delta}</td></tr>`).join("") : `<tr><td colspan="3" class="muted">No activity yet.</td></tr>`;
+    $("#ledger").innerHTML = ME.ledger.length ? ME.ledger.map((l) => `<tr><td>${dt(l.at)}</td><td>${esc(l.reason)}</td><td style="text-align:right;font-weight:600;color:${l.delta > 0 ? "#17653a" : "var(--ink)"}">${l.delta > 0 ? "+" : ""}${fmtC(l.delta)}</td></tr>`).join("") : `<tr><td colspan="3" class="muted">No activity yet.</td></tr>`;
     $("#orders").innerHTML = ME.orders.length ? ME.orders.map((o) => `<tr><td>${o.ref}<div class="small muted">${dt(o.created_at)}</div></td><td>${o.qty}</td><td>${money(o.amount)}</td><td><span class="pill ${o.status}">${o.status}</span></td><td>${o.status === "pending" ? `<button class="btn btn-secondary btn-sm" data-oc="${o.ref}">Cancel</button>` : ""}</td></tr>`).join("") : `<tr><td colspan="5" class="muted">No orders yet.</td></tr>`;
     $$("[data-oc]").forEach((b) => b.onclick = async () => { try { await AGT.api(`/api/me/orders/${b.dataset.oc}/cancel`, { body: {} }); await load(); } catch (e) { toast(e.message); } });
     $("#enqs").innerHTML = ME.enquiries.length ? ME.enquiries.map((e) => `<tr><td>${e.ref}<div class="small muted">${dt(e.created_at)}</div></td><td>${e.locations}</td><td>${esc(e.cities || "—")}</td><td><span class="pill ${e.status}">${e.status}</span>${e.response ? `<div class="small muted" style="margin-top:6px">${esc(e.response)}</div>` : ""}</td></tr>`).join("") : `<tr><td colspan="4" class="muted">No enquiries yet.</td></tr>`;
@@ -231,6 +292,52 @@
     if (pend) $("#payBox").innerHTML = `<div class="small muted" style="margin-bottom:8px">Order ${pend.ref} · ${money(pend.amount)}</div><div class="box">${ME.payment_instructions && ME.payment_instructions.trim() ? esc(ME.payment_instructions) + "\n\nQuote reference " + pend.ref + " with your payment." : "We’ll email you the payment details shortly."}</div>`;
     updTotal();
   }
+  function fmtC(n) { n = Number(n) || 0; return Number.isInteger(n) ? String(n) : (Math.abs(n) < 0.01 ? n.toFixed(4) : n.toFixed(2)).replace(/0+$/, "").replace(/\.$/, ""); }
+  function renderShare() {
+    if (!ME.user.can_share) return;
+    const cost = Number(P.share_credits ?? 1), rel = REQS.filter((r) => r.status === "released");
+    $("#shareCostTxt").textContent = `${fmtC(cost)} credit${cost === 1 ? "" : "s"} (${money(cost * (P.credit_value || 1000))})`;
+    $("#shareCostNote").textContent = `Each link uses ${fmtC(cost)} credit${cost === 1 ? "" : "s"} · balance ${fmtC(ME.user.credits)}`;
+    const sel = $("#sRef"), keep = sel.value;
+    sel.innerHTML = rel.length ? rel.map((r) => `<option value="${esc(r.ref)}">${esc(r.company)} · ${esc(r.ref)}</option>`).join("") : `<option value="">No released reports yet</option>`;
+    if (keep && rel.some((r) => r.ref === keep)) sel.value = keep;
+    const sh = ME.shares || [];
+    $("#shares").innerHTML = sh.length ? sh.map((s) => `<tr><td><b style="color:var(--ink)">${esc(s.client_name || s.client_email)}</b><div class="small muted">${esc(s.client_email)}</div></td><td>${esc(s.company)}<div class="small muted">${esc(s.request_ref)} · ${dt(s.created_at)} · ${fmtC(s.credits)} credit${s.credits === 1 ? "" : "s"}</div></td>
+      <td>${s.opens ? `${s.opens}×<div class="small muted">last ${dt(s.last_opened)}</div>` : "Not yet"}</td><td><span class="pill ${s.status === "active" ? "released" : "cancelled"}">${s.status === "active" ? "Active" : "Switched off"}</span></td>
+      <td>${s.status === "active" ? `<button class="btn btn-secondary btn-sm" data-rv="${s.id}">Switch off</button>` : ""}</td></tr>`).join("") : `<tr><td colspan="5" class="muted">No links yet.</td></tr>`;
+    $$("[data-rv]").forEach((b) => b.onclick = async () => {
+      if (!confirm("Switch this link off? Your client will no longer be able to open the dashboard. The credits used for it are not returned.")) return;
+      try { await AGT.api(`/api/me/shares/${b.dataset.rv}/revoke`, { body: {} }); toast("Link switched off"); await load(); } catch (e) { toast(e.message); }
+    });
+  }
+  function askShareCredits(info) {
+    return new Promise((res) => {
+      const d = $("#shareDlg");
+      $("#shareDlgTxt").textContent = `Sending this link to ${$("#sEmail").value.trim()} activates it and uses credits from your account. Credits are not returned if you switch the link off later.`;
+      $("#shareDlgCost").textContent = `${fmtC(info.credits)} credit${info.credits === 1 ? "" : "s"} · ${info.amount}`;
+      $("#shareDlgBal").textContent = `Balance now ${fmtC(info.balance)} → after ${fmtC(info.balance - info.credits)}${info.balance < info.credits ? " — not enough credits" : ""}`;
+      $("#shareYes").disabled = info.balance < info.credits;
+      const done = (v) => { d.close(); res(v); };
+      $("#shareYes").onclick = () => done(true); $("#shareNo").onclick = () => done(false); d.oncancel = () => res(false);
+      d.showModal();
+    });
+  }
+  $("#shareForm").addEventListener("submit", async (ev) => {
+    ev.preventDefault(); const e = $("#shareErr"); e.classList.remove("on");
+    const body = { ref: $("#sRef").value, email: $("#sEmail").value, name: $("#sName").value, note: $("#sNote").value };
+    try {
+      let r;
+      try { r = await AGT.api("/api/me/shares", { body }); }
+      catch (x) { if (!(x.status === 409 && x.data && x.data.confirm_needed)) throw x;
+        if (!(await askShareCredits(x.data))) return;
+        r = await AGT.api("/api/me/shares", { body: { ...body, confirm: true } }); }
+      $("#shareDone").innerHTML = `<div class="box" style="margin-top:22px;white-space:normal"><b style="color:var(--ink)">Link sent to ${esc(body.email)}.</b> ${fmtC(r.charged)} credit${r.charged === 1 ? "" : "s"} used. You can also copy it:
+        <div class="linkbox"><input readonly value="${esc(r.link)}" id="sLink" /><button class="btn btn-secondary btn-sm" type="button" id="sCopy">Copy</button></div><div class="small muted" style="margin-top:8px">This is the only time the link is shown here.</div></div>`;
+      $("#sCopy").onclick = () => { const i = $("#sLink"); i.select(); (navigator.clipboard ? navigator.clipboard.writeText(i.value) : Promise.reject()).then(() => toast("Link copied"), () => document.execCommand("copy")); };
+      $("#sEmail").value = ""; $("#sName").value = ""; $("#sNote").value = "";
+      toast("Share link sent"); await load();
+    } catch (x) { e.textContent = x.message; e.classList.add("on"); }
+  });
   const qv = () => Math.max(1, Math.min(100, parseInt($("#qty").value || "1", 10) || 1));
   function updTotal() { $("#qty").value = qv(); $("#qTotal").textContent = money(qv() * P.standard_per_location); }
   $("#qMinus").onclick = () => { $("#qty").value = qv() - 1; updTotal(); }; $("#qPlus").onclick = () => { $("#qty").value = qv() + 1; updTotal(); }; $("#qty").oninput = updTotal;
@@ -252,11 +359,12 @@
   }
   AGT.session().then(async (s) => {
     if (s.role === "admin") { location.replace("admin.html"); return; }
+    if (s.role === "guest") { location.replace("index.html"); return; }
     if (s.role !== "user") { try { P = (await AGT.api("/api/config")).pricing; fillPrices(); } catch (e) {} $("#gate").hidden = false; return; }
     $("#app").hidden = false;
     if (s.can_inbox) { $("#tabReq").hidden = false; $("#tabReq").addEventListener("click", () => { if (!$("#paneReq").dataset.m) { $("#paneReq").dataset.m = 1; AGTInbox.mount($("#paneReq")); } }); }
     try { await load(); } catch (e) { toast(e.message); }
-    const h = (location.hash || "").slice(1); tab(["overview", "reports", "credits", "history"].includes(h) ? h : h === "enterprise" ? "credits" : "overview");
+    const h = (location.hash || "").slice(1); tab(["overview", "reports", "credits", "history"].includes(h) || (h === "share" && ME && ME.user.can_share) ? h : h === "enterprise" ? "credits" : "overview");
     if (h === "enterprise") setTimeout(() => $("#enterprise").scrollIntoView({ behavior: "smooth" }), 100);
   });
 })();

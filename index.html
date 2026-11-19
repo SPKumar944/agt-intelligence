@@ -146,7 +146,7 @@
   <div class="loader" id="loader"><div class="spinner"></div><div id="loaderText">Loading intelligence layers…</div></div>
   <script src="https://unpkg.com/supercluster@8.0.1/dist/supercluster.min.js"></script>
   <script src="icons.js?v=2"></script>
-  <script src="app.js?v=13"></script>
+  <script src="app.js?v=14"></script>
   <script>
     (function () {   // light / dark (default light)
       const b = document.getElementById("themeBtn"), dk = () => document.documentElement.dataset.theme === "dark";
@@ -160,8 +160,9 @@
       AGT.session().then((s) => {
         if (s.role === "none") { location.replace("login.html"); return; }
         const ini = (s.name || s.email).split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("");
-        btn.textContent = ini; $("accName").textContent = s.role === "admin" ? "Super admin" : (s.name || "Your report"); $("accEmail").textContent = s.email;
-        $("signOutBtn").insertAdjacentHTML("beforebegin", s.role === "admin" ? '<a class="menu-link" href="admin.html">Back to admin</a>' : '<a class="menu-link" href="account.html">My account</a>');
+        btn.textContent = ini; $("accName").textContent = s.role === "admin" ? "Super admin" : s.role === "guest" ? (s.shared_by ? "Shared by " + s.shared_by : "Shared report") : (s.name || "Your report"); $("accEmail").textContent = s.email;
+        if (s.role !== "guest") $("signOutBtn").insertAdjacentHTML("beforebegin", s.role === "admin" ? '<a class="menu-link" href="admin.html">Back to admin</a>' : '<a class="menu-link" href="account.html">My account</a>');
+        else $("signOutBtn").textContent = "Close shared report";
       });
       const toggle = (open) => { menu.classList.toggle("hidden", !open); btn.setAttribute("aria-expanded", open); };
       btn.onclick = (e) => { e.stopPropagation(); toggle(menu.classList.contains("hidden")); };

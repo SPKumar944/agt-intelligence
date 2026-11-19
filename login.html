@@ -227,6 +227,24 @@
       .card .sub { margin-bottom: 26px; }
       .panel-foot { padding: 0 16px 24px; }
     }
+    /* ------------------------------------------------------------ account-type chooser */
+    .choose { display: grid; gap: 12px; margin: 0 0 6px; }
+    .opt { display: grid; grid-template-columns: 40px 1fr 16px; gap: 14px; align-items: center; text-align: left; width: 100%;
+      padding: 18px 18px; border: 1px solid var(--field-line); border-radius: 16px; background: var(--field); cursor: pointer;
+      transition: border-color .2s var(--ease), box-shadow .2s var(--ease), transform .2s var(--ease); }
+    .opt:hover { border-color: var(--field-hover); }
+    .opt:focus-visible { outline: none; border-color: var(--focus); box-shadow: 0 0 0 4px color-mix(in srgb, var(--focus) 22%, transparent); }
+    .opt svg.ic { width: 30px; height: 30px; color: var(--ink); }
+    .opt b { display: block; font-size: 17px; font-weight: 600; letter-spacing: -.02em; }
+    .opt span { display: block; font-size: 13.5px; line-height: 1.4; color: var(--ink-2); margin-top: 3px; letter-spacing: -.005em; }
+    .opt .chev { width: 14px; height: 14px; color: var(--ink-3); }
+    .opt span[data-cv] { display: inline; margin: 0; color: inherit; font-size: inherit; }
+    .chosen { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 14px; font-size: 14px; color: var(--ink-2); }
+    .chosen b { color: var(--ink); font-weight: 600; }
+    .typehint { font-size: 13px; color: var(--ink-2); margin: 10px 2px 0; line-height: 1.45; }
+    .ask-type .choose { animation: shake .42s var(--ease); }
+    .ask-type .opt { border-color: var(--focus); }
+
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
     }
@@ -288,10 +306,25 @@
               <path d="M16 12 L24 4 L32 12 L24 20 Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" opacity=".5"/>
               <circle cx="35.5" cy="12" r="2.3" fill="currentColor"/>
             </svg>
-            <h2>Sign in.</h2>
-            <p class="sub">Enter your email address and we’ll send a 6-digit code. No password needed — everyone with an AGT account signs in here.</p>
+            <h2 id="cardTitle">Sign in or create an account.</h2>
+            <p class="sub" id="cardSub">Choose the kind of account. We email you a 6-digit code — no password needed.</p>
 
-            <div id="gWrap">
+            <div class="choose" id="choose" role="group" aria-label="Account type">
+              <button type="button" class="opt" data-type="partner">
+                <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" data-icon="user-group"></svg>
+                <div><b>Partner account</b><span>Any email address. Run reports on your credits, tune the model and share dashboards with your clients. Approved by our team.</span></div>
+                <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg>
+              </button>
+              <button type="button" class="opt" data-type="client">
+                <svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" data-icon="office-block"></svg>
+                <div><b>Client account</b><span>Your company email only — not Gmail, Outlook or iCloud. Buy credits (<span data-cv>₹1,000</span> each) and open your reports.</span></div>
+                <svg class="chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3l5 5-5 5"/></svg>
+              </button>
+              <div class="row" style="margin-top:8px"><span style="color:var(--ink-2)">Already have an account?</span><button type="button" class="linkbtn" id="justSignIn">Sign in</button></div>
+            </div>
+
+            <div id="gWrap" hidden>
+              <div class="chosen" id="chosen"><span id="chosenTxt">Signing in</span><button type="button" class="linkbtn" id="rechoose">Change</button></div>
               <form id="codeForm" novalidate>
                 <div class="fields" id="fields">
                   <div class="field"><input id="email" type="email" placeholder=" " autocomplete="email" inputmode="email" /><label for="email">Email address</label></div>
@@ -307,13 +340,14 @@
                 <div class="fields"><div class="field"><input id="devEmail" type="email" placeholder=" " /><label for="devEmail">Test email</label></div>
                   <button type="submit" class="go ready" aria-label="Sign in"><svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></button></div>
               </form>
-              <div class="row" style="margin-top:26px"><span style="color:var(--ink-2)">New here?</span><a class="linkbtn" href="pricing.html">See pricing &amp; free credits</a></div>
+              <p class="typehint" id="typeHint" hidden></p>
+              <div class="row" style="margin-top:26px"><span style="color:var(--ink-2)">New here?</span><a class="linkbtn" href="pricing.html">See pricing &amp; credits</a></div>
             </div>
 
             <div class="divider"></div>
             <p class="fine">
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="7" rx="1.6"/><path d="M5.2 7V5.2a2.8 2.8 0 0 1 5.6 0V7"/></svg>
-              New accounts include 2 free credits. You can open only the reports you requested, once we have checked and released them.
+              You can open only the reports you requested, or that a partner shared with you, once we have checked and released them.
             </p>
           </div>
 
@@ -333,6 +367,7 @@
 
   <script src="icons.js?v=2"></script>
   <script src="city.js?v=4"></script>
+  <script>document.querySelectorAll("svg[data-icon]").forEach((s) => { if (!s.innerHTML.trim() && typeof ICONS !== "undefined" && ICONS[s.dataset.icon]) { s.setAttribute("aria-hidden", "true"); s.innerHTML = ICONS[s.dataset.icon]; } });</script>
   <script>
   /* ======================================================= email-code sign-in */
   (function () {
@@ -342,11 +377,32 @@
     const show = (m) => { info.classList.remove("show"); err.textContent = m; err.classList.add("show"); card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake"); };
     const say = (m) => { err.classList.remove("show"); info.textContent = m; info.classList.add("show"); };
     const next = () => { const n = new URLSearchParams(location.search).get("next") || ""; return /^[a-z0-9_.\-]+\.html/i.test(n) && !/^admin\.html/i.test(n) ? n : "account.html"; };
-    let step = 1, busy = false;
+    let step = 1, busy = false, TYPE = "";
+    const HINT = { partner: "Partner accounts work with any email address. New partner accounts are checked and approved by our team before you can request or share reports.",
+                   client: "Use your company email address (for example you@yourcompany.com). Personal addresses such as Gmail, Outlook, Hotmail, iCloud or Yahoo can’t be used for client accounts.", "": "" };
+    function pick(type) {
+      TYPE = type; $("choose").hidden = true; $("gWrap").hidden = false; $("card").classList.remove("ask-type");
+      $("chosenTxt").innerHTML = type ? `New <b>${type === "partner" ? "Partner" : "Client"} account</b> — or sign in if you already have one` : "Sign in to your account";
+      $("cardTitle").textContent = type === "partner" ? "Partner account." : type === "client" ? "Client account." : "Sign in.";
+      $("cardSub").textContent = type === "client" ? "Enter your company email address and we’ll send a 6-digit code." : "Enter your email address and we’ll send a 6-digit code. No password needed.";
+      $("typeHint").textContent = HINT[type]; $("typeHint").hidden = !type;
+      $("email").placeholder = " "; setStep(1);
+    }
+    function rechoose(needed) {
+      $("gWrap").hidden = true; $("choose").hidden = false; $("code").value = ""; step = 1; $("fields").classList.remove("step2");
+      $("cardTitle").textContent = "Sign in or create an account."; $("cardSub").textContent = needed ? "This email address doesn’t have an account yet. Choose the kind of account to create." : "Choose the kind of account. We email you a 6-digit code — no password needed.";
+      if (needed) { const c = $("card"); c.classList.remove("ask-type"); void c.offsetWidth; c.classList.add("ask-type"); }
+      const first = document.querySelector("#choose .opt"); if (first) first.focus();
+    }
+    document.querySelectorAll("#choose .opt").forEach((b) => b.addEventListener("click", () => pick(b.dataset.type)));
+    $("justSignIn").addEventListener("click", () => pick(""));
+    $("rechoose").addEventListener("click", () => rechoose(false));
+    { const q = new URLSearchParams(location.search).get("type"); if (q === "partner" || q === "client") pick(q); else if (q === "signin") pick(""); }
     const setStep = (n) => { step = n; $("fields").classList.toggle("step2", n === 2); $("step2row").hidden = n !== 2; if (n === 2) $("code").focus(); else $("email").focus(); };
     async function sendCode() {
       const email = $("email").value.trim();
-      await AGT.api("/api/auth/email-code", { body: { email } });
+      try { await AGT.api("/api/auth/email-code", { body: { email, type: TYPE } }); }
+      catch (x) { if (x.data && x.data.need_type) { rechoose(true); } throw x; }
       setStep(2); say("We’ve emailed a 6-digit code to " + email + ". It works for 10 minutes.");
     }
     $("codeForm").addEventListener("submit", async (e) => {
@@ -358,7 +414,7 @@
     });
     $("resend").addEventListener("click", async () => { try { await sendCode(); } catch (x) { show(x.message); } });
     $("change").addEventListener("click", () => { $("code").value = ""; info.classList.remove("show"); err.classList.remove("show"); setStep(1); });
-    AGT.api("/api/config").then((c) => { if (c.dev_login) $("devForm").hidden = false; })
+    AGT.api("/api/config").then((c) => { if (c.dev_login) $("devForm").hidden = false; const cv = (c.pricing || {}).credit_value || 1000; document.querySelectorAll("[data-cv]").forEach((e) => { e.textContent = ((c.pricing || {}).currency || "₹") + Number(cv).toLocaleString("en-IN"); }); })
       .catch(() => show("We couldn’t reach the server. Please try again in a moment."));
     $("devForm").addEventListener("submit", async (e) => {
       e.preventDefault();

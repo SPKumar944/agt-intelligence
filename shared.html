@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <script>(function(){var t=null;try{t=localStorage.getItem("agt.theme")}catch(e){}if(t!=="light")document.documentElement.dataset.theme="dark"})()</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <meta name="referrer" content="no-referrer" />
+  <title>Shared report · AGT Intelligence</title>
+  <style>
+    :root { --ink: #1d1d1f; --ink-2: #6e6e73; --page: #ffffff; --line: #e8e8ed; --err: #c4281c;
+      --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", Arial, sans-serif; }
+    :root[data-theme="dark"] { --ink: #f5f5f7; --ink-2: #a1a1a6; --page: #000000; --line: #2c2c2e; --err: #ff6961; }
+    html, body { margin: 0; height: 100%; }
+    body { background: var(--page); color: var(--ink); font-family: var(--font); -webkit-font-smoothing: antialiased; display: grid; place-items: center; padding: 16px; box-sizing: border-box; }
+    .box { max-width: 440px; text-align: center; }
+    svg.mark { width: 50px; height: 30px; margin-bottom: 26px; }
+    h1 { font-size: 30px; line-height: 1.15; letter-spacing: -.03em; margin: 0 0 10px; font-weight: 600; }
+    p { color: var(--ink-2); font-size: 16px; line-height: 1.5; margin: 0; }
+    p.err { color: var(--err); }
+    .spin { width: 22px; height: 22px; margin: 26px auto 0; border: 2px solid var(--line); border-top-color: var(--ink); border-radius: 50%; animation: r .9s linear infinite; }
+    @keyframes r { to { transform: rotate(360deg); } }
+    a { color: inherit; }
+  </style>
+  <script src="site/config.js?v=1"></script>
+  <script src="site/api.js?v=7"></script>
+</head>
+<body>
+  <main class="box">
+    <svg class="mark" viewBox="0 0 40 24" aria-hidden="true"><path d="M2 12 L10 4 L18 12 L10 20 Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M16 12 L24 4 L32 12 L24 20 Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" opacity=".5"/><circle cx="35.5" cy="12" r="2.3" fill="currentColor"/></svg>
+    <h1 id="t">Opening the shared report…</h1>
+    <p id="m">One moment.</p>
+    <div class="spin" id="s"></div>
+  </main>
+  <script>
+  (async () => {
+    const $ = (id) => document.getElementById(id);
+    const fail = (msg) => { $("t").textContent = "We couldn’t open this report."; $("m").textContent = msg; $("m").className = "err"; $("s").remove(); };
+    const tok = new URLSearchParams((location.hash || "").slice(1)).get("t") || "";
+    history.replaceState(null, "", location.pathname);              // keep the token out of the address bar and history
+    if (!tok) return fail("This link is incomplete. Open it again from the email you received.");
+    try {
+      const j = await AGT.api("/api/share/open", { body: { t: tok } });
+      AGT.setToken(j.token);
+      $("t").textContent = j.company ? `Opening ${j.company}…` : "Opening the shared report…";
+      let site = "";
+      try { const s = await AGT.api(`/data/${encodeURIComponent(j.business_id)}/sites.json`); site = ((s.sites || [])[0] || {}).id || ""; } catch (e) { /* the dashboard picks one */ }
+      location.replace(`index.html#${j.business_id}${site ? "/" + site : ""}`);
+    } catch (x) { fail(x.message); }
+  })();
+  </script>
+</body>
+</html>

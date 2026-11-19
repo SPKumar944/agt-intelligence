@@ -749,7 +749,7 @@ function renderModelTab() {
 }
 function weightsPanel() {
   const w = D.site.weights;
-  return `<div class="wpanel"><div class="section-title"><h4>Model weights</h4><span>${WSTATE.level === "admin" ? "Super admin" : "Manager"}</span></div>
+  return `<div class="wpanel"><div class="section-title"><h4>Model weights</h4><span>${({ admin: "Super admin", partner: "Partner", analyst: "Analyst" })[WSTATE.level] || "Manager"}</span></div>
     <p class="note" style="margin:0 0 10px">Change how much each driver counts. Quick-score values, tiers and the suitability layer update live (candidates stay ranked by the interaction model’s expected volume); Save makes the new weights the ones every user of this report sees. Revenue and unit projections are not re-forecast.</p>
     ${WKEYS.map(([k, l]) => `<div class="wrow"><label for="w_${k}">${l}</label><input type="range" id="w_${k}" data-w="${k}" min="0" max="100" value="${Math.round(w[k] * 100)}"><output id="wo_${k}">${Math.round(w[k] * 100)}%</output></div>`).join("")}
     <div class="wfoot"><button class="ghost-btn" id="wReset" type="button">Reset to model default</button><button class="ghost-btn" id="wSave" type="button" style="font-weight:600">Save weights</button></div><div class="note" id="wMsg" aria-live="polite"></div></div>`;
