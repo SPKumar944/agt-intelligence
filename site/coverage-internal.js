@@ -56,7 +56,7 @@
   .cv .cv-h3{font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin:24px 0 10px}
   .cv-empty{padding:60px 0;text-align:center;color:var(--ink-3)}
   .cv .leaflet-tooltip.cv-tip{background:var(--ink);color:var(--bg);border:0;border-radius:6px;padding:8px 10px;font-size:12px;line-height:1.5;box-shadow:0 8px 24px rgba(0,0,0,.3)}.cv .leaflet-tooltip.cv-tip::before{display:none}
-  .cv .leaflet-container{background:var(--bg-3);font-family:inherit}.cv .leaflet-bar a{background:var(--bg);color:var(--ink);border-color:var(--line)}
+  .cv .leaflet-container{background:var(--bg-3);font-family:inherit}.cv-pinq{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;width:190px}.cv-pinq:focus{outline:2px solid var(--ink-3);outline-offset:1px}.cv-pst{margin-top:6px;color:var(--ink-3);font-size:12px}.cv .leaflet-bar a{background:var(--bg);color:var(--ink);border-color:var(--line)}
   .cv .leaflet-control-attribution{background:color-mix(in srgb,var(--bg) 78%,transparent);color:var(--ink-3);font-size:10px}.cv .leaflet-control-attribution a{color:var(--ink-2)}
   @media (max-width:1100px){.cv-kp{grid-template-columns:repeat(3,minmax(0,1fr))}.cv-map{grid-template-columns:1fr}.cv-side{max-height:none}}
   @media (max-width:640px){.cv{padding:18px 16px 60px}.cv-kp{grid-template-columns:repeat(2,minmax(0,1fr))}.cv-mapbox{min-height:420px}.cv-bars div{grid-template-columns:70px 1fr}.cv-bars div span:last-child{display:none}.cv-t{display:block;overflow-x:auto}}`;
@@ -106,13 +106,13 @@
         <div style="text-align:right"><div class="sub" style="margin:0 0 8px">Rebuilt ${esc(D.generated_at)}${D.building ? " · rebuilding now…" : ""}</div><button class="cv-btn" id="cvRe" ${D.building ? "disabled" : ""}>${D.building ? "Rebuilding…" : "Refresh inventory"}</button></div></div>
       <div class="cv-kp">${kp.map((k) => `<div class="cv-k"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="d">${k[2]}</div></div>`).join("")}</div>
 
-      <div class="cv-sec"><h2>Where we have been</h2><p>Zoomed out, each covered place is a marker. Zoom in to see the real circles and, from city level, hexagons of about 0.7 km² coloured by how much we hold there.</p>
+      <div class="cv-sec"><h2>Where we have been</h2><p>Every circle is drawn to its true size on the ground, so at country level a 10 km city scan is a speck; zoom in to see it grow. From city level, hexagons of about 0.7 km² show how much we hold. Switch on PIN code areas to see India Post boundaries and what we hold inside each.</p>
         <div class="cv-bar"><div class="g"><span class="gl">Show</span>
-          <button class="cv-ch" data-ly="hex" aria-pressed="true">Hexagons</button><button class="cv-ch" data-ly="city" aria-pressed="true">City scans</button><button class="cv-ch" data-ly="study" aria-pressed="true">Client studies</button><button class="cv-ch" data-ly="tiles" aria-pressed="false">Stored tiles</button><button class="cv-ch" data-ly="raw" aria-pressed="false">Raw downloads</button></div>
-          <div class="g"><span class="gl">Colour hexagons by</span><button class="cv-ch" data-hm="depth" aria-pressed="true">Overlapping runs</button><button class="cv-ch" data-hm="n" aria-pressed="false">Mapped places</button><button class="cv-ch" data-hm="p" aria-pressed="false">Residents</button></div></div>
+          <button class="cv-ch" data-ly="hex" aria-pressed="true">Hexagons</button><button class="cv-ch" data-ly="city" aria-pressed="true">City scans</button><button class="cv-ch" data-ly="study" aria-pressed="true">Client studies</button><button class="cv-ch" data-ly="tiles" aria-pressed="false">Stored tiles</button><button class="cv-ch" data-ly="raw" aria-pressed="false">Raw downloads</button><button class="cv-ch" data-ly="pin" aria-pressed="false" title="Official India Post PIN-code areas">PIN code areas</button></div>
+          <div class="g"><span class="gl">Colour hexagons by</span><button class="cv-ch" data-hm="depth" aria-pressed="true">Overlapping runs</button><button class="cv-ch" data-hm="n" aria-pressed="false">Mapped places</button><button class="cv-ch" data-hm="p" aria-pressed="false">Residents</button></div><div class="g"><span class="gl">Colour PIN areas by</span><button class="cv-ch" data-pm="cov" aria-pressed="true">Covered or not</button><button class="cv-ch" data-pm="n" aria-pressed="false">Mapped places</button><button class="cv-ch" data-pm="r" aria-pressed="false">Residents</button><input class="cv-pinq" id="cvPinQ" inputmode="numeric" maxlength="6" placeholder="Find a PIN, e.g. 560001" aria-label="Find a PIN code" /></div></div>
         <div class="cv-map"><div class="cv-mapbox"><div id="cvMap"></div><div class="cv-leg" id="cvLeg"></div></div>
           <aside class="cv-side"><h3>Jump to</h3><div class="cv-j">${jumps.map((j, i) => `<button type="button" data-j="${i}"><span>${esc(j.n)}</span><small>${j.st ? j.st + (j.st === 1 ? " study" : " studies") : ""}${j.st && j.sc ? " · " : ""}${j.sc ? "scan" : ""}</small></button>`).join("")}<button type="button" data-j="all"><span>All India</span><small>reset</small></button></div>
-            <h3>Selected hexagon</h3><div class="cv-hx" id="cvHx">Click a hexagon to see which runs reach it.</div></aside></div></div>
+            <h3>Selected hexagon</h3><div class="cv-hx" id="cvHx">Click a hexagon to see which runs reach it.</div><h3>Selected PIN area</h3><div class="cv-hx" id="cvPin">Switch on “PIN code areas”, zoom in and click an area. Zoomed out you see the 3-digit PIN regions.</div></aside></div></div>
 
       <div class="cv-sec"><h2>Country and state view</h2><p>Share of each state's land area inside a study or scan footprint. States with no work yet are listed underneath.</p>
         <table class="cv-t"><tr><th>State / UT</th><th>Covered by</th><th class="n">Area covered</th><th class="n">Share of state</th><th style="width:140px"></th><th class="n">Mapped places</th><th>Last run</th></tr>
@@ -194,6 +194,7 @@
         const tip = (h) => ({ className: "cv-tip", sticky: true, direction: "auto", opacity: 1, offset: [12, 12] });
         const tileL = L.layerGroup(), hexL = L.layerGroup(), cityL = L.layerGroup(), studyL = L.layerGroup(), rawL = L.layerGroup(), dotL = L.layerGroup();
         let mode = "depth", sel = null;
+        const on = { hex: true, city: true, study: true, tiles: false, raw: false, pin: false };
         const maxN = Math.max(...D.hexes.map((h) => h.n), 1), maxP = Math.max(...D.hexes.map((h) => h.p), 1);
         const hexStyle = (h) => {
           let a, c = HOT;
@@ -212,15 +213,15 @@
         });
         const paintHex = () => polys.forEach((p) => p.setStyle(hexStyle(p._h)));
         live.forEach((s) => {
-          const c = L.circle([s.lat, s.lng], { radius: s.radius_km * 1000, color: COLD, weight: 1.6, fillColor: COLD, fillOpacity: 0.06 });
+          const c = L.circle([s.lat, s.lng], { radius: s.radius_km * 1000, color: COLD, weight: 1.4, fillColor: COLD, fillOpacity: 0.14 });
           c.bindTooltip(`<b>${esc(s.client_label)}</b><br>${esc(s.locality || s.site)} · ${esc(s.role)}<br>${s.radius_km} km · ${N(s.pois)} places · ${dt(s.generated)}`, tip()); studyL.addLayer(c);
-          const m = L.circleMarker([s.lat, s.lng], { radius: 5, color: COLD, weight: 1.5, fillColor: COLD, fillOpacity: 0.55 });
+          const m = L.circleMarker([s.lat, s.lng], { radius: 9, stroke: false, fillOpacity: 0, fill: true, fillColor: COLD });
           m.bindTooltip(`<b>${esc(s.client_label)}</b><br>${esc(s.locality || s.site)}`, tip()); dotL.addLayer(m);
         });
         D.cities.forEach((c) => {
-          const r = L.circle([c.lat, c.lng], { radius: c.radius_km * 1000, color: HOT, weight: 1.6, dashArray: "5 5", fill: false });
+          const r = L.circle([c.lat, c.lng], { radius: c.radius_km * 1000, color: HOT, weight: 1.4, fillColor: HOT, fillOpacity: 0.14 });
           r.bindTooltip(`<b>${esc(c.name)} city scan</b><br>${c.radius_km} km · ${N(c.places)} places · ${N(c.residents)} residents<br>${dt(c.scanned)}`, tip()); cityL.addLayer(r);
-          const m = L.circleMarker([c.lat, c.lng], { radius: 9, color: HOT, weight: 2, fill: false });
+          const m = L.circleMarker([c.lat, c.lng], { radius: 9, stroke: false, fillOpacity: 0, fill: true, fillColor: HOT });
           m.bindTooltip(`<b>${esc(c.name)} city scan</b><br>${N(c.places)} places`, tip()); dotL.addLayer(m);
         });
         D.store.tiles.forEach((t) => {
@@ -233,21 +234,91 @@
           L.rectangle([[b[0], b[1]], [b[2], b[3]]], { color: dark() ? "#9a9aa0" : "#666", weight: 1, dashArray: "2 4", fill: false, interactive: true })
             .bindTooltip(`<b>${esc(r.label)}</b><br>${N(r.rows)} rows · ${SIZE(r.size_mb)} · ${dt(r.updated)}`, tip()).addTo(rawL);
         });
-        const on = { hex: true, city: true, study: true, tiles: false, raw: false };
+
+        // ---- PIN-code areas (internal; /api/admin/pin/*). Coarse 3-digit regions when zoomed out, real PIN polygons from city level.
+        let pinIdx = null, pinMode = "cov", pinSel = null, pinLook = null, pinStatus = "";
+        const pinFine = new Map(), pinPolys = [], pinCoarse = [];
+        map.createPane("pin"); map.getPane("pin").style.zIndex = 450;
+        const pinR = L.canvas({ pane: "pin", padding: 0.3 });
+        const pinCoarseL = L.layerGroup(), pinFineL = L.layerGroup();
+        const pinCol = () => dark() ? "#d9d9de" : "#222";
+        const pinStyle = (o) => {
+          let a;
+          if (pinMode === "cov") a = o.h > 0 ? 0.34 : 0.03;
+          else { const mx = pinMode === "n" ? (pinIdx.max_n || 1) : (pinIdx.max_r || 1), v = pinMode === "n" ? o.n : o.r; a = v > 0 ? 0.12 + Math.pow(v / mx, 0.45) * 0.68 : 0.02; }
+          return { renderer: pinR, pane: "pin", color: pinCol(), weight: 0.7, opacity: 0.55, fillColor: pinMode === "r" ? COLD : HOT, fillOpacity: a };
+        };
+        const pinTip = (o) => `<b>PIN ${esc(o.p)}</b> · ${esc(o.o)}<br>${esc(o.d)}, ${esc(o.s)}<br>${o.h ? `<b>${N(o.n)}</b> mapped places · <b>${N(o.r)}</b> residents (modelled)` : "No coverage here yet"}`;
+        const pinShow = (o) => {
+          el.querySelector("#cvPin").innerHTML = `<b>PIN ${esc(o.p)}</b><br>${esc(o.o)} <span class="mut">(${esc(o.t || "")})</span><br>${esc(o.d)}, ${esc(o.s)}<br><span class="mut">${esc(o.v || "")}</span><br><br>${o.h ? `<b>${N(o.n)}</b> mapped places<br><b>${N(o.r)}</b> residents (modelled)<br><span class="mut">across ${N(o.h)} coverage ${o.h === 1 ? "hexagon" : "hexagons"} whose centre lies inside</span>` : "<b>Not covered yet</b><br>No city scan or client study reaches this PIN area."}`;
+        };
+        const pinSelect = (poly) => {
+          if (pinSel) pinSel.setStyle({ weight: 0.7, opacity: 0.55, color: pinCol() });
+          pinSel = poly; poly.setStyle({ weight: 2.4, opacity: 1, color: dark() ? "#fff" : "#000" }); poly.bringToFront(); pinShow(poly._o);
+        };
+        const addFine = (list) => list.forEach((o) => {
+          const poly = L.polygon(o.b, pinStyle(o)); poly._o = o;
+          poly.bindTooltip(() => pinTip(o), tip());
+          poly.on("click", () => pinSelect(poly));
+          poly.on("mouseover", () => { if (poly !== pinSel) poly.setStyle({ weight: 1.8, opacity: 0.95 }); });
+          poly.on("mouseout", () => { if (poly !== pinSel) poly.setStyle({ weight: 0.7, opacity: 0.55 }); });
+          pinFineL.addLayer(poly); pinPolys.push(poly);
+        });
+        const pinFetch = async (name) => AGT.api("/api/admin/pin/" + name);
+        const pinNeed = async () => {
+          if (!on.pin) return;
+          const z = map.getZoom();
+          if (!pinIdx) { pinIdx = await pinFetch("index"); if (pinIdx.empty) { pinStatus = "PIN layer not built yet (run scripts/build_pin_layer.py)."; legend(); return; } }
+          if (!pinCoarse.length && z < 9) {
+            pinStatus = "Loading PIN regions…"; legend();
+            const co = await pinFetch("coarse");
+            co.forEach((o) => { const poly = L.polygon(o.b, { renderer: pinR, pane: "pin", color: pinCol(), weight: 0.8, opacity: 0.6, fillColor: HOT, fillOpacity: o.h ? 0.3 : 0.04 }); poly._o = o;
+              poly.bindTooltip(`<b>PIN region ${esc(o.k)}xxx</b><br>${esc(o.d)}, ${esc(o.s)}<br>${N(o.c)} PIN areas · ${o.h ? `<b>${N(o.n)}</b> mapped places · <b>${N(o.r)}</b> residents` : "not covered yet"}<br><span style="opacity:.7">Zoom in for individual PIN areas</span>`, tip());
+              poly.on("click", () => map.fitBounds(poly.getBounds(), { maxZoom: 10 })); pinCoarseL.addLayer(poly); pinCoarse.push(poly); });
+            pinStatus = "";
+          }
+          if (z >= 9) {
+            const b = map.getBounds(), want = [];
+            for (let la = Math.floor(b.getSouth()); la <= Math.floor(b.getNorth()); la++) for (let lo = Math.floor(b.getWest()); lo <= Math.floor(b.getEast()); lo++) { const k = `t_${la}_${lo}`; if (pinIdx.chunks.includes(k) && !pinFine.has(k)) want.push(k); }
+            if (want.length) { pinStatus = `Loading ${want.length} PIN ${want.length === 1 ? "tile" : "tiles"}…`; legend(); await Promise.all(want.map(async (k) => { pinFine.set(k, 1); try { addFine(await pinFetch(k)); } catch (e) { pinFine.delete(k); } })); pinStatus = ""; }
+          }
+          legend();
+        };
+        const pinSync = () => {
+          const z = map.getZoom(), w = (l, v) => { if (v && !map.hasLayer(l)) map.addLayer(l); if (!v && map.hasLayer(l)) map.removeLayer(l); };
+          w(pinCoarseL, on.pin && z < 9); w(pinFineL, on.pin && z >= 9);
+          pinNeed().catch((e) => { pinStatus = "Could not load PIN areas: " + e.message; legend(); });
+        };
+        const pinLegend = () => `<div style="margin-top:6px;border-top:1px solid var(--line);padding-top:6px"><div><i style="background:${pinMode === "r" ? COLD : HOT};opacity:.5"></i>${pinMode === "cov" ? "PIN area with coverage" : pinMode === "n" ? "few → many mapped places" : "few → many residents"}</div><div><span class="r" style="border:1px solid ${pinCol()};border-radius:2px"></span>${map.getZoom() >= 9 ? "PIN area" : "3-digit PIN region"} · click for detail</div>${pinStatus ? `<div class="cv-pst">${esc(pinStatus)}</div>` : ""}</div>`;
+        const pinRepaint = () => { pinPolys.forEach((p) => p.setStyle(pinStyle(p._o))); if (pinSel) pinSel.setStyle({ weight: 2.4, opacity: 1, color: dark() ? "#fff" : "#000" }); };
+        const pinFind = async (q) => {
+          if (!/^\d{6}$/.test(q)) return;
+          try { if (!pinLook) pinLook = await pinFetch("lookup"); } catch (e) { return; }
+          const c = pinLook[q]; const box = el.querySelector("#cvPinQ");
+          if (!c) { box.setCustomValidity("Not found"); box.reportValidity(); box.setCustomValidity(""); return; }
+          if (!on.pin) { on.pin = true; el.querySelector('[data-ly="pin"]').setAttribute("aria-pressed", "true"); }
+          map.flyTo(c, 12, { duration: 0.8 });
+          map.once("moveend", async () => { await pinNeed(); const hit = pinPolys.find((p) => p._o.p === q); if (hit) pinSelect(hit); });
+        };
+        map.on("moveend", () => { if (on.pin) pinSync(); });
         const sync = () => {
           const z = map.getZoom(), close = z >= 9;
           const want = (l, v) => { if (v && !map.hasLayer(l)) map.addLayer(l); if (!v && map.hasLayer(l)) map.removeLayer(l); };
-          want(hexL, on.hex && z >= 10); want(cityL, on.city && close); want(studyL, on.study && close); want(rawL, on.raw); want(tileL, on.tiles && z >= 8);
+          want(hexL, on.hex && z >= 10); want(cityL, on.city); want(studyL, on.study); want(rawL, on.raw); want(tileL, on.tiles && z >= 8);
           want(dotL, (on.city || on.study) && !close);
+          pinSync();
           legend();
         };
         const legend = () => {
           const z = map.getZoom(), pals = mode === "depth" ? `<div><i style="background:${COLD};opacity:.4"></i>one run</div><div><i style="background:${HOT};opacity:.55"></i>two runs</div><div><i style="background:${HOT};opacity:.8"></i>three or more</div>`
             : `<div><i style="background:linear-gradient(90deg,color-mix(in srgb,${mode === "n" ? HOT : COLD} 12%,transparent),${mode === "n" ? HOT : COLD})"></i>${mode === "n" ? "few → many places" : "few → many residents"}</div>`;
-          leg.innerHTML = `${z >= 10 ? pals : '<div style="color:var(--ink-3)">Zoom in to city level for hexagons</div>'}<div><span class="r" style="border:2px solid ${HOT};border-style:dashed"></span>city scan, 10 km</div><div><span class="r" style="border:2px solid ${COLD}"></span>client study, 5 km</div>${on.raw ? `<div><span class="r" style="border-radius:2px;border:1px dashed #888"></span>raw download area</div>` : ""}${on.tiles ? `<div><span class="r" style="border-radius:2px;border:1px dotted ${COLD}"></span>stored tile, up to date</div><div><span class="r" style="border-radius:2px;border:1px dotted ${HOT}"></span>stored tile, due for refresh</div>` : ""}`;
+          leg.innerHTML = `${z >= 10 ? pals : '<div style="color:var(--ink-3)">Zoom in to city level for hexagons</div>'}<div><span class="r" style="border:2px solid ${HOT};background:color-mix(in srgb,${HOT} 18%,transparent)"></span>city scan, 10 km radius</div><div><span class="r" style="border:2px solid ${COLD};background:color-mix(in srgb,${COLD} 18%,transparent)"></span>client study, 5 km radius</div><div style="color:var(--ink-3)">Circles are drawn to true scale, so they are small until you zoom in.</div>${on.pin ? pinLegend() : ""}${on.raw ? `<div><span class="r" style="border-radius:2px;border:1px dashed #888"></span>raw download area</div>` : ""}${on.tiles ? `<div><span class="r" style="border-radius:2px;border:1px dotted ${COLD}"></span>stored tile, up to date</div><div><span class="r" style="border-radius:2px;border:1px dotted ${HOT}"></span>stored tile, due for refresh</div>` : ""}`;
         };
         map.on("zoomend", sync); sync();
-        el.querySelectorAll("[data-ly]").forEach((b) => b.onclick = () => { on[b.dataset.ly] = !on[b.dataset.ly]; b.setAttribute("aria-pressed", on[b.dataset.ly]); sync(); });
+        el.querySelectorAll("[data-ly]").forEach((b) => b.onclick = () => { on[b.dataset.ly] = !on[b.dataset.ly]; b.setAttribute("aria-pressed", on[b.dataset.ly]);
+          if (b.dataset.ly === "pin" && on.pin && on.hex) { on.hex = false; el.querySelector('[data-ly="hex"]').setAttribute("aria-pressed", "false"); } sync(); });
+        el.querySelectorAll("[data-pm]").forEach((b) => b.onclick = () => { pinMode = b.dataset.pm; el.querySelectorAll("[data-pm]").forEach((x) => x.setAttribute("aria-pressed", x === b)); pinRepaint(); legend(); });
+        el.querySelector("#cvPinQ").addEventListener("keydown", (e) => { if (e.key === "Enter") pinFind(e.target.value.trim()); });
         el.querySelectorAll("[data-hm]").forEach((b) => b.onclick = () => { mode = b.dataset.hm; el.querySelectorAll("[data-hm]").forEach((x) => x.setAttribute("aria-pressed", x === b)); paintHex(); legend(); });
         el.querySelectorAll("[data-j]").forEach((b) => b.onclick = () => { if (b.dataset.j === "all") { map.fitBounds(india); return; } const j = jumps[+b.dataset.j]; map.flyTo([j.lat, j.lng], 11, { duration: 0.8 }); });
         setTimeout(() => map.invalidateSize(), 200);
