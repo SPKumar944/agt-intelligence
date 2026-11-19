@@ -22,7 +22,7 @@
   <section class="sn-hero"><div class="cp-wrap in">
     <div><span class="mono">City snapshots</span><h1>Every city,<br /><em>by the numbers.</em></h1></div>
     <div><p>Pick a city on the map or from the tier lists. A snapshot shows who lives there, what retail exists and where it is thin — compared like for like with a benchmark city. Cities without a snapshot yet are on the rollout plan.</p>
-      <div class="sn-stats"><div><span class="mono">Cities</span><b>${CITIES.length}</b><small>across ${new Set(CITIES.map((c) => c.s)).size} states and territories</small></div><div><span class="mono">Tiers</span><b>${R.tiers.length}</b><small>${esc(R.tiers[0].short)} to ${esc(R.tiers[R.tiers.length - 1].short)}</small></div><div><span class="mono">Snapshots live</span><b>${nSnap}</b><small>${SNAPS.map((s) => esc(s.name)).join(", ")}</small></div></div>
+      <div class="sn-stats"><div><span class="mono">Cities</span><b>${CITIES.length}</b><small>across ${new Set(CITIES.map((c) => c.s)).size} states and territories</small></div><div><span class="mono">Tiers</span><b>${R.tiers.length}</b><small>${esc(R.tiers[0].short)} to ${esc(R.tiers[R.tiers.length - 1].short)}</small></div><div><span class="mono">Snapshots live</span><b>${nSnap}</b><small>${nSnap === CITIES.length ? "every city in the plan" : "of " + CITIES.length + " · more every week"}</small></div></div>
       <p style="margin:26px 0 0;font-size:15px"><span class="mono" style="color:var(--hot)">New</span> &nbsp;<a href="event.html" style="color:var(--ink);text-decoration:underline;text-underline-offset:3px">Event brief — Bengaluru around Deepavali 2026: the calendar, the weather, the departure hubs →</a></p></div>
   </div></section>
   <section class="sn-mapsec"><div class="cp-wrap">
