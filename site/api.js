@@ -24,16 +24,4 @@
     logout: async () => { try { await api("/api/logout", { body: {} }); } catch (e) { /* already out */ } setToken(""); },
     url: (p) => base + p,
   };
-  /* Screen protection: only on the dashboard (pages carrying <meta name="agt-guard">), and only for accounts
-     the super admin has marked as protected (never super admins). Website pages are never affected. */
-  const me = document.currentScript && document.currentScript.src;
-  if (token() && document.querySelector('meta[name="agt-guard"]')) {
-    window.AGT.session().then((s) => {
-      if (!s || s.role !== "user" || !s.guard) return;
-      window.__agtGuardSession = { email: s.email, id: s.id };
-      const g = document.createElement("script");
-      g.src = me ? new URL("guard.js?v=5", me).href : "site/guard.js?v=5";
-      document.head.appendChild(g);
-    });
-  }
 })();
