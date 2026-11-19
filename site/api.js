@@ -24,4 +24,15 @@
     logout: async () => { try { await api("/api/logout", { body: {} }); } catch (e) { /* already out */ } setToken(""); },
     url: (p) => base + p,
   };
+  /* Screen protection: only for accounts the super admin has marked as protected (never super admins). */
+  const me = document.currentScript && document.currentScript.src;
+  if (token()) {
+    window.AGT.session().then((s) => {
+      if (!s || s.role !== "user" || !s.guard) return;
+      window.__agtGuardSession = { email: s.email, id: s.id };
+      const g = document.createElement("script");
+      g.src = me ? new URL("guard.js?v=1", me).href : "site/guard.js?v=1";
+      document.head.appendChild(g);
+    });
+  }
 })();
