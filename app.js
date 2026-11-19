@@ -948,6 +948,17 @@ const ALL_TOGGLES = ["streets", "walkshed", "rings", "hexes", "competitors", "ca
 function applyBusinessDefaults(site) {
   const db = (site.business || {}).dashboard || {};
   const on = new Set(["streets", "stores"]);   // calm by default: everything else is opt-in from the Data layers panel
+  const cp = (site.business || {}).client_priorities;   // the customer's request-form answers: layers they scored 7+ (or listed brands for) start on
+  if (cp) {
+    const m = cp.minor || {}, hi = (k) => (m[k] || 0) >= 7;
+    [["dining", "dining"], ["kidsvenues", "kids"], ["education", "education"], ["techparks", "techparks"], ["offices", "offices"]].forEach(([q, l]) => { if (hi(q)) on.add(l); });
+    if (hi("rail") || hi("bus")) on.add("transit");
+    if (((cp.brands || {}).competitors || []).length) on.add("competitors");
+    ((site.business || {}).custom_layers || []).forEach((c) => {
+      const key = /^client_malls$/.test(c.id) ? "malls" : /^client_parks$/.test(c.id) ? "parks" : /^client_supermarkets$/.test(c.id) ? "supermarkets" : /^client_societies$/.test(c.id) ? "societies" : null;
+      if ((key && hi(key)) || /^cb_/.test(c.id) || (c.id === "client_other" && ((cp.other || {}).score || 0) >= 7)) on.add("custom_" + c.id);
+    });
+  }
   S.on = {};
   ALL_TOGGLES.forEach((k) => { S.on[k] = on.has(k); });
   ((site.business || {}).custom_layers || []).forEach((c) => { S.on["custom_" + c.id] = on.has("custom_" + c.id); });

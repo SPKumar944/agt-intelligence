@@ -26,6 +26,63 @@
     .loc .code i.ok { color: #1a7f4b; } .loc .code i.bad { color: #b42318; }
     .loc .rm { width: 44px; height: 44px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--bg); color: var(--ink-2); cursor: pointer; font-size: 18px; line-height: 1; }
     .loc .rm:hover { border-color: var(--ink-3); color: var(--ink); } .loc .rm[disabled] { opacity: .35; cursor: default; }
+
+    /* ---- priorities: 0-10 sliders, fine-tune dropdowns, brand pickers ---- */
+    .pri { display: grid; gap: 22px; margin: 4px 0 6px; }
+    .q .q-top { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
+    .q label.q-l { font-size: 15.5px; font-weight: 600; letter-spacing: -.012em; color: var(--ink); }
+    .q output { font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; min-width: 92px; text-align: right; }
+    .q.unset output { color: var(--ink-3); font-weight: 500; }
+    .q .q-h { font-size: 13.5px; color: var(--ink-2); margin: 3px 0 8px; line-height: 1.4; }
+    .q input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; margin: 0; height: 28px; background: transparent; cursor: pointer; --p: 50%; }
+    .q input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: linear-gradient(to right, var(--ink) var(--p), var(--bg-3) var(--p)); }
+    .q input[type=range]::-moz-range-track { height: 4px; border-radius: 4px; background: var(--bg-3); }
+    .q input[type=range]::-moz-range-progress { height: 4px; border-radius: 4px; background: var(--ink); }
+    .q input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--bg); border: 2px solid var(--ink); margin-top: -9px; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+    .q input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--bg); border: 2px solid var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+    .q input[type=range]:focus-visible { outline: none; }
+    .q input[type=range]:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 4px color-mix(in srgb, var(--ink) 25%, transparent); }
+    .q.unset input[type=range]::-webkit-slider-runnable-track { background: var(--bg-3); }
+    .q.unset input[type=range]::-moz-range-progress { background: var(--bg-3); }
+    .q.unset input[type=range]::-webkit-slider-thumb { border-color: var(--ink-3); }
+    .q.unset input[type=range]::-moz-range-thumb { border-color: var(--ink-3); }
+    .q .q-s { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--ink-3); margin-top: -2px; }
+    .q .q-tag { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; padding: 1px 7px; border-radius: 980px; background: var(--bg-3); color: var(--ink-2); margin-left: 8px; vertical-align: 1px; }
+    .q .q-tag.edited { background: var(--ink); color: var(--bg); }
+    .q .q-clear { border: 0; background: none; color: var(--ink-3); font-size: 12px; cursor: pointer; padding: 0 0 0 10px; text-decoration: underline; }
+    .pri-more { border: 1px solid var(--line-2); border-radius: 14px; background: var(--bg); }
+    .pri-more + .pri-more { margin-top: 10px; }
+    .pri-more > summary { list-style: none; cursor: pointer; padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-weight: 600; font-size: 15px; letter-spacing: -.01em; }
+    .pri-more > summary::-webkit-details-marker { display: none; }
+    .pri-more > summary::after { content: "+"; font-size: 20px; font-weight: 400; color: var(--ink-3); line-height: 1; }
+    .pri-more[open] > summary::after { content: "−"; }
+    .pri-more > summary em { font-style: normal; font-weight: 400; font-size: 13px; color: var(--ink-3); margin-left: auto; padding-right: 6px; }
+    .pri-body { padding: 4px 18px 22px; display: grid; gap: 20px; }
+    .pri-list { display: grid; gap: 26px; }
+    .pri-note { font-size: 13px; color: var(--ink-2); display: flex; justify-content: space-between; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0; }
+    .pri-note button { border: 0; background: none; color: var(--ink); text-decoration: underline; cursor: pointer; font: inherit; padding: 0; }
+    .pri-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+    .pri-two .field input, .pri-two .field select { height: 44px; }
+    .more-label { margin: 34px 0 10px; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; }
+    .bp { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .bp-card { border: 1px solid var(--line-2); border-radius: 16px; padding: 20px; background: var(--bg); display: grid; gap: 14px; align-content: start; min-width: 0; }
+    .bp-card h4 { margin: 0; font-size: 16px; letter-spacing: -.015em; }
+    .bp-card .q-h { margin: 4px 0 0; font-size: 13.5px; color: var(--ink-2); font-weight: 400; line-height: 1.4; }
+    .chip[hidden] { display: none; }
+    .more-types { border: 0; background: none; color: var(--ink-2); font: inherit; font-size: 12.5px; text-decoration: underline; cursor: pointer; padding: 2px 0 0; justify-self: start; }
+    .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+    .chip { border: 1px solid var(--line-2); background: var(--bg); color: var(--ink); border-radius: 980px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; line-height: 1.25; }
+    .chip:hover { border-color: var(--ink-3); }
+    .chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+    .chip.brand { font-size: 12.5px; padding: 5px 11px; }
+    .bp-dom { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 9px; }
+    .bp-dom-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 13px; font-weight: 600; }
+    .bp-dom-h span { font-weight: 400; color: var(--ink-3); }
+    .bp-dom-h button { border: 0; background: none; font: inherit; font-size: 12px; font-weight: 400; color: var(--ink-2); text-decoration: underline; cursor: pointer; padding: 0; }
+    .bp-add { display: flex; gap: 8px; }
+    .bp-add input { flex: 1; min-width: 0; height: 40px; border: 1px solid var(--line-2); border-radius: 10px; padding: 0 12px; background: var(--bg); color: var(--ink); font: inherit; font-size: 14px; }
+    .bp-sum { font-size: 13px; color: var(--ink-2); min-height: 18px; }
+    @media (max-width: 860px) { .bp { grid-template-columns: 1fr; } .q output { min-width: 0; } }
     .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 18px; }
     .modes button { text-align: left; padding: 16px 18px; border: 1px solid var(--line-2); border-radius: 14px; background: var(--bg); color: var(--ink); cursor: pointer; font: inherit; }
     .modes button b { display: block; font-size: 16px; letter-spacing: -.015em; } .modes button span { display: block; font-size: 13.5px; color: var(--ink-2); margin-top: 4px; line-height: 1.4; }
@@ -157,6 +214,20 @@
               </div>
             </fieldset>
 
+            <fieldset class="fset" id="priFs">
+              <legend>What matters to you</legend>
+              <p class="hint">Optional, and quick. Slide each one from 0 (doesn't matter) to 10 (critical). If you're not sure, leave it and we'll decide. Your answers tune how we analyse and rank locations for <i>your</i> business.</p>
+              <div class="pri" id="priMajor"></div>
+              <p class="more-label">Fine-tune <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional, already suggested from your answers above; change anything you like)</span></p>
+              <div id="priMore"></div>
+            </fieldset>
+
+            <fieldset class="fset" id="brandFs">
+              <legend>Competitors and nearby brands</legend>
+              <p class="hint">Optional. Pick the kinds of business, then the brands. We find other competitors on our own; this makes sure the ones you care about are counted.</p>
+              <div class="bp" id="brandBox"></div>
+            </fieldset>
+
             <div class="form">
               <label class="checkrow"><input type="checkbox" id="consent" name="consent" /><span>I agree that AGT Intelligence may use these details to review my request and contact me about it. The report stays private to my email address.</span></label>
               <button class="btn btn-primary" type="submit" id="submitBtn" style="justify-self:start">Submit request</button>
@@ -184,6 +255,8 @@
 <script src="site/layout.js?v=10"></script>
 <script src="site/coverage-data.js?v=2"></script>
 <script src="site/coverage.js?v=11"></script>
-<script src="site/request.js?v=5"></script>
+<script src="site/brands.js?v=1"></script>
+<script src="site/priorities.js?v=3"></script>
+<script src="site/request.js?v=6"></script>
 </body>
 </html>

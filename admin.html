@@ -301,6 +301,7 @@
       ${d.ai_status ? `<div class="sec"><h3>Step 1 · Claude profile</h3><div class="kv"><span>Status</span><span>${{ pending: "Waiting to start", running: "Claude is drafting the rules…", done: "Done — rules are in the profile below", failed: "Failed", skipped: "Skipped — no API key, format presets used", override: "Started without Claude (your choice)" }[d.ai_status] || esc(d.ai_status)}${d.ai_error ? `<br><span class="small neg">${esc(d.ai_error)}</span>` : ""}</span></div>
         ${["pending", "running", "failed"].includes(d.ai_status) ? `<p class="small muted" style="margin:8px 0">The analysis will not start until Claude's rules are ready${d.status === "approved" ? " (it is approved and waiting in the queue)" : ""}.</p>` : ""}
         ${["failed", "pending", "skipped"].includes(d.ai_status) ? `<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-secondary btn-sm" id="aiRetry">Run Claude now</button>${d.ai_status !== "skipped" ? '<button class="btn btn-secondary btn-sm" id="aiSkip">Start without Claude</button>' : ""}</div>` : ""}</div>` : ""}
+      ${priBox(d)}
       ${d.study && d.study.mode === "area" && d.study.area ? `<div class="sec"><h3>Request type: find new locations</h3><div class="kv"><span>Area centre</span><span>${esc(d.study.area.centre)}</span><span>Radius</span><span>${d.study.area.radius_km} km</span><span>Locations to suggest</span><span>${d.study.area.n}</span></div></div>` : ""}
       <div class="sec"><h3>${d.study && d.study.mode === "area" ? "Existing outlets (context)" : "Locations"} (${d.locations.length})</h3>${d.locations.map((l, i) => `<div class="locrow"><span class="n">${i + 1}</span><span><code>${esc(l.code)}</code>${l.label ? " · " + esc(l.label) : ""}</span><span class="pill">${l.role === "existing" ? "Existing outlet" : l.role === "alternatives" ? `Site + ${l.n_suggest} alternatives · ${l.search_km} km` : "Site to evaluate"}</span></div>`).join("")}
         <div class="small muted" style="margin-top:8px"><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/${encodeURIComponent(d.locations[0] ? d.locations[0].code : "")}">Check the first code on Google Maps ↗</a></div></div>
@@ -409,6 +410,29 @@
   }
   $("#uQ").addEventListener("input", (e) => { UQ = e.target.value; if (UD) renderUsers(); });
 
+  const PRI_MAJOR = { footfall: "Heavy footfall", residents: "People living nearby", workers: "People working nearby", avoid_rivals: "Avoid many competitors", anchors: "Businesses that bring customers", avoid_cannibal: "Avoid taking sales from own outlets" };
+  const PRI_MINOR = { kids: "Children 0–14", youth: "Youth 15–24", working: "Adults 25–59", seniors: "Seniors 60+", visitors: "Visitors", dining: "Restaurants & cafés", kidsvenues: "Kids & family venues", education: "Schools & colleges", rail: "Metro & rail", bus: "Bus stops", techparks: "Tech parks", offices: "Offices", malls: "Malls & cinemas", parks: "Parks", supermarkets: "Supermarkets & high streets", societies: "Residential societies", brand_vs_local: "Branded vs local rivals", indirect: "Similar shops as rivals" };
+  const pct = (x) => Math.round(x * 100) + "%";
+  function priBox(d) {
+    const P = d.priorities; if (!P) return "";
+    const bar = (v) => v == null ? '<span class="muted">not sure</span>' : `<span style="display:inline-block;width:70px;height:6px;border-radius:3px;background:var(--bg-3);vertical-align:middle;margin-right:8px"><i style="display:block;height:100%;width:${v * 10}%;border-radius:3px;background:var(--ink)"></i></span><b>${v}</b>`;
+    const main = Object.entries(PRI_MAJOR).map(([k, l]) => `<span>${l}</span><span>${bar(P.major[k])}</span>`).join("");
+    const mins = Object.entries(PRI_MINOR).filter(([k]) => P.minor[k] && P.minor[k].value != null).map(([k, l]) => `<span>${l}</span><span>${bar(P.minor[k].value)} <span class="small muted">${P.minor[k].manual ? "set by client" : "suggested"}</span></span>`).join("");
+    const br = (a) => a.length ? a.map((b) => esc(b.name)).join(", ") : "none";
+    const E = d.priority_effects || {}, sw = E.suitability_weights;
+    const eff = [];
+    if (sw) eff.push(["Suitability weights", `demographic ${pct(sw.demographic)} · commercial ${pct(sw.commercial)} · synergy ${pct(sw.synergy)} · white space ${pct(sw.white_space)}`]);
+    if (E.white_space_k != null) eff.push(["Rivals tolerated", E.white_space_k]);
+    if (E.cannibal_penalty != null) eff.push(["Own-outlet sales penalty", pct(E.cannibal_penalty)]);
+    if (E.peak_hours) eff.push(["Busy hours", `${String(E.peak_hours[0]).padStart(2, "0")}:00–${String(E.peak_hours[1]).padStart(2, "0")}:00`]);
+    if (E.avg_ticket_inr != null) eff.push(["Average bill", "₹" + E.avg_ticket_inr]);
+    const o = P.other && P.other.label ? `<span>Something else: ${esc(P.other.label)}</span><span>${bar(P.other.score)}</span>` : "";
+    return `<div class="sec"><h3>Client priorities</h3>
+      <div class="kv">${main}</div>
+      ${mins || o ? `<details style="margin-top:10px"><summary class="small muted" style="cursor:pointer">Finer answers (${Object.values(P.minor).filter((m) => m.value != null).length})</summary><div class="kv" style="margin-top:8px">${mins}${o}</div></details>` : ""}
+      <div class="kv" style="margin-top:12px"><span>Competitor brands</span><span>${br(P.brands.competitors)}</span><span>Nearby brands</span><span>${br(P.brands.complementary)}</span></div>
+      ${eff.length ? `<div class="small" style="margin-top:12px;color:var(--ink-2)"><b>Applied to the profile:</b><br>${eff.map(([a, b]) => `${a}: ${b}`).join("<br>")}</div>` : ""}</div>`;
+  }
   const mailList = (emails) => emails.length ? emails.map((m) => `<div class="mrow"><div class="h"><b>${esc(m.subject)}</b><span class="small muted">${fdt(m.at)} · <span class="pill ${esc(m.status)}">${esc(m.status === "sent" ? "Sent" : m.status === "outbox" ? "Saved (not sent)" : m.status)}</span></span></div>
       ${m.error ? `<div class="small neg" style="margin-top:4px">${esc(m.error)}</div>` : ""}<details><summary class="small muted" style="cursor:pointer;margin-top:6px">Show message</summary><pre>${esc(m.body)}</pre></details></div>`).join("") : '<div class="small muted">No emails have been sent to this address yet.</div>';
 

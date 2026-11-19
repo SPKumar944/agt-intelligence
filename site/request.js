@@ -81,7 +81,7 @@
     const btn = $("#submitBtn"); btn.disabled = true; btn.textContent = "Sending…";
     try {
       const j = await AGT.api(ADMIN ? "/api/admin/requests" : "/api/me/requests", { body: { email: v("email"), name: v("name"), phone: v("phone"), role: $("#role").value, company: v("company"), website: v("website"), format: $("#format").value,
-        city: (window.AGT_COVERAGE ? AGT_COVERAGE.cityValue() : v("city")), description: v("description"), locations: L, mode: MODE, area, consent: true } });
+        city: (window.AGT_COVERAGE ? AGT_COVERAGE.cityValue() : v("city")), description: v("description"), locations: L, mode: MODE, area, priorities: window.AGTPri ? AGTPri.collect() : null, consent: true } });
       $("#refOut").textContent = "Reference " + j.ref; if (ADMIN) $("#done").querySelector(".hero-cta").innerHTML = '<a class="btn btn-primary" href="admin.html#' + j.ref + '">Open in admin</a><a class="btn btn-secondary" href="request-report.html">File another</a>'; $("#emailOut").textContent = v("email");
       $("#formCard").hidden = true; $("#done").style.display = "block"; window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (x) {
