@@ -101,6 +101,7 @@
             <div class="card stat"><div class="k">Reports</div><div class="v" id="rCount">0</div><p id="rNote">Requested so far</p></div>
             <div class="card stat"><div class="k">Plan</div><div class="v" style="font-size:34px;margin-top:22px" id="planName">Free</div><p id="planNote"></p></div>
           </div>
+          <p class="small muted" id="apiLine" style="margin:16px 4px 0" hidden></p>
           <div class="split even" style="margin-top:44px;gap:32px">
             <div class="card" style="padding:32px">
               <p class="eyebrow">What is a credit?</p>
@@ -192,8 +193,8 @@
           <div class="pane-h" style="margin-top:44px"><h2>Orders</h2></div>
           <div class="card" style="padding:26px"><table class="t"><thead><tr><th>Order</th><th>Credits</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody id="orders"></tbody></table></div>
           <div id="usageWrap" hidden>
-            <div class="pane-h" style="margin-top:44px"><h2>API usage</h2><span class="small muted" id="usageNote"></span></div>
-            <div class="card" style="padding:26px"><table class="t"><thead><tr><th>Date</th><th>What used it</th><th>Reference</th><th style="text-align:right">Credits</th></tr></thead><tbody id="usage"></tbody></table></div>
+            <div class="pane-h" style="margin-top:44px"><h2>Claude API usage</h2><span class="small muted" id="usageNote"></span></div>
+            <div class="card" style="padding:26px"><table class="t"><thead><tr><th>Date</th><th>What used it</th><th>Request</th><th style="text-align:right">Tokens in / out</th><th style="text-align:right">Cost</th><th style="text-align:right">Credits</th></tr></thead><tbody id="usage"></tbody></table></div>
           </div>
           <div class="pane-h" style="margin-top:44px"><h2>Enterprise enquiries</h2></div>
           <div class="card" style="padding:26px"><table class="t"><thead><tr><th>Enquiry</th><th>Locations</th><th>Cities</th><th>Status</th></tr></thead><tbody id="enqs"></tbody></table></div>
@@ -276,9 +277,13 @@
     $$("[data-share]").forEach((b) => b.onclick = () => { tab("share"); $("#sRef").value = b.dataset.share; $("#sEmail").focus(); });
     renderShare();
     const us = ME.usage || [];
+    const ut = ME.usage_totals || { calls: 0, price_inr: 0 };
     $("#usageWrap").hidden = !us.length && !ME.usage_billing;
-    $("#usageNote").textContent = ME.usage_billing ? `1 credit = ${money(P.credit_value || 1000)} · charged as used` : "Not charged at the moment";
-    $("#usage").innerHTML = us.length ? us.map((x) => `<tr><td>${dt(x.at)}</td><td>${esc(x.feature)}</td><td>${esc(x.ref || "—")}</td><td style="text-align:right">${x.billed ? "−" + fmtC(x.credits) : "—"}</td></tr>`).join("") : `<tr><td colspan="4" class="muted">No API usage yet.</td></tr>`;
+    $("#usageNote").textContent = `${ut.calls} call${ut.calls === 1 ? "" : "s"} · ${money(Math.round(ut.price_inr * 100) / 100)} in total · ` + (ME.usage_billing ? `taken as credits (1 credit = ${money(P.credit_value || 1000)})` : "not charged at the moment");
+    $("#apiLine").hidden = !ut.calls;
+    $("#apiLine").innerHTML = `Claude API usage on your reports: <b>${ut.calls} call${ut.calls === 1 ? "" : "s"}</b>, ${Number(ut.input_tokens || 0).toLocaleString("en-IN")} tokens in and ${Number(ut.output_tokens || 0).toLocaleString("en-IN")} out, <b>${money(Math.round(ut.price_inr * 100) / 100)}</b>${ME.usage_billing ? "" : " (not charged at the moment)"}. <a href="#history" data-go="history">Details</a>`;
+    $$("#apiLine [data-go]").forEach((b) => b.onclick = (e) => { e.preventDefault(); tab("history"); });
+    $("#usage").innerHTML = us.length ? us.map((x) => `<tr><td>${dt(x.at)}</td><td>${esc(x.feature)}</td><td>${esc(x.ref || "—")}</td><td style="text-align:right">${Number((x.detail || {}).input_tokens || 0).toLocaleString("en-IN")} / ${Number((x.detail || {}).output_tokens || 0).toLocaleString("en-IN")}</td><td style="text-align:right">${money(x.price_inr)}</td><td style="text-align:right">${x.billed ? "−" + fmtC(x.credits) : "not charged"}</td></tr>`).join("") : `<tr><td colspan="6" class="muted">No API usage yet.</td></tr>`;
     $$("[data-wd]").forEach((b) => b.onclick = async () => {
       if (!confirm("Withdraw this request? Its credits will be returned to your account.")) return;
       try { const r = await AGT.api(`/api/me/requests/${b.dataset.wd}/withdraw`, { body: {} }); toast(`Withdrawn — ${r.refunded} credit(s) returned`); await load(); } catch (e) { toast(e.message); }
