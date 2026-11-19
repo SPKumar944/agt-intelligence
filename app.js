@@ -17,7 +17,7 @@ const S = {
         dining: false, kids: false, education: false, transit: false, techparks: false, offices: false, allpoints: false },
   openGroups: new Set(["foot"]),
 };
-let D = null, map = null, overlay = null, BIZ = null, REG = null;
+let D = null, map = null, overlay = null, BIZ = null, REG = null, PLAN = null;
 const B = () => (D && D.site.business) || {};
 const DEM = () => B().demand || {};
 const PROP = () => (D && (D.site.propensity || D.site.dessert_propensity)) || new Array(24).fill(1);
@@ -384,11 +384,20 @@ function layers() {
       getAlignmentBaseline: "center", getPixelOffset: [15, -14], background: true, backgroundPadding: [4, 2],
       getBackgroundColor: (d) => d.candidate_id === S.selCandidate ? [15, 23, 42, 255] : [15, 118, 110, 255], updateTriggers: { getBackgroundColor: S.selCandidate } }));
   }
-  // the study site (always on top): store for an outlet, crosshair for a prospective site
-  const prospective = D.site.profile.site_role === "prospective";
+  // the study site (always on top): store for an outlet, crosshair for a prospective site; an area search shows its area instead
+  const role = D.site.profile.site_role, prospective = role !== "existing";
+  if (role === "area") {
+    const at = D.site.profile.area_tile || {};
+    if (at.area_centre) L.push(new deck.PathLayer({ id: "search-area", data: [circle(at.area_centre[1], at.area_centre[0], at.area_radius_km * 1000)], getPath: (d) => d,
+      getColor: [29, 29, 31, 200], getWidth: 2, widthUnits: "pixels", getDashArray: [6, 4], dashJustified: true }));
+    if (PLAN) L.push(new deck.TextLayer({ id: "plan-other", data: PLAN.picks.filter((p) => p.site_id !== S.siteId), getPosition: (d) => [d.lng, d.lat], getText: (d) => "#" + d.pick_rank,
+      getSize: 12, getColor: [255, 255, 255, 255], background: true, getBackgroundColor: [110, 110, 115, 230], backgroundPadding: [4, 2], fontWeight: 700,
+      fontFamily: "Inter, -apple-system, sans-serif", pickable: false }));
+    return L;
+  }
   L.push(new deck.IconLayer({ id: "store", data: [{ lng: clng, lat: clat }], getPosition: (d) => [d.lng, d.lat],
     getIcon: () => badge(prospective ? "crosshair" : "store", "#1d1d1f", { strong: true }), getSize: 42, sizeUnits: "pixels", pickable: true }));
-  L.push(new deck.TextLayer({ id: "store-label", data: [site.centre], getPosition: (d) => d, getText: () => D.site.profile.store_name + (prospective ? " · prospective" : ""),
+  L.push(new deck.TextLayer({ id: "store-label", data: [site.centre], getPosition: (d) => d, getText: () => D.site.profile.store_name + (role === "alternatives" ? " · your site" : prospective ? " · prospective" : ""),
     getSize: 12.5, getColor: [15, 23, 42, 255], getPixelOffset: [0, -40], fontWeight: 700, fontFamily: "Inter, -apple-system, sans-serif",
     background: true, getBackgroundColor: [255, 255, 255, 235], backgroundPadding: [6, 3], getBorderColor: [29, 29, 31, 255], getBorderWidth: 1.2 }));
   return L;
@@ -432,7 +441,7 @@ function markerIcon(id, o) {
     case "offices": return ["briefcase", "#475569"];
     case "candidates": return ["map-pin-plus", "#6e6e73"];
     case "stores": return ["store", "#1d1d1f"];
-    case "store": return [D.site.profile.site_role === "prospective" ? "crosshair" : "store", "#1d1d1f"];
+    case "store": return [D.site.profile.site_role !== "existing" ? "crosshair" : "store", "#1d1d1f"];
     case "streets": return ["road", "#1d1d1f"];
     case "hexes": return ["hexagon", "#3a3a3c"];
     case "walkshed": return ["steps", "#6e6e73"];
@@ -488,7 +497,7 @@ function inspect(info) {
         ["Google rating", o.google_rating], ["Reviews", o.google_review_count], ["ID", o.store_id]]); break;
     case "candidates": selectCandidate(o.candidate_id, false); type = `Expansion candidate #${o.rank}`; title = o.name; body = candidateGrid(o); break;
     case "stores": type = "Existing outlet"; title = o.store_name; body = grid([["Serial", o.serial_no], ["Lat, Lng", `${o.lat.toFixed(5)}, ${o.lng.toFixed(5)}`]]); break;
-    case "store": { const p = D.site.profile; type = p.site_role === "prospective" ? "Prospective site" : "Client store"; title = p.store_name;
+    case "store": { const p = D.site.profile; type = p.site_role === "alternatives" ? "Your site" : p.site_role !== "existing" ? "Prospective site" : "Client store"; title = p.store_name;
       body = grid([["Serial", p.serial_no], ["Locality", p.locality], ["Ward", p.ward], ["Zone", p.zone], ["Corridor", p.corridor_name], ["Corridor tier", p.corridor_tier],
         ["Address", p.address], ["Phone", p.phone], ["Plus code", p.plus_code], ["Google rating", p.google_rating ?? "not fetched"]]); break; }
     case "walkshed": { const q = o.properties; type = "Catchment"; title = q.walkshed_type === "radial_buffer" ? "350 m radial catchment" : "350 m walk along roads";
@@ -504,7 +513,7 @@ function inspect(info) {
 }
 function candidateGrid(o) {
   return grid([["Persona", o.corridor_type], ["Shop front", `${o.frontage_street || o.corridor} (${o.frontage_road_type || "road"})`],
-    [`Peak footfall ${o.peak_window || ""}`, `${fmt(o.frontage_peak_hourly)}/hr · #${o.peak_footfall_rank} of 10`], ["Daily footfall", fmt(o.frontage_daily_footfall)], ["Corridor", o.corridor], ["Suitability", `${o.overall_suitability_score} · ${o.suitability_tier}`],
+    [`Peak footfall ${o.peak_window || ""}`, `${fmt(o.frontage_peak_hourly)}/hr` + (["alternatives", "area"].includes(D.site.profile.site_role) ? "" : ` · #${o.peak_footfall_rank} of 10`)], ["Daily footfall", fmt(o.frontage_daily_footfall)], ["Corridor", o.corridor], ["Suitability", `${o.overall_suitability_score} · ${o.suitability_tier}`],
     ["Nearest store", `${o.min_distance_km} km`], ["Analog benchmark", o.analog_benchmark], ["Cannibalisation of own outlets", o.cannibalization_risk_pct + "%"],
     ...(o.ci_rev_lakhs != null ? [["Revenue range ₹ L/month (P10–P90)", `${fmt(o.ci_rev_p10, 1)} – ${fmt(o.ci_rev_p90, 1)}`], ["Share of nearby demand captured", fmt(o.ci_capture_pct, 1) + "%"], ["Beats a typical site", fmt(o.ci_p_beat_typical) + "% of scenarios"]] : []),
     [`Projected ${UNIT().toLowerCase()}`, fmt(o.projected_daily_units)], ["Target demand ≤1.5 km", fmt(o.target_demand_15k)], ["Customers/month", fmt(o.projected_monthly_customers)], ["Revenue ₹ L/month", fmt(o.projected_monthly_revenue_lakhs, 2)],
@@ -534,7 +543,7 @@ function renderSite() {
 
   $("sitePanel").innerHTML = `
     <div class="store-card">
-      <div class="eyebrow">${esc(p.serial_no)} · ${esc(p.zone || "")} ZONE ${p.site_role === "prospective" ? '<span class="pass" style="background:var(--soft);color:var(--text-2)">PROSPECTIVE SITE</span>' : '<span class="pass">EXISTING OUTLET</span>'}</div>
+      <div class="eyebrow">${esc(p.serial_no)} · ${esc(p.zone || "")} ZONE ${p.site_role === "area" ? '<span class="pass" style="background:var(--soft);color:var(--text-2)">SEARCH AREA</span>' : p.site_role !== "existing" ? '<span class="pass" style="background:var(--soft);color:var(--text-2)">PROSPECTIVE SITE</span>' : '<span class="pass">EXISTING OUTLET</span>'}</div>
       <div class="note" style="margin-top:4px">${esc(B().format || "")}</div>
       <div class="store-meta">
         <div>Locality<b>${esc(p.locality)}</b></div><div>Ward<b>${esc(p.ward)}</b></div>
@@ -579,7 +588,7 @@ function renderSite() {
 }
 function siteAssessment(a, role) {
   const col = a.suit_score >= 75 ? "#047857" : a.suit_score >= 60 ? "#10b981" : a.suit_score >= 45 ? "#d97706" : "#64748b";
-  return `<div class="section" style="margin-top:12px"><div class="section-title"><h4>${role === "prospective" ? "Site assessment" : "Outlet location benchmark"}</h4>
+  return `<div class="section" style="margin-top:12px"><div class="section-title"><h4>${role !== "existing" ? "Site assessment" : "Outlet location benchmark"}</h4>
       <span>top ${fmt(100 - a.percentile_in_area, 0)}% of ${fmt(a.cells_in_area)} cells</span></div>
     <div class="cand" style="cursor:default"><div class="cand-head"><div class="rank" style="background:${col}">${Math.round(a.suit_score)}</div>
       <div><div class="cand-name">${esc(a.tier)}</div><div class="cand-persona">rank ${fmt(a.rank_in_area)} / ${fmt(a.cells_in_area)} · ${a.nearest_other_outlet_km != null ? `${a.nearest_other_outlet_km} km to ${esc((a.nearest_other_outlet || "").replace(/^.*?—\s*/, ""))}` : "no other outlet"}</div></div>
@@ -776,27 +785,57 @@ function ciNote() {
   const m = (D.site.profile || {}).interaction_model || {};
   return `<div class="note"><b>Revenue model — competitive interaction.</b> Each site’s expected volume comes from a Huff / MCI gravity model: every demand cell splits its custom between the candidate, ${fmt(m.rivals)} rival outlets and ${fmt(m.own_outlets)} of your own, in proportion to attraction ÷ distance<sup>${m.beta}</sup>. Attraction rises with complementary venues nearby (dining, transit, offices, education…) and falls with stronger rivals. Cannibalisation is the volume the candidate would take from your own outlets. Ranges are P10–P90 over ${m.draws} runs with the distance decay, complement strength, rival strength and outside option varied. Levels are anchored to the baseline of ${fmt(m.typical_site_units_per_day)}/day for a typical site until real sales data calibrate it; ranking between sites is what the model establishes. Ranked by expected net volume.</div>`;
 }
+function altHeader(a) {   // request type "site + N alternatives": the client's site as the benchmark
+  const better = a.n_better != null ? `${a.n_better} of ${a.n_found} beat your site` : `${a.n_found} found`;
+  return `<div class="section-title"><h4>Alternatives within ${a.search_km} km</h4><span>${better}</span></div>
+    <div class="cand" style="cursor:default;border-style:dashed"><div class="cand-head"><div class="rank" style="background:#1d1d1f">★</div>
+      <div><div class="cand-name">Your site · ${esc(D.site.profile.store_name)}</div><div class="cand-persona">${esc(a.frontage_street || "")} · ${fmt(a.frontage_daily_footfall)} passers-by a day</div></div></div>
+      <div class="cand-stats"><div>${UNIT()}<b>${fmt(a.ci_net_units)}</b></div><div>₹ L/mo<b>${fmt(a.ci_rev_lakhs, 1)}</b>${a.ci_rev_p10 != null ? `<small style="display:block;color:#6e6e73;font-weight:400">${fmt(a.ci_rev_p10, 1)}–${fmt(a.ci_rev_p90, 1)}</small>` : ""}</div>
+        <div>Own-outlet loss<b>${fmt(a.ci_cannibal_pct, 1)}%</b></div></div></div>
+    <div class="note" style="margin:0 0 12px">Every shop front within ${a.search_km} km (${fmt(a.pool_size)} checked, quietest quarter dropped, at least 300 m from your outlets) is scored with the same model as your site. The best ${a.n_requested} at least ${fmt(a.min_gap_m)} m apart are listed. They are options <i>instead of</i> your site, so each is compared with it directly.</div>`;
+}
+function planHeader() {   // request type "N new locations in an area": the whole plan across tiles
+  if (!PLAN) return `<div class="section-title"><h4>Recommended new locations</h4></div>`;
+  const P0 = PLAN.picks, mx = Math.max(1, ...P0.map((p) => p.marginal_units));
+  return `<div class="section-title"><h4>Recommended new locations</h4><span>${P0.length} of ${PLAN.area.n} · ${esc(PLAN.area.label || "")} ${PLAN.area.radius_km} km</span></div>
+    <div class="note" style="margin:0 0 10px">Picked one at a time across the whole area: each pick is the shop front that adds the most ${esc(PLAN.unit_label || "sales")} after what it would take from your outlets and the earlier picks. The bars show what each extra store adds — where they get short, more stores mostly share the same customers.${PLAN.stopped_early ? " Fewer than requested were found that still add sales." : ""}</div>
+    ${P0.map((p) => `<button class="plan-row ${p.site_id === S.siteId ? "here" : ""}" data-plan="${p.pick_rank}" style="display:grid;grid-template-columns:28px 1fr 64px;gap:8px;align-items:center;width:100%;text-align:left;border:0;background:none;padding:6px 2px;cursor:pointer;color:inherit;font:inherit">
+      <b>#${p.pick_rank}</b><span><span style="display:block;font-size:12.5px">${esc(p.name || "")}</span><span style="display:block;height:6px;border-radius:3px;background:currentColor;opacity:${p.site_id === S.siteId ? 1 : .45};width:${Math.max(4, p.marginal_units / mx * 100)}%;margin-top:4px"></span></span>
+      <span style="text-align:right;font-size:12.5px">+${fmt(p.marginal_units)}<small style="display:block;color:#6e6e73">₹${fmt(p.ci_rev_lakhs, 1)} L/mo</small></span></button>`).join("")}
+    <div class="note" style="margin:8px 0 14px">Network total: ${fmt((P0[P0.length - 1] || {}).cumulative_units)} ${esc(PLAN.unit_label || "")}. This area tile holds the picks listed below; others open their own tile.</div>`;
+}
+async function openPlanPick(rank) {
+  const p = PLAN && PLAN.picks.find((x) => x.pick_rank === +rank);
+  if (!p) return;
+  if (p.site_id !== S.siteId) { S.siteId = p.site_id; $("siteSelect").value = p.site_id; location.hash = `${BIZ}/${S.siteId}`; await loadSite(S.siteId); }
+  const c = D.layers.candidates.find((x) => x.plan_rank === p.pick_rank);
+  if (c) selectCandidate(c.candidate_id, true);
+}
 function renderExpansion() {
   const hx = D.hexes, ly = D.layers, [b0, b1] = D.site.golden_band_km;
   const elig = hx.all.filter((i) => hx.eligible && hx.eligible[i]);
   const cnt = SUIT.map(([t], k) => elig.filter((i) => hx.suit_score[i] >= t && (k === 0 || hx.suit_score[i] < SUIT[k - 1][0])).length);
-  const w = D.site.weights;
-  $("expansionTab").innerHTML = `
-    <div class="section-title"><h4>Golden band ${b0}–${b1} km</h4><span>${fmt(elig.length)} eligible cells</span></div>
-    <div class="tier-counts">${SUIT.map(([, c, l], k) => `<div class="tier-count" style="border-top:3px solid ${c}"><div class="n">${fmt(cnt[k])}</div><div class="l">${l}</div></div>`).join("")}</div>
-    <button class="ghost-btn" id="showSuit" style="width:100%;margin-bottom:12px">Show suitability mesh on map</button>
+  const w = D.site.weights, role = D.site.profile.site_role, alt = D.site.profile.alternatives;
+  const head = role === "alternatives" && alt ? altHeader(alt) : role === "area" ? planHeader() : `
+    <div class="section-title"><h4>Golden band ${b0}–${b1} km</h4><span>${fmt(elig.length)} eligible cells</span></div>`;
+  $("expansionTab").innerHTML = `${head}
+    <div class="tier-counts"${["alternatives", "area"].includes(role) ? ' style="display:none"' : ""}>${SUIT.map(([, c, l], k) => `<div class="tier-count" style="border-top:3px solid ${c}"><div class="n">${fmt(cnt[k])}</div><div class="l">${l}</div></div>`).join("")}</div>
+    <button class="ghost-btn" id="showSuit" style="width:100%;margin-bottom:12px${["alternatives", "area"].includes(role) ? ";display:none" : ""}">Show suitability mesh on map</button>
     ${ly.candidates.map((c) => `<div class="cand ${c.candidate_id === S.selCandidate ? "sel" : ""}" data-cand="${c.candidate_id}">
       <div class="cand-head"><div class="rank">${c.rank}</div>
         <div><div class="cand-name">${esc(c.name)}</div><div class="cand-persona">${esc(c.corridor_type)} · ${c.min_distance_km} km <span class="pass">PASS</span></div>
-          ${c.frontage_peak_hourly != null ? `<div class="cand-persona">${ico("walking", null, 12, 1.4)} ${fmt(c.frontage_peak_hourly)}/hr at peak ${esc(c.peak_window || "")} · footfall #${c.peak_footfall_rank} of 10</div>` : ""}</div>
+          ${c.frontage_peak_hourly != null ? `<div class="cand-persona">${ico("walking", null, 12, 1.4)} ${fmt(c.frontage_peak_hourly)}/hr at peak ${esc(c.peak_window || "")} ${(D.site.profile.site_role || "existing") === "existing" || D.site.profile.site_role === "prospective" ? ` · footfall #${c.peak_footfall_rank} of 10` : ""}</div>` : ""}</div>
         <div class="score" style="color:${scoreColor(c.overall_suitability_score)}">${fmt(c.overall_suitability_score, 1)}<small>/ 100</small></div></div>
       <div class="cand-bars">${[["DEMO", c.demographic_score], ["COMM", c.commercial_score], ["SYN", c.synergy_score], ["WHITE", c.white_space_score]].map(([l, v]) =>
         `<div class="cbar"><div class="l">${l} ${fmt(v, 0)}</div><div class="tr"><div style="width:${v}%;background-image:${scoreGradient(v)}"></div></div></div>`).join("")}</div>
+      ${c.vs_site_pct != null ? `<div class="cand-persona" style="margin:2px 0 6px"><b style="color:${c.vs_site_pct >= 0 ? "#17653a" : "#b42318"}">${c.vs_site_pct >= 0 ? "+" : ""}${fmt(c.vs_site_pct, 0)}% vs your site</b> · ${c.dist_from_site_km} km away · ${fmt(c.footfall_vs_site, 1)}× its street footfall</div>` : ""}
+      ${c.marginal_units != null ? `<div class="cand-persona" style="margin:2px 0 6px"><b>Pick #${c.plan_rank}</b> · adds ${fmt(c.marginal_units)} ${esc(UNIT())} to the network (total ${fmt(c.cumulative_units)})</div>` : ""}
       <div class="cand-stats"><div>${UNIT()}<b>${fmt(c.projected_daily_units)}</b></div><div>₹ L/mo<b>${fmt(c.projected_monthly_revenue_lakhs, 1)}</b>${c.ci_rev_p10 != null ? `<small style="display:block;color:#6e6e73;font-weight:400">${fmt(c.ci_rev_p10, 1)}–${fmt(c.ci_rev_p90, 1)}</small>` : ""}</div>
         <div>Payback<b>${fmt(c.est_payback_months, 1)} mo</b></div><div>${c.ci_rev_p10 != null ? "Own-outlet loss" : "Risk"}<b>${fmt(c.cannibalization_risk_pct, 1)}%</b></div></div>
     </div>`).join("")}
-    <div class="note">Candidates are restricted to the 10 busiest peak-hour shop fronts in the golden band (≥1.5 km apart; expressways and ramps excluded), then ranked by area score. Score = ${Math.round(w.demographic * 100)}% demographic + ${Math.round(w.commercial * 100)}% commercial + ${Math.round(w.synergy * 100)}% synergy + ${Math.round(w.white_space * 100)}% white space, each a percentile within the study area. ${esc(UNIT())} and revenue are heuristic projections from a baseline of ${fmt((B().economics || {}).baseline_daily_units)} ${esc((DEM().unit || "units"))}/day at ₹${fmt((B().economics || {}).avg_ticket_inr)} per bill; risk is the Huff-model share of the candidate’s 1.5 km demand pulled by the nearest existing outlet.</div>${(ly.candidates[0] || {}).ci_rev_lakhs != null ? ciNote() : ""}`;
+    <div class="note"${["alternatives", "area"].includes(role) ? " hidden" : ""}>Candidates are restricted to the 10 busiest peak-hour shop fronts in the golden band (≥1.5 km apart; expressways and ramps excluded), then ranked by area score. Score = ${Math.round(w.demographic * 100)}% demographic + ${Math.round(w.commercial * 100)}% commercial + ${Math.round(w.synergy * 100)}% synergy + ${Math.round(w.white_space * 100)}% white space, each a percentile within the study area. ${esc(UNIT())} and revenue are heuristic projections from a baseline of ${fmt((B().economics || {}).baseline_daily_units)} ${esc((DEM().unit || "units"))}/day at ₹${fmt((B().economics || {}).avg_ticket_inr)} per bill; risk is the Huff-model share of the candidate’s 1.5 km demand pulled by the nearest existing outlet.</div>${(ly.candidates[0] || {}).ci_rev_lakhs != null ? ciNote() : ""}`;
   $("expansionTab").querySelectorAll("[data-cand]").forEach((el) => el.onclick = () => selectCandidate(el.dataset.cand, true));
+  $("expansionTab").querySelectorAll("[data-plan]").forEach((el) => el.onclick = () => openPlanPick(el.dataset.plan).catch(fail));
   $("showSuit").onclick = () => { S.hexMode = "suit_score"; S.hexScope = "band"; S.on.hexes = true; S.hexOpacity = 0.7; S.openGroups.add("mesh"); buildHexScale(); renderLayersPanel(); renderHexLegend(); redraw(); };
 }
 function selectCandidate(id, fly) {
@@ -944,9 +983,10 @@ async function loadSite(id, isNewBusiness = false) {
 async function loadBusiness(bid) {
   BIZ = bid;
   REG = await getJSON(`data/${bid}/sites.json`);
-  let n = 0, p = 0;
+  PLAN = REG.sites.some((s) => s.role === "area") ? await getJSON(`data/${bid}/plan.json`).catch(() => null) : null;
+  let n = 0, p = 0, a = 0;
   $("siteSelect").innerHTML = REG.sites.map((s) => {
-    const tag = s.role === "prospective" ? `P${String(++p).padStart(2, "0")}` : `#${String(++n).padStart(2, "0")}`;
+    const tag = s.role === "area" ? `Area ${++a}` : s.role !== "existing" ? `P${String(++p).padStart(2, "0")}` : `#${String(++n).padStart(2, "0")}`;
     return `<option value="${s.id}">${tag} ${esc(s.label)}${s.zone ? " · " + esc(s.zone) : ""}${s.rating ? ` (★ ${s.rating})` : ""}</option>`;
   }).join("");
   const want = decodeURIComponent(location.hash.slice(1)).split("?")[0].split("/")[1];

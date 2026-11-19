@@ -26,6 +26,16 @@
     .loc .code i.ok { color: #1a7f4b; } .loc .code i.bad { color: #b42318; }
     .loc .rm { width: 44px; height: 44px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--bg); color: var(--ink-2); cursor: pointer; font-size: 18px; line-height: 1; }
     .loc .rm:hover { border-color: var(--ink-3); color: var(--ink); } .loc .rm[disabled] { opacity: .35; cursor: default; }
+    .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 18px; }
+    .modes button { text-align: left; padding: 16px 18px; border: 1px solid var(--line-2); border-radius: 14px; background: var(--bg); color: var(--ink); cursor: pointer; font: inherit; }
+    .modes button b { display: block; font-size: 16px; letter-spacing: -.015em; } .modes button span { display: block; font-size: 13.5px; color: var(--ink-2); margin-top: 4px; line-height: 1.4; }
+    .modes button[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
+    .loc .alt { grid-column: 1 / -1; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 14px; color: var(--ink-2); padding: 2px 0 6px; }
+    .loc .alt select { height: 38px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--bg); color: var(--ink); padding: 0 10px; font: inherit; }
+    .area { display: grid; gap: 14px; margin: 0 0 22px; }
+    .area[hidden], .loc .alt[hidden] { display: none; }
+    .area-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, .8fr) minmax(0, .8fr); gap: 10px; }
+    @media (max-width: 720px) { .modes, .area-grid { grid-template-columns: 1fr; } }
     .loc-actions { display: flex; gap: 14px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
     .linkbtn { border: 0; background: none; padding: 0; color: var(--ink); font-weight: 500; cursor: pointer; text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; font-size: 14px; }
     .paste { display: none; margin-top: 12px; } .paste.on { display: block; }
@@ -61,7 +71,7 @@
         <div class="card" id="creditCard" style="padding:24px;margin-bottom:28px" hidden>
           <span class="kicker">Your credits</span>
           <div style="display:flex;align-items:baseline;gap:8px;margin:8px 0 4px"><b id="cBal" style="font-size:44px;letter-spacing:-.045em;line-height:1">–</b><span class="muted">available</span></div>
-          <p class="small muted" style="margin:0 0 14px">1 credit = 1 location. This request uses <b id="cCost" style="color:var(--ink)">0</b>, leaving <b id="cLeft" style="color:var(--ink)">–</b>.</p>
+          <p class="small muted" style="margin:0 0 14px">1 credit = ₹1,000. This request uses <b id="cCost" style="color:var(--ink)">0</b>, leaving <b id="cLeft" style="color:var(--ink)">–</b>.</p>
           <div class="err-banner" id="cWarn" style="margin:0 0 12px"></div>
           <a class="link-arrow" href="account.html#credits">Buy credits</a> &nbsp;·&nbsp; <a class="link-arrow" href="pricing.html">How credits work</a>
         </div>
@@ -79,8 +89,8 @@
       <div>
         <div class="card" id="gate" style="padding:44px;text-align:center" hidden>
           <h2 class="h2" style="font-size:32px">Sign in to request a report.</h2>
-          <p class="lede" style="margin:12px auto 26px">Use your Gmail address. It keeps your requests together, holds your credits (new accounts get 2 free), and means only you can open your reports.</p>
-          <a class="btn btn-primary" href="login.html?next=request-report.html">Sign in with Gmail</a>
+          <p class="lede" style="margin:12px auto 26px">Sign in with your partner or company account. It keeps your requests together, holds your credits, and means only you can open your reports.</p>
+          <a class="btn btn-primary" href="login.html?next=request-report.html">Sign in</a>
         </div>
         <div class="card" id="formCard" style="padding:36px" hidden>
           <form id="reqForm" novalidate autocomplete="on">
@@ -88,11 +98,11 @@
             
             <fieldset class="fset">
               <legend>About you</legend>
-              <p class="hint">The person submitting the request. Your email is your Gmail sign-in — we send confirmations and updates there.</p>
+              <p class="hint">The person submitting the request. Your email is your sign-in address — we send confirmations and updates there.</p>
               <div class="form">
                 <div class="two">
                   <div class="field"><label for="name">Full name</label><input id="name" name="name" autocomplete="name" required /></div>
-                  <div class="field"><label for="email">Email <span class="opt">(your Gmail sign-in)</span></label><input id="email" name="email" type="email" readonly /></div>
+                  <div class="field"><label for="email">Email <span class="opt">(your sign-in)</span></label><input id="email" name="email" type="email" readonly /></div>
                 </div>
                 <div class="two">
                   <div class="field"><label for="phone">Phone <span class="opt">(optional)</span></label><input id="phone" name="phone" type="tel" autocomplete="tel" /></div>
@@ -121,7 +131,19 @@
 
             <fieldset class="fset">
               <legend>Locations</legend>
-              <p class="hint">One Google Plus code per location — each one uses 1 credit. Mark whether it is an outlet you already run or a site you want evaluated. Up to 10 per request; more than that is an <a href="pricing.html">enterprise report</a>.</p>
+              <div class="modes" id="modes" role="group" aria-label="Request type">
+                <button type="button" data-mode="sites" aria-pressed="true"><b>Rate locations</b><span>Outlets you run and sites you're considering. For any site we can also suggest better spots nearby.</span></button>
+                <button type="button" data-mode="area" aria-pressed="false"><b>Find new locations</b><span>Tell us the area and how many stores. We suggest the best spots, chosen so they don't take sales from each other.</span></button>
+              </div>
+              <div class="area" id="areaBox" hidden>
+                <div class="area-grid">
+                  <div class="field"><label for="aCentre">Centre of the area</label><input id="aCentre" placeholder="Plus code or place, e.g. Koramangala" /></div>
+                  <div class="field"><label for="aRadius">Area radius</label><select id="aRadius"><option value="3">3 km</option><option value="5">5 km</option><option value="8" selected>8 km</option><option value="10">10 km</option><option value="12">12 km</option><option value="15">15 km (whole city)</option></select></div>
+                  <div class="field"><label for="aN">Locations to suggest</label><select id="aN"></select></div>
+                </div>
+                <p class="hint" style="margin:0">Uses 2 credits for scanning the area plus 1 per location. Add your existing outlets below (optional, free) so the new ones don't take their sales. Bigger areas take longer to analyse (up to a few hours for a whole city).</p>
+              </div>
+              <p class="hint" id="locHint">One Google Plus code per location. An existing outlet or a site to evaluate uses 1 credit. <b>Site + suggest alternatives</b> also finds better spots near the site, at 1 more credit per 2 suggestions. Up to 10 per request; more than that is an <a href="pricing.html">enterprise report</a>.</p>
               <div class="locs" id="locs"></div>
               <div class="loc-actions">
                 <button type="button" class="btn btn-secondary btn-sm" id="addLoc">Add a location</button>
@@ -162,6 +184,6 @@
 <script src="site/layout.js?v=10"></script>
 <script src="site/coverage-data.js?v=2"></script>
 <script src="site/coverage.js?v=11"></script>
-<script src="site/request.js?v=4"></script>
+<script src="site/request.js?v=5"></script>
 </body>
 </html>
