@@ -543,22 +543,29 @@ function renderSite() {
 
   $("sitePanel").innerHTML = `
     <div class="store-card">
-      <div class="eyebrow">${esc(p.serial_no)} · ${esc(p.zone || "")} ZONE ${p.site_role === "area" ? '<span class="pass" style="background:var(--soft);color:var(--text-2)">SEARCH AREA</span>' : p.site_role !== "existing" ? '<span class="pass" style="background:var(--soft);color:var(--text-2)">PROSPECTIVE SITE</span>' : '<span class="pass">EXISTING OUTLET</span>'}</div>
+      <div class="eyebrow">${p.site_role === "area" ? "SEARCH AREA · " + esc(String(s.radius_km)) + " KM RADIUS" : esc(p.serial_no) + " · " + esc(p.zone || "") + " ZONE"} ${p.site_role === "area" ? '<span class="pass" style="background:var(--soft);color:var(--text-2)">SEARCH AREA</span>' : p.site_role !== "existing" ? '<span class="pass" style="background:var(--soft);color:var(--text-2)">PROSPECTIVE SITE</span>' : '<span class="pass">EXISTING OUTLET</span>'}</div>
       <div class="note" style="margin-top:4px">${esc(B().format || "")}</div>
       <div class="store-meta">
+        ${p.site_role === "area" ? `<div style="grid-column:1/3">Search area<b>${esc(p.store_name)} · ${esc(String(s.radius_km))} km around this point</b></div>
+        <div>Map cells<b>${fmt(D.hexes.n)}</b></div><div>Streets analysed<b>${fmt(D.streets.n)}</b></div>` : `
         <div>Locality<b>${esc(p.locality)}</b></div><div>Ward<b>${esc(p.ward)}</b></div>
         <div>Faces<b>${esc(p.corridor_name)}</b></div><div>Corridor<b>${esc((p.corridor_tier || "").replace("Designated ", ""))}</b></div>
-        <div style="grid-column:1/3">Address<b>${esc(p.address || "—")}</b></div>
+        <div style="grid-column:1/3">Address<b>${esc(p.address || "—")}</b></div>`}
       </div>
     </div>
     ${p.site_assessment ? siteAssessment(p.site_assessment, p.site_role) : ""}
     <div class="kpi-grid">
       <div class="kpi"><div class="eyebrow">Residents · ${s.radius_km} km</div><div class="v">${compact(pop.pop)}</div><div class="s">${fmt(pop.pop / (Math.PI * s.radius_km ** 2))} per km²</div></div>
       <div class="kpi"><div class="eyebrow">Daytime population</div><div class="v">${compact(pop.day_pop)}</div><div class="s">residents − commuters + workers</div></div>
+      ${p.site_role === "area" ? `
+      <div class="kpi"><div class="eyebrow">Streets analysed</div><div class="v">${compact(D.streets.n)}</div><div class="s">footfall modelled for every hour</div></div>
+      <div class="kpi"><div class="eyebrow">Suggested locations</div><div class="v">${fmt(ly.candidates.length)}</div><div class="s">busiest shop fronts, spread out</div></div>
+      <div class="kpi"><div class="eyebrow">Direct competitors</div><div class="v">${fmt(direct.length)}</div><div class="s">in the whole area</div></div>
+      <div class="kpi"><div class="eyebrow">Businesses mapped</div><div class="v">${compact(businesses)}</div><div class="s">in the whole area</div></div>` : `
       <div class="kpi"><div class="eyebrow">Walkshed footfall<span class="tag">MODEL</span></div><div class="v">${compact(rf.weekday_daily_footfall)}</div><div class="s">per street / weekday</div></div>
       <div class="kpi"><div class="eyebrow">Weekend surge<span class="tag">MODEL</span></div><div class="v">+${fmt(rf.weekend_surge_pct, 1)}%</div><div class="s">peak eve ${fmt(rf.peak_evening_hourly_flow)}/hr</div></div>
       <div class="kpi"><div class="eyebrow">Direct competitors</div><div class="v">${fmt(direct.length)}</div><div class="s">${direct15} within 1.5 km by road</div></div>
-      <div class="kpi"><div class="eyebrow">Businesses mapped</div><div class="v">${compact(businesses)}</div><div class="s">F&amp;B share ${fmt(rf.f_and_b_share_pct, 1)}% in walkshed</div></div>
+      <div class="kpi"><div class="eyebrow">Businesses mapped</div><div class="v">${compact(businesses)}</div><div class="s">F&amp;B share ${fmt(rf.f_and_b_share_pct, 1)}% in walkshed</div></div>`}
     </div>
     <div class="section"><div class="section-title"><h4>Population pyramid</h4><span>male · female</span></div>
       <div class="pyramid">${pyr.map(([l, m, f]) => `
@@ -798,11 +805,11 @@ function planHeader() {   // request type "N new locations in an area": the whol
   if (!PLAN) return `<div class="section-title"><h4>Recommended new locations</h4></div>`;
   const P0 = PLAN.picks, mx = Math.max(1, ...P0.map((p) => p.marginal_units));
   return `<div class="section-title"><h4>Recommended new locations</h4><span>${P0.length} of ${PLAN.area.n} · ${esc(PLAN.area.label || "")} ${PLAN.area.radius_km} km</span></div>
-    <div class="note" style="margin:0 0 10px">Footfall first: each pick is the busiest remaining shop front by peak-hour footfall (top ${PLAN.footfall_top_pct || 5}% of the area), at least ${fmt(PLAN.min_gap_m)} m from your outlets and the earlier picks. The bars show the ${esc(PLAN.unit_label || "sales")} each store is expected to add after sharing customers with your outlets and the earlier picks; they are for information and do not decide the ranking.</div>
+    <div class="note" style="margin:0 0 10px">Footfall first, spread evenly: the area is split into ${PLAN.area.n} equal zones and each gets its busiest shop front by peak-hour footfall (top ${PLAN.footfall_top_pct || 5}% of the area). The picks are at least ${((PLAN.min_gap_m || 0) / 1000).toFixed(1)} km apart${PLAN.gap_target_m && PLAN.min_gap_m < PLAN.gap_target_m ? ` (the aim was ${(PLAN.gap_target_m / 1000).toFixed(0)} km; the area is too small to fit them further apart)` : ""}. The bars show the ${esc(PLAN.unit_label || "sales")} each store is expected to add after sharing customers with your outlets and the earlier picks; they are for information and do not decide the ranking.</div>
     ${P0.map((p) => `<button class="plan-row ${p.site_id === S.siteId ? "here" : ""}" data-plan="${p.pick_rank}" style="display:grid;grid-template-columns:28px 1fr 64px;gap:8px;align-items:center;width:100%;text-align:left;border:0;background:none;padding:6px 2px;cursor:pointer;color:inherit;font:inherit">
       <b>#${p.pick_rank}</b><span><span style="display:block;font-size:12.5px">${esc(p.name || "")}</span><span style="display:block;height:6px;border-radius:3px;background:currentColor;opacity:${p.site_id === S.siteId ? 1 : .45};width:${Math.max(4, p.marginal_units / mx * 100)}%;margin-top:4px"></span></span>
       <span style="text-align:right;font-size:12.5px">+${fmt(p.marginal_units)}<small style="display:block;color:#6e6e73">₹${fmt(p.ci_rev_lakhs, 1)} L/mo</small></span></button>`).join("")}
-    <div class="note" style="margin:8px 0 14px">Network total: ${fmt((P0[P0.length - 1] || {}).cumulative_units)} ${esc(PLAN.unit_label || "")}. This area tile holds the picks listed below; others open their own tile.</div>`;
+    <div class="note" style="margin:8px 0 14px">Network total: ${fmt((P0[P0.length - 1] || {}).cumulative_units)} ${esc(PLAN.unit_label || "")} across the ${P0.length} suggested locations.${(PLAN.incomplete_tiles || []).length ? ` Part of the area could not be analysed (${PLAN.incomplete_tiles.length} map tile${PLAN.incomplete_tiles.length === 1 ? "" : "s"}), so these picks do not cover all of it.` : ""}</div>`;
 }
 async function openPlanPick(rank) {
   const p = PLAN && PLAN.picks.find((x) => x.pick_rank === +rank);
@@ -997,7 +1004,7 @@ async function loadBusiness(bid) {
   PLAN = REG.sites.some((s) => s.role === "area") ? await getJSON(`data/${bid}/plan.json`).catch(() => null) : null;
   let n = 0, p = 0, a = 0;
   $("siteSelect").innerHTML = REG.sites.map((s) => {
-    const tag = s.role === "area" ? `Area ${++a}` : s.role !== "existing" ? `P${String(++p).padStart(2, "0")}` : `#${String(++n).padStart(2, "0")}`;
+    const tag = s.role === "area" ? "Whole area" : s.role !== "existing" ? `P${String(++p).padStart(2, "0")}` : `#${String(++n).padStart(2, "0")}`;
     return `<option value="${s.id}">${tag} ${esc(s.label)}${s.zone ? " · " + esc(s.zone) : ""}${s.rating ? ` (★ ${s.rating})` : ""}</option>`;
   }).join("");
   const want = decodeURIComponent(location.hash.slice(1)).split("?")[0].split("/")[1];
