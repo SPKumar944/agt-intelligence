@@ -302,7 +302,7 @@
         ${d.status === "results_ready" ? `<label class="small" for="relMsg" style="font-weight:600">Message to the client <span class="muted" style="font-weight:400">(optional, included in the email)</span></label><textarea class="t" id="relMsg" style="margin-top:6px" placeholder="A short note, e.g. what to look at first"></textarea>` : `<div class="small muted">Released ${fdt(d.released_at)}${d.release_message ? " · “" + esc(d.release_message) + "”" : ""}</div>`}</div>` : ""}
 
       ${["results_ready", "released"].includes(d.status) ? `<div class="sec"><h3>Assign to registered users</h3>
-        <p class="small muted" style="margin:0 0 12px">Give other registered users access to this one report, as many as you like. They see only this report, in their account under “My reports”${d.status === "released" ? "; they are emailed now" : "; they are emailed when you release it"}.</p>
+        <p class="small muted" style="margin:0 0 12px">Give other registered users access to this one report, as many as you like. They see only this report, in their account under “My reports”; access starts immediately and they are emailed now, even before you release it to the owner.</p>
         <div id="accList" class="small muted">Loading…</div>
         <input class="t" id="accFind" type="search" placeholder="Search registered users by name or email" style="margin-top:12px" autocomplete="off">
         <div id="accPick" class="accpick"></div>
