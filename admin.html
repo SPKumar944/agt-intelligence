@@ -31,6 +31,12 @@
     .item .m { font-size: 12.5px; color: var(--ink-3); display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
     .pill { display: inline-block; border-radius: 980px; padding: 3px 10px; font-size: 11.5px; font-weight: 600; background: var(--bg-3); color: var(--ink-2); white-space: nowrap; }
     .pill.submitted { background: #fff3d6; color: #8a5a00; } .pill.approved, .pill.processing { background: #e1ecff; color: #1d4ea0; } .pill.results_ready { background: #e8e1ff; color: #4a2fa0; }
+    .accchip { display:inline-flex; align-items:center; gap:6px; margin:0 8px 8px 0; padding:5px 6px 5px 12px; border:1px solid var(--line, #d7dae0); border-radius:999px; background:var(--bg-2, #f4f5f7); color:var(--ink, #111); font-size:13px; }
+    .accchip button { border:0; background:transparent; cursor:pointer; font-size:16px; line-height:1; color:var(--ink-3, #666); padding:0 6px; border-radius:50%; }
+    .accchip button:hover { color:#98231a; }
+    .accpick { max-height:220px; overflow:auto; margin-top:8px; border:1px solid var(--line, #d7dae0); border-radius:10px; }
+    .accrow { display:flex; align-items:center; gap:10px; padding:9px 12px; cursor:pointer; border-bottom:1px solid var(--line, #e6e8ec); font-size:14px; }
+    .accrow:last-child { border-bottom:0; } .accrow:hover { background:var(--bg-2, #f4f5f7); }
     .pill.released { background: #dcf3e4; color: #17653a; } .pill.rejected, .pill.failed { background: #fde3e0; color: #98231a; }
     :root[data-theme="dark"] .pill.submitted { background: #3a2f10; color: #f3c969; } :root[data-theme="dark"] .pill.approved, :root[data-theme="dark"] .pill.processing { background: #14233f; color: #8fb4ff; }
     :root[data-theme="dark"] .pill.results_ready { background: #251a47; color: #c0adff; } :root[data-theme="dark"] .pill.released { background: #12301f; color: #7fd6a2; } :root[data-theme="dark"] .pill.rejected, :root[data-theme="dark"] .pill.failed { background: #3a1613; color: #ffa59c; }
@@ -295,6 +301,13 @@
         <div class="sitebtns">${(d.sites || []).map((s) => `<a class="btn btn-secondary btn-sm" target="_blank" rel="noopener" href="index.html#${d.business_id}/${s.id}">${esc((s.label || s.id).slice(0, 42))} ↗</a>`).join("") || '<span class="small muted">No sites found in the output.</span>'}</div>
         ${d.status === "results_ready" ? `<label class="small" for="relMsg" style="font-weight:600">Message to the client <span class="muted" style="font-weight:400">(optional, included in the email)</span></label><textarea class="t" id="relMsg" style="margin-top:6px" placeholder="A short note, e.g. what to look at first"></textarea>` : `<div class="small muted">Released ${fdt(d.released_at)}${d.release_message ? " · “" + esc(d.release_message) + "”" : ""}</div>`}</div>` : ""}
 
+      ${["results_ready", "released"].includes(d.status) ? `<div class="sec"><h3>Assign to registered users</h3>
+        <p class="small muted" style="margin:0 0 12px">Give other registered users access to this one report, as many as you like. They see only this report, in their account under “My reports”${d.status === "released" ? "; they are emailed now" : "; they are emailed when you release it"}.</p>
+        <div id="accList" class="small muted">Loading…</div>
+        <input class="t" id="accFind" type="search" placeholder="Search registered users by name or email" style="margin-top:12px" autocomplete="off">
+        <div id="accPick" class="accpick"></div>
+        <div style="display:flex;gap:10px;align-items:center;margin-top:10px"><button class="btn btn-primary btn-sm" id="accGo" disabled>Assign selected</button><span class="small muted" id="accNote"></span></div></div>` : ""}
+
       <div class="sec"><h3>Owner</h3><div class="kv"><span>Name</span><span>${esc(d.name)}</span><span>Email</span><span><a href="mailto:${esc(d.email)}">${esc(d.email)}</a></span><span>Phone</span><span>${esc(d.phone) || "—"}</span><span>Role</span><span>${esc(d.role) || "—"}</span></div></div>
       <div class="sec"><h3>Business</h3><div class="kv"><span>Company</span><span>${esc(d.company)}</span><span>Format</span><span>${esc(d.format) || "—"}</span><span>City</span><span>${esc(d.city)}</span><span>Website</span><span>${d.website ? `<a href="${esc(d.website)}" target="_blank" rel="noopener">${esc(d.website)}</a>` : "—"}</span></div>
         <div class="desc" style="margin-top:14px">${esc(d.description)}</div></div>
@@ -330,6 +343,22 @@
     on("aReject", () => { const r = prompt("Reason to include in the email to the client (optional):", ""); if (r !== null) act("reject", { reason: r }, "Request rejected"); });
     on("aRerun", () => { if (confirm("Run the analysis again?")) act("retry", {}, "Queued again"); });
     on("aRelease", () => { if (confirm(`Release this report to ${d.name} <${d.email}>?\nThey will get a private link by email and can then see only this report.`)) act("release", { message: ($("#relMsg") || {}).value || "" }, "Released — the client has been emailed"); });
+    if (["results_ready", "released"].includes(d.status)) {
+      let A = null; const picked = new Set();
+      const paint = () => {
+        const have = new Set(A.assigned.map((x) => x.email.toLowerCase())), q = ($("#accFind").value || "").trim().toLowerCase();
+        $("#accList").innerHTML = A.assigned.length ? A.assigned.map((x) => `<span class="accchip">${esc(x.name ? x.name + " · " : "")}${esc(x.email)}<button type="button" data-rm="${esc(x.email)}" title="Remove access" aria-label="Remove ${esc(x.email)}">×</button></span>`).join("") : "Not assigned to anyone yet.";
+        const rows = A.users.filter((u) => !have.has(u.email.toLowerCase()) && u.email.toLowerCase() !== (d.email || "").toLowerCase() && (!q || (u.email + " " + (u.name || "")).toLowerCase().includes(q))).slice(0, 60);
+        $("#accPick").innerHTML = rows.length ? rows.map((u) => `<label class="accrow"><input type="checkbox" data-em="${esc(u.email)}" ${picked.has(u.email) ? "checked" : ""}><span><b>${esc(u.name || u.email)}</b><span class="small muted"> ${u.name ? esc(u.email) : ""} · ${esc(u.level || "client")}</span></span></label>`).join("") : `<div class="small muted" style="padding:10px">${q ? "No registered user matches." : "Every registered user already has access."}</div>`;
+        $("#accGo").disabled = !picked.size; $("#accGo").textContent = picked.size ? `Assign ${picked.size} user${picked.size === 1 ? "" : "s"}` : "Assign selected";
+      };
+      const load = async () => { try { A = await api(`requests/${d.ref}/access`); paint(); } catch (e) { $("#accList").textContent = e.message; } };
+      $("#accFind").addEventListener("input", paint);
+      $("#accPick").addEventListener("change", (e) => { const em = e.target.dataset.em; if (!em) return; e.target.checked ? picked.add(em) : picked.delete(em); paint(); });
+      $("#accList").addEventListener("click", async (e) => { const em = e.target.dataset.rm; if (!em || !confirm(`Remove ${em}'s access to this report?`)) return; try { await api(`requests/${d.ref}/unassign`, { emails: [em] }); toast("Access removed"); await load(); } catch (x) { toast(x.message); } });
+      $("#accGo").addEventListener("click", async () => { const b = $("#accGo"); b.disabled = true; try { const j = await api(`requests/${d.ref}/assign`, { emails: [...picked] }); picked.clear(); toast(`${j.done.length} user${j.done.length === 1 ? "" : "s"} assigned${j.pending_release ? " — they are emailed when you release the report" : ""}`); await load(); } catch (x) { toast(x.message); b.disabled = false; } });
+      load();
+    }
     on("aResend", () => act("resend", {}, "Sign-in link sent"));
     on("aRevoke", () => { if (confirm("Withdraw the client's access to this report?")) act("revoke", {}, "Access withdrawn"); });
   }

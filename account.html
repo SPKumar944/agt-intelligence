@@ -247,9 +247,9 @@
   }
   function reqRow(r) {
     return `<div class="rq"><div><b>${esc(r.company)}</b> <span class="pill ${r.status}" style="margin-left:8px">${esc(r.status_label)}</span>
-      <div class="m">${r.ref} · ${r.n_locations} location${r.n_locations === 1 ? "" : "s"} · ${r.credits_used} credit${r.credits_used === 1 ? "" : "s"} · submitted ${dt(r.created_at)}${r.scheduled_for && r.status === "approved" ? " · scheduled " + new Date(r.scheduled_for * 1000).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}</div>
+      <div class="m">${r.ref} · ${r.n_locations} location${r.n_locations === 1 ? "" : "s"} ${r.assigned ? "" : ` · ${r.credits_used} credit${r.credits_used === 1 ? "" : "s"}`} · submitted ${dt(r.created_at)}${r.scheduled_for && r.status === "approved" ? " · scheduled " + new Date(r.scheduled_for * 1000).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : ""}</div>
       ${r.status === "released" && r.release_message ? `<div class="m" style="color:var(--ink-2)">“${esc(r.release_message)}”</div>` : ""}</div>
-      <div class="a">${r.status === "released" ? `<button class="btn btn-primary btn-sm" data-open="${r.business_id}">Open dashboard</button>` : ""}${r.status === "released" && ME && ME.user.can_share ? `<button class="btn btn-secondary btn-sm" data-share="${r.ref}">Share with client</button>` : ""}${r.can_withdraw ? `<button class="btn btn-secondary btn-sm" data-wd="${r.ref}">Withdraw</button>` : ""}</div></div>`;
+      <div class="a">${r.assigned ? `<span class="small muted" style="margin-right:8px">Shared with you</span>` : ""}${r.status === "released" ? `<button class="btn btn-primary btn-sm" data-open="${r.business_id}">Open dashboard</button>` : ""}${r.status === "released" && !r.assigned && ME && ME.user.can_share ? `<button class="btn btn-secondary btn-sm" data-share="${r.ref}">Share with client</button>` : ""}${r.can_withdraw ? `<button class="btn btn-secondary btn-sm" data-wd="${r.ref}">Withdraw</button>` : ""}</div></div>`;
   }
   function render() {
     const u = ME.user, bal = u.credits, free = P.free_credits;
