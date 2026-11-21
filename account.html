@@ -102,6 +102,10 @@
             <div class="card stat"><div class="k">Plan</div><div class="v" style="font-size:34px;margin-top:22px" id="planName">Free</div><p id="planNote"></p></div>
           </div>
           <p class="small muted" id="apiLine" style="margin:16px 4px 0" hidden></p>
+          <div class="card list" style="padding:0;margin-top:28px" id="sharedCard">
+            <div style="padding:22px 26px 6px"><p class="eyebrow" style="margin:0">Shared with you <span id="sharedN" class="small muted"></span></p></div>
+            <div id="sharedList"></div>
+          </div>
           <div class="split even" style="margin-top:44px;gap:32px">
             <div class="card" style="padding:32px">
               <p class="eyebrow">What is a credit?</p>
@@ -273,6 +277,11 @@
     $("#rNote").textContent = REQS.length ? `${ready} ready · ${prog} in progress` : "No requests yet";
     $("#recent").innerHTML = REQS.length ? REQS.slice(0, 3).map(reqRow).join("") : `<div style="padding:12px 26px 26px;color:var(--ink-3)">No reports yet. <a href="request-report.html">Request your first report</a> with your free credits.</div>`;
     $("#reqList").innerHTML = REQS.length ? REQS.map(reqRow).join("") : `<div style="padding:40px 26px;text-align:center;color:var(--ink-3)">No requests yet. <a href="request-report.html">Request a report</a>.</div>`;
+    const SW = ME.shared_with_me || [];
+    $("#sharedN").textContent = SW.length ? `· ${SW.length}` : "";
+    $("#sharedList").innerHTML = SW.length ? SW.map((r) => `<div class="rq"><div><b>${esc(r.company)}</b> <span class="pill released" style="margin-left:8px">Shared</span>
+      <div class="m">${esc(r.ref)} · shared by ${esc(r.by)} · ${dt(r.at)}</div></div><div class="a"><button class="btn btn-primary btn-sm" data-open="${esc(r.business_id)}">Open dashboard</button></div></div>`).join("")
+      : `<div style="padding:12px 26px 26px;color:var(--ink-3)">Nothing has been shared with you yet. Reports that AGT Intelligence or a partner shares with this email appear here.</div>`;
     $$("[data-open]").forEach((b) => b.onclick = () => openDashboard(b.dataset.open));
     $$("[data-share]").forEach((b) => b.onclick = () => { tab("share"); $("#sRef").value = b.dataset.share; $("#sEmail").focus(); });
     renderShare();
