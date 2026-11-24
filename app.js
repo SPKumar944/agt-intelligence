@@ -818,6 +818,26 @@ async function openPlanPick(rank) {
   const c = D.layers.candidates.find((x) => x.plan_rank === p.pick_rank);
   if (c) selectCandidate(c.candidate_id, true);
 }
+/* PDF report of the recommended locations: approved partners and the super admin only (the server enforces it too). */
+let USER_LEVEL = null;
+if (window.AGT) AGT.session().then((s) => { USER_LEVEL = s.level || (s.role === "admin" ? "admin" : "client"); paintPdf(); }).catch(() => {});
+function paintPdf() {
+  const box = $("pdfBox");
+  if (!box) return;
+  if (!["partner", "admin"].includes(USER_LEVEL) || !D || !D.layers.candidates.length) { box.innerHTML = ""; return; }
+  box.innerHTML = `<button class="ghost-btn" id="pdfBtn" style="width:100%;margin-bottom:12px">Download PDF report · ${D.layers.candidates.length} location${D.layers.candidates.length === 1 ? "" : "s"}</button><div class="note" id="pdfMsg" style="margin:-6px 0 12px" hidden></div>`;
+  $("pdfBtn").onclick = async () => {
+    const b = $("pdfBtn"), m = $("pdfMsg"), old = b.textContent;
+    b.disabled = true; b.textContent = "Preparing the PDF… (about 20 seconds)"; m.hidden = true;
+    try {
+      const r = await fetch(AGT.url(`/api/pdf/${encodeURIComponent(BIZ)}/${encodeURIComponent(S.siteId)}`), { headers: { Authorization: "Bearer " + AGT.token() } });
+      if (!r.ok) { let j = {}; try { j = await r.json(); } catch (e) { /* not json */ } throw new Error(j.error || "The PDF could not be made."); }
+      const blob = await r.blob(), name = ((r.headers.get("Content-Disposition") || "").match(/filename="([^"]+)"/) || [])[1] || "recommended_locations.pdf";
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    } catch (e) { m.textContent = e.message && e.message !== "Failed to fetch" ? e.message : "We couldn’t reach the server. Please try again."; m.hidden = false; }
+    b.disabled = false; b.textContent = old;
+  };
+}
 function renderExpansion() {
   const hx = D.hexes, ly = D.layers, [b0, b1] = D.site.golden_band_km;
   const elig = hx.all.filter((i) => hx.eligible && hx.eligible[i]);
@@ -825,7 +845,7 @@ function renderExpansion() {
   const w = D.site.weights, role = D.site.profile.site_role, alt = D.site.profile.alternatives;
   const head = role === "alternatives" && alt ? altHeader(alt) : role === "area" ? planHeader() : `
     <div class="section-title"><h4>Golden band ${b0}–${b1} km</h4><span>${fmt(elig.length)} eligible cells</span></div>`;
-  $("expansionTab").innerHTML = `${head}
+  $("expansionTab").innerHTML = `<div id="pdfBox"></div>${head}
     <div class="tier-counts"${["alternatives", "area"].includes(role) ? ' style="display:none"' : ""}>${SUIT.map(([, c, l], k) => `<div class="tier-count" style="border-top:3px solid ${c}"><div class="n">${fmt(cnt[k])}</div><div class="l">${l}</div></div>`).join("")}</div>
     <button class="ghost-btn" id="showSuit" style="width:100%;margin-bottom:12px${["alternatives", "area"].includes(role) ? ";display:none" : ""}">Show suitability mesh on map</button>
     ${ly.candidates.map((c) => `<div class="cand ${c.candidate_id === S.selCandidate ? "sel" : ""}" data-cand="${c.candidate_id}">
@@ -841,6 +861,7 @@ function renderExpansion() {
         <div>Payback<b>${fmt(c.est_payback_months, 1)} mo</b></div><div>${c.ci_rev_p10 != null ? "Own-outlet loss" : "Risk"}<b>${fmt(c.cannibalization_risk_pct, 1)}%</b></div></div>
     </div>`).join("")}
     <div class="note"${["alternatives", "area"].includes(role) ? " hidden" : ""}>Candidates are restricted to the 10 busiest peak-hour shop fronts in the golden band (≥1.5 km apart; expressways and ramps excluded), then ranked by area score. Score = ${Math.round(w.demographic * 100)}% demographic + ${Math.round(w.commercial * 100)}% commercial + ${Math.round(w.synergy * 100)}% synergy + ${Math.round(w.white_space * 100)}% white space, each a percentile within the study area. ${esc(UNIT())} and revenue are heuristic projections from a baseline of ${fmt((B().economics || {}).baseline_daily_units)} ${esc((DEM().unit || "units"))}/day at ₹${fmt((B().economics || {}).avg_ticket_inr)} per bill; risk is the Huff-model share of the candidate’s 1.5 km demand pulled by the nearest existing outlet.</div>${(ly.candidates[0] || {}).ci_rev_lakhs != null ? ciNote() : ""}`;
+  paintPdf();
   $("expansionTab").querySelectorAll("[data-cand]").forEach((el) => el.onclick = () => selectCandidate(el.dataset.cand, true));
   $("expansionTab").querySelectorAll("[data-plan]").forEach((el) => el.onclick = () => openPlanPick(el.dataset.plan).catch(fail));
   $("showSuit").onclick = () => { S.hexMode = "suit_score"; S.hexScope = "band"; S.on.hexes = true; S.hexOpacity = 0.7; S.openGroups.add("mesh"); buildHexScale(); renderLayersPanel(); renderHexLegend(); redraw(); };
