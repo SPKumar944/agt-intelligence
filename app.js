@@ -828,7 +828,7 @@ function paintPdf() {
   box.innerHTML = `<button class="ghost-btn" id="pdfBtn" style="width:100%;margin-bottom:12px">Download PDF report · ${D.layers.candidates.length} location${D.layers.candidates.length === 1 ? "" : "s"}</button><div class="note" id="pdfMsg" style="margin:-6px 0 12px" hidden></div>`;
   $("pdfBtn").onclick = async () => {
     const b = $("pdfBtn"), m = $("pdfMsg"), old = b.textContent;
-    b.disabled = true; b.textContent = "Preparing the PDF… (about 20 seconds)"; m.hidden = true;
+    b.disabled = true; b.textContent = "Preparing the PDF… (up to a minute)"; m.hidden = true;
     try {
       const r = await fetch(AGT.url(`/api/pdf/${encodeURIComponent(BIZ)}/${encodeURIComponent(S.siteId)}`), { headers: { Authorization: "Bearer " + AGT.token() } });
       if (!r.ok) { let j = {}; try { j = await r.json(); } catch (e) { /* not json */ } throw new Error(j.error || "The PDF could not be made."); }
