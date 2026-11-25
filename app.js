@@ -462,6 +462,15 @@ function tidy(root, opts = {}) {
     if (t && nm && !nm.querySelector(".info")) nm.insertAdjacentHTML("beforeend", info(t));
     d.remove();
   });
+  root.querySelectorAll(".kpi .s").forEach((s) => {                           // KPI captions → an i beside the KPI title
+    const k = s.closest(".kpi"), ey = k.querySelector(".eyebrow"), t = s.textContent.trim().replace(/\s+/g, " ");
+    if (t && ey && !ey.querySelector(".info")) ey.insertAdjacentHTML("beforeend", info(t));
+    s.remove();
+  });
+  root.querySelectorAll(".section-title span").forEach((sp) => {              // small text-only captions beside a section title → i
+    const t = sp.textContent.trim(), h = sp.parentElement.querySelector("h4");
+    if (t && !/\d/.test(t) && h && !sp.querySelector("*")) { h.insertAdjacentHTML("beforeend", info(t)); sp.remove(); }
+  });
   root.querySelectorAll(".note").forEach((n) => {                             // long explanatory notes → an i beside the nearest heading
     if (n.id || n.hidden || n.dataset.keep != null || n.textContent.trim().length < 60) return;
     const host = n.closest(".section,.store-card,.layer,.cand,.lgroup-body,.tab-pane") || root;
