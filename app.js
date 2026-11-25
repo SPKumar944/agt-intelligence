@@ -477,16 +477,25 @@ function inspect(info) {
         ["Locality", st.localities[st.loc[i]]]]) + `<div class="eyebrow" style="margin-top:10px">${DAYS[S.day]} · 24-hour profile</div>` + spark(vals, S.hour);
       break; }
     case "hexes": {
-      const i = o; type = `H3 res ${hx.res} cell`; title = `${dec(hx.locality, i) || "Cell"} · ${dec(hx.ward, i) || ""}`;
-      body = grid([["Land use", dec(hx.cls, i)], ["Residents", fmt(hx.pop[i])], ["Daytime pop", fmt(hx.day_pop[i])], ["Registered voters", fmt(hx.voters_registered[i])],
-        ["Floating adults", fmt(hx.floating_adults[i])], ["IT intensity", fmt((hx.it_intensity[i] || 0) * 100) + "%"], ["Kids 0–14", fmt(hx.k[i])],
-        ["Youth 15–24", fmt(hx.y[i])], ["Working 25–59", fmt(hx.w[i])], ["Seniors 60+", fmt(hx.s[i])], ["Workforce", fmt(hx.com_workers[i])],
-        ["Office floor", fmt(hx.off_m2[i]) + " m²"], ["Res / Com / Syn idx", `${fmt(hx.res_idx[i], 0)} / ${fmt(hx.com_idx[i], 0)} / ${fmt(hx.syn_idx[i], 0)}`],
-        ["Suitability", `${fmt(hx.suit_score[i], 1)} · ${(SUIT.find(([t]) => hx.suit_score[i] >= t) || SUIT[3])[2].replace(/ [\d<–-].*$/, "")}`], ["Dist. to store", fmt(hx.dist_km[i], 2) + " km"],
-        ["Golden band", hx.in_golden_band[i] ? "Yes — eligible" : "No"], ["Competitors ≤1.5 km", fmt(hx.comp_count[i])], ["Dining ≤1.5 km", fmt(hx.dining_count[i])],
-        ["Target demand ≤1.5 km", fmt(hx.target_demand_15k && hx.target_demand_15k[i])], ["Floating adults ≤1.5 km", fmt(hx.floating_15k && hx.floating_15k[i])],
-        ...(B().custom_layers || []).map((c) => [`${c.label} ≤1.5 km`, fmt((hx[`custom_${c.id}_count`] || [])[i])]),
-        ["Tech parks ≤1.5 km", fmt((hx.techparks_count || [])[i])], [`Projected ${UNIT().toLowerCase()}`, fmt((hx.proj_units || hx.proj_cups || [])[i])], ["Projected ₹ L/month", fmt(hx.proj_rev[i], 2)]]);
+      const i = o, g = (k, d = 0, suf = "") => { const c = hx[k]; return c && c[i] != null ? fmt(c[i], d) + suf : null; };
+      const pc = (k) => { const c = hx[k]; return c && c[i] != null ? fmt(c[i] * 100, 0) + "%" : null; };
+      type = `H3 res ${hx.res} cell · all layers`; title = `${dec(hx.locality, i) || "Cell"}${dec(hx.ward, i) ? " · " + dec(hx.ward, i) : ""}`;
+      const sc = hx.suit_score && hx.suit_score[i] != null ? `${fmt(hx.suit_score[i], 1)} · ${(SUIT.find(([t]) => hx.suit_score[i] >= t) || SUIT[3])[2].replace(/ [\d<–-].*$/, "")}` : null;
+      const sec = (name, rows) => { const r = rows.filter((x) => x && x[1] != null && x[1] !== ""); return r.length ? `<div class="eyebrow" style="margin:12px 0 6px">${esc(name)}</div>` + grid(r) : ""; };
+      const cust = (B().custom_layers || []).map((c) => [`${c.label} ≤1.5 km`, g(`custom_${c.id}_count`)]);
+      body = (hx.h && hx.h[i] != null ? `<div class="insp-id" style="font-size:10.5px;color:var(--text-3);word-break:break-all">H3 index <b>${esc(String(typeof hx.h[i] === "number" ? hx.h[i].toString(16) : hx.h[i]))}</b></div>` : "")
+        + sec("Suitability", [["Overall score", sc], ["Demographic", g("demographic_score", 1)], ["Commercial", g("commercial_score", 1)], ["Synergy", g("synergy_score", 1)],
+            ["White space", g("white_space_score", 1)], ["Dist. to store", g("dist_km", 2, " km")], ["Golden band", hx.in_golden_band ? (hx.in_golden_band[i] ? "Yes — eligible" : "No") : null]])
+        + sec("People", [["Land use", dec(hx.cls, i)], ["Residents", g("pop")], ["Daytime pop", g("day_pop")], ["Registered voters", g("voters_registered")], ["Floating adults", g("floating_adults")],
+            ["IT intensity", pc("it_intensity")], ["Kids 0–14", g("k")], ["Youth 15–24", g("y")], ["Working 25–59", g("w")], ["Seniors 60+", g("s")], ["Workforce", g("com_workers")]])
+        + sec("Built space & footfall", [["Office floor", g("off_m2", 0, " m²")], ["Commercial floor", g("com_m2", 0, " m²")], ["Residential floor", g("res_built_m2", 0, " m²")],
+            ["Businesses", g("n_pois")], ["Street footfall / day", g("mean_daily_footfall")], ["Res / Com / Syn idx", hx.res_idx ? `${fmt(hx.res_idx[i], 0)} / ${fmt(hx.com_idx[i], 0)} / ${fmt(hx.syn_idx[i], 0)}` : null]])
+        + sec("Around this cell · within 1.5 km", [["Residents", g("pop_15k")], ["Kids", g("kids_15k")], ["Youth", g("youth_15k")], ["Workforce", g("workforce_15k")],
+            ["Target demand", g("target_demand_15k")], ["Floating adults", g("floating_15k")], ["Direct competitors", g("comp_count")], ["All competitors", g("comp_all_count")],
+            ["Dining", g("dining_count")], ["Kids & family", g("kids_count")], ["Schools & colleges", g("education_count")], ["Rail / metro", g("transit_rail_count")],
+            ["Bus stops", g("bus_stops_count")], ["Tech parks", g("techparks_count")], ["Offices", g("offices_count")], ...cust])
+        + sec("If an outlet opened here", [[`Projected ${UNIT().toLowerCase()}`, g("proj_units") || g("proj_cups")], ["Projected ₹ L/month", g("proj_rev", 2)], ["Own-outlet loss", g("ci_cannibal_pct", 1, "%")],
+            ["Share of demand captured", g("ci_capture_pct", 1, "%")]]);
       break; }
     case "allpoints": { const i = o; type = P.categories[P.cat[i]].replace(/_/g, " "); title = P.name[i] || "(unnamed)";
       body = grid([["Type", P.sub[i]], ["Straight", km(P.sd[i])], ["By road", km(P.nd[i])], ["Direction", P.dir[i]], ["Faces", P.street[i]],
