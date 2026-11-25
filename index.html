@@ -40,6 +40,7 @@
     </div>
     <div class="header-right">
       <div class="badge mono" id="snapshotBadge">—</div>
+      <button class="ghost-btn" id="execPdfBtn" hidden title="One PDF with every recommended location">Executive report PDF</button>
       <button class="ghost-btn" id="methodBtn" title="Data sources & methodology">ⓘ Data &amp; method</button>
       <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch to dark mode" title="Light / dark"></button>
       <div class="account" id="account">
@@ -146,7 +147,7 @@
   <div class="loader" id="loader"><div class="spinner"></div><div id="loaderText">Loading intelligence layers…</div></div>
   <script src="https://unpkg.com/supercluster@8.0.1/dist/supercluster.min.js"></script>
   <script src="icons.js?v=2"></script>
-  <script src="app.js?v=21"></script>
+  <script src="app.js?v=22"></script>
   <script>
     (function () {   // light / dark (default light)
       const b = document.getElementById("themeBtn"), dk = () => document.documentElement.dataset.theme === "dark";

@@ -831,9 +831,10 @@ async function openPlanPick(rank) {
 let USER_LEVEL = null;
 if (window.AGT) AGT.session().then((s) => { USER_LEVEL = s.level || (s.role === "admin" ? "admin" : "client"); paintPdf(); }).catch(() => {});
 function paintPdf() {
-  const box = $("pdfBox");
+  const box = $("pdfBox"), eb = $("execPdfBtn"), okPdf = ["partner", "admin"].includes(USER_LEVEL) && D && D.layers.candidates.length;
+  if (eb) { eb.hidden = !okPdf; eb.onclick = () => { const t = document.querySelector('[data-tab="expansionTab"]'); if (t) t.click(); if ($("pdfBtn")) $("pdfBtn").click(); }; }
   if (!box) return;
-  if (!["partner", "admin"].includes(USER_LEVEL) || !D || !D.layers.candidates.length) { box.innerHTML = ""; return; }
+  if (!okPdf) { box.innerHTML = ""; return; }
   box.innerHTML = `<button class="ghost-btn" id="pdfBtn" style="width:100%;margin-bottom:12px">Download PDF report · ${D.layers.candidates.length} location${D.layers.candidates.length === 1 ? "" : "s"}</button><div class="note" id="pdfMsg" style="margin:-6px 0 12px" hidden></div>`;
   $("pdfBtn").onclick = async () => {
     const b = $("pdfBtn"), m = $("pdfMsg"), old = b.textContent;
