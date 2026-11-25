@@ -450,6 +450,57 @@ function markerIcon(id, o) {
       return [null, null];
   }
 }
+
+/* ----------------------------------------------------------------- clean-up layer: info popovers, folded sections, collapsed cards
+   (added 2026-11-25; the previous dashboard is saved in backups/dashboard-before-cleanup-2026-11-25 with a REVERT.sh) */
+const info = (text, cls = "") => `<button type="button" class="info ${cls}" data-info="${esc(String(text))}" aria-label="More information" title="More information">i</button>`;
+const FOLD = {};
+function tidy(root, opts = {}) {
+  if (!root) return;
+  root.querySelectorAll(".layer-desc").forEach((d) => {                       // layer descriptions → an i next to the layer name
+    const t = d.textContent.trim(), nm = d.parentElement.querySelector(".layer-name");
+    if (t && nm && !nm.querySelector(".info")) nm.insertAdjacentHTML("beforeend", info(t));
+    d.remove();
+  });
+  root.querySelectorAll(".note").forEach((n) => {                             // long explanatory notes → an i beside the nearest heading
+    if (n.id || n.hidden || n.dataset.keep != null || n.textContent.trim().length < 60) return;
+    const host = n.closest(".section,.store-card,.layer,.cand,.lgroup-body,.tab-pane") || root;
+    const h = host.querySelector(".section-title h4,.layer-name,.eyebrow,.eyebrow-row,h3,h4") || null;
+    if (!h) return;
+    h.insertAdjacentHTML("beforeend", info(n.textContent.trim().replace(/\s+/g, " ")));
+    n.remove();
+  });
+  if (opts.fold) root.querySelectorAll(".section").forEach((sec) => {          // sections fold; the most useful stay open
+    const t = sec.querySelector(":scope > .section-title"), key = t && (t.querySelector("h4") || t).textContent.trim();
+    if (!t || !key) return;
+    if (!(key in FOLD)) FOLD[key] = opts.keepOpen ? opts.keepOpen.test(key) : false;
+    sec.classList.add("fold"); sec.classList.toggle("closed", !FOLD[key]);
+    t.onclick = (e) => { if (e.target.closest(".info")) return; FOLD[key] = !FOLD[key]; sec.classList.toggle("closed", !FOLD[key]); };
+  });
+}
+(function infoPopover() {
+  const pop = document.createElement("div");
+  pop.className = "info-pop hidden"; pop.setAttribute("role", "tooltip"); document.body.appendChild(pop);
+  let cur = null;
+  const close = () => { pop.classList.add("hidden"); cur = null; };
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest(".info");
+    if (b) {
+      e.preventDefault(); e.stopPropagation();                               // an i inside a label/card must not toggle the layer or select the card
+      if (cur === b) return close();
+      cur = b; pop.innerHTML = `<div>${esc(b.dataset.info)}</div><a href="#" class="info-more">Learn more in Data &amp; method ›</a>`;
+      pop.classList.remove("hidden");
+      const r = b.getBoundingClientRect(), w = pop.offsetWidth, h = pop.offsetHeight;
+      pop.style.left = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2)) + "px";
+      pop.style.top = (r.bottom + h + 12 > innerHeight ? Math.max(8, r.top - h - 8) : r.bottom + 8) + "px";
+      return;
+    }
+    if (e.target.closest(".info-more")) { e.preventDefault(); close(); const m = document.getElementById("methodBtn"); if (m) m.click(); return; }
+    if (!e.target.closest(".info-pop")) close();
+  }, true);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  window.addEventListener("resize", close);
+})();
 function grid(rows) { return `<div class="insp-grid">${rows.filter((r) => r && r[1] != null && r[1] !== "").map(([k, v]) => `<div>${esc(k)}<b>${esc(v)}</b></div>`).join("")}</div>`; }
 function spark(values, now) {
   const mx = Math.max(...values, 1);
@@ -565,7 +616,7 @@ function renderSite() {
     ${p.site_assessment ? siteAssessment(p.site_assessment, p.site_role) : ""}
     <div class="kpi-grid">
       <div class="kpi"><div class="eyebrow">Residents · ${s.radius_km} km</div><div class="v">${compact(pop.pop)}</div><div class="s">${fmt(pop.pop / (Math.PI * s.radius_km ** 2))} per km²</div></div>
-      <div class="kpi"><div class="eyebrow">Daytime population</div><div class="v">${compact(pop.day_pop)}</div><div class="s">residents − commuters + workers</div></div>
+      <div class="kpi"><div class="eyebrow">Daytime population${info("Residents, minus people who commute out, plus people who work here.")}</div><div class="v">${compact(pop.day_pop)}</div><div class="s"></div></div>
       ${p.site_role === "area" ? `
       <div class="kpi"><div class="eyebrow">Streets analysed</div><div class="v">${compact(D.streets.n)}</div><div class="s">footfall modelled for every hour</div></div>
       <div class="kpi"><div class="eyebrow">Suggested locations</div><div class="v">${fmt(ly.candidates.length)}</div><div class="s">busiest shop fronts, spread out</div></div>
@@ -599,6 +650,7 @@ function renderSite() {
     <div class="section"><div class="section-title"><h4>Business mix · ${s.radius_km} km</h4><span>${fmt(businesses)} points</span></div>
       ${mix.map(([k, v]) => `<div class="hbar"><span class="lbl">${ico(iconFor(k), CAT_COLORS[k] || "#6366f1", 13, 1.5)}${k.replace(/_/g, " ")}</span><div class="track"><div class="fill" style="width:${(v / mixmax) * 100}%;background:${CAT_COLORS[k] || "#6366f1"}"></div></div><span class="num">${compact(v)}</span></div>`).join("")}</div>
     <div class="note">Sources: OpenStreetMap, Overture Maps, ${pop.voters_registered ? "electoral-roll booth aggregates" : "WorldPop / Meta HRSL population"}, Overture buildings. Footfall, workforce and projections are modelled. Open “Data &amp; method” for details.</div>`;
+  tidy($("sitePanel"), { fold: true, keepOpen: /corridor|competitor|assessment|benchmark/i });
   $("sitePanel").querySelectorAll("[data-corridor]").forEach((el) => el.onclick = () => flyToCorridor(el.dataset.corridor));
   $("sitePanel").querySelectorAll("[data-lng]").forEach((el) => el.onclick = () => map.flyTo({ center: [+el.dataset.lng, +el.dataset.lat], zoom: 17 }));
 }
@@ -668,7 +720,7 @@ function renderLayersPanel() {
   const direct = ly.competitors.filter((c) => c.is_direct_competitor && !c.is_client_store).length;
   const T = (s) => s;
   $("layersTab").innerHTML = `
-    <div class="layers-intro">Choose what to show on the map. Open a group, then switch layers on as you need them.</div>
+    <div class="layers-intro">Switch layers on as you need them.</div>
     <details class="lgroup" data-g="foot" ${S.openGroups.has("foot") ? "open" : ""}><summary><span>Footfall &amp; catchment</span><em data-gcount="foot"></em></summary><div class="lgroup-body">
     ${layerCard("streets", "Street footfall flow", `${fmt(st.n)} OSM road segments · 11-step index · live by hour`, ramp,
       `<div class="sub-label">Metric</div>${seg("streetMetric", [["footfall", "Footfall"], ["demand", `Business demand (× ${esc((DEM().propensity_label || "propensity").toLowerCase())})`]], S.streetMetric)}
@@ -712,6 +764,7 @@ function renderLayersPanel() {
     <details class="lgroup" data-g="exp" ${S.openGroups.has("exp") ? "open" : ""}><summary><span>Expansion</span><em data-gcount="exp"></em></summary><div class="lgroup-body">
     ${layerCard("candidates", `Expansion candidates (${ly.candidates.length})`, "Top-10 peak-footfall shop fronts in the golden band, ranked by area score", "#6e6e73")}</div></details>`;
   updateGroupCounts();
+  tidy($("layersTab"));
   bindLayerControls($("layersTab"));
 }
 function bindLayerControls(root) {
@@ -770,7 +823,7 @@ function renderModelTab() {
   const btn = $("modelTabBtn"), pane = $("modelTab");
   btn.style.display = WSTATE.canEdit ? "" : "none";
   if (!WSTATE.canEdit) { pane.innerHTML = ""; if (pane.classList.contains("active")) document.querySelector("[data-tab=layersTab]").click(); return; }
-  pane.innerHTML = weightsPanel(); bindWeights();
+  pane.innerHTML = weightsPanel(); bindWeights(); tidy(pane);
 }
 function weightsPanel() {
   const w = D.site.weights;
@@ -877,17 +930,21 @@ function renderExpansion() {
         <div><div class="cand-name">${esc(c.name)}</div><div class="cand-persona">${esc(c.corridor_type)} · ${c.min_distance_km} km <span class="pass">PASS</span></div>
           ${c.frontage_peak_hourly != null ? `<div class="cand-persona">${ico("walking", null, 12, 1.4)} ${fmt(c.frontage_peak_hourly)}/hr at peak ${esc(c.peak_window || "")} ${(D.site.profile.site_role || "existing") === "existing" || D.site.profile.site_role === "prospective" ? ` · footfall #${c.peak_footfall_rank} of 10` : ""}</div>` : ""}</div>
         <div class="score" style="color:${scoreColor(c.overall_suitability_score)}">${fmt(c.overall_suitability_score, 1)}<small>/ 100</small></div></div>
-      <div class="cand-bars">${[["DEMO", c.demographic_score], ["COMM", c.commercial_score], ["SYN", c.synergy_score], ["WHITE", c.white_space_score]].map(([l, v]) =>
+      <div class="cand-stats"><div>${UNIT()}<b>${fmt(c.projected_daily_units)}</b></div><div>₹ L/mo<b>${fmt(c.projected_monthly_revenue_lakhs, 1)}</b>${c.ci_rev_p10 != null ? `<small style="display:block;color:#6e6e73;font-weight:400">${fmt(c.ci_rev_p10, 1)}–${fmt(c.ci_rev_p90, 1)}</small>` : ""}</div>
+        <div>Payback<b>${fmt(c.est_payback_months, 1)} mo</b></div><div>${c.ci_rev_p10 != null ? "Own-outlet loss" : "Risk"}<b>${fmt(c.cannibalization_risk_pct, 1)}%</b></div></div>
+      <div class="cand-more"><div class="cand-bars">${[["DEMO", c.demographic_score], ["COMM", c.commercial_score], ["SYN", c.synergy_score], ["WHITE", c.white_space_score]].map(([l, v]) =>
         `<div class="cbar"><div class="l">${l} ${fmt(v, 0)}</div><div class="tr"><div style="width:${v}%;background-image:${scoreGradient(v)}"></div></div></div>`).join("")}</div>
       ${c.vs_site_pct != null ? `<div class="cand-persona" style="margin:2px 0 6px"><b style="color:${c.vs_site_pct >= 0 ? "#17653a" : "#b42318"}">${c.vs_site_pct >= 0 ? "+" : ""}${fmt(c.vs_site_pct, 0)}% vs your site</b> · ${c.dist_from_site_km} km away · ${fmt(c.footfall_vs_site, 1)}× its street footfall</div>` : ""}
       ${c.marginal_units != null ? `<div class="cand-persona" style="margin:2px 0 6px"><b>Pick #${c.plan_rank}</b> · adds ${fmt(c.marginal_units)} ${esc(UNIT())} to the network (total ${fmt(c.cumulative_units)})</div>` : ""}
-      <div class="cand-stats"><div>${UNIT()}<b>${fmt(c.projected_daily_units)}</b></div><div>₹ L/mo<b>${fmt(c.projected_monthly_revenue_lakhs, 1)}</b>${c.ci_rev_p10 != null ? `<small style="display:block;color:#6e6e73;font-weight:400">${fmt(c.ci_rev_p10, 1)}–${fmt(c.ci_rev_p90, 1)}</small>` : ""}</div>
-        <div>Payback<b>${fmt(c.est_payback_months, 1)} mo</b></div><div>${c.ci_rev_p10 != null ? "Own-outlet loss" : "Risk"}<b>${fmt(c.cannibalization_risk_pct, 1)}%</b></div></div>
-      <button class="ghost-btn" data-locpdf="${c.plan_rank || c.rank}" hidden style="width:100%;margin-top:8px">Detailed PDF report · location ${c.plan_rank || c.rank}</button>
+      
+      <button class="ghost-btn" data-locpdf="${c.plan_rank || c.rank}" hidden style="width:100%;margin-top:8px">Detailed PDF report · location ${c.plan_rank || c.rank}</button></div>
+      <button type="button" class="cand-toggle" data-candtoggle aria-label="Show details">Details <i></i></button>
     </div>`).join("")}
     <div class="note"${["alternatives", "area"].includes(role) ? " hidden" : ""}>Candidates are restricted to the 10 busiest peak-hour shop fronts in the golden band (≥1.5 km apart; expressways and ramps excluded), then ranked by area score. Score = ${Math.round(w.demographic * 100)}% demographic + ${Math.round(w.commercial * 100)}% commercial + ${Math.round(w.synergy * 100)}% synergy + ${Math.round(w.white_space * 100)}% white space, each a percentile within the study area. ${esc(UNIT())} and revenue are heuristic projections from a baseline of ${fmt((B().economics || {}).baseline_daily_units)} ${esc((DEM().unit || "units"))}/day at ₹${fmt((B().economics || {}).avg_ticket_inr)} per bill; risk is the Huff-model share of the candidate’s 1.5 km demand pulled by the nearest existing outlet.</div>${(ly.candidates[0] || {}).ci_rev_lakhs != null ? ciNote() : ""}`;
   paintPdf();
   $("expansionTab").querySelectorAll("[data-cand]").forEach((el) => el.onclick = () => selectCandidate(el.dataset.cand, true));
+  $("expansionTab").querySelectorAll("[data-candtoggle]").forEach((b) => b.onclick = (e) => { e.stopPropagation(); b.closest(".cand").classList.toggle("open"); });
+  tidy($("expansionTab"));
   $("expansionTab").querySelectorAll("[data-plan]").forEach((el) => el.onclick = () => openPlanPick(el.dataset.plan).catch(fail));
   $("showSuit").onclick = () => { S.hexMode = "suit_score"; S.hexScope = "band"; S.on.hexes = true; S.hexOpacity = 0.7; S.openGroups.add("mesh"); buildHexScale(); renderLayersPanel(); renderHexLegend(); redraw(); };
 }
