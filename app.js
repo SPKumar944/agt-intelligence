@@ -833,6 +833,20 @@ if (window.AGT) AGT.session().then((s) => { USER_LEVEL = s.level || (s.role === 
 function paintPdf() {
   const box = $("pdfBox"), eb = $("execPdfBtn"), okPdf = ["partner", "admin"].includes(USER_LEVEL) && D && D.layers.candidates.length;
   if (eb) { eb.hidden = !okPdf; eb.onclick = () => { const t = document.querySelector('[data-tab="expansionTab"]'); if (t) t.click(); if ($("pdfBtn")) $("pdfBtn").click(); }; }
+  document.querySelectorAll("[data-locpdf]").forEach((b) => {
+    b.hidden = !okPdf;
+    b.onclick = async (ev) => {
+      ev.stopPropagation();
+      const old = b.textContent; b.disabled = true; b.textContent = "Preparing the detailed report… (about a minute)";
+      try {
+        const r = await fetch(AGT.url(`/api/pdf/${encodeURIComponent(BIZ)}/${encodeURIComponent(S.siteId)}/loc/${b.dataset.locpdf}`), { headers: { Authorization: "Bearer " + AGT.token() } });
+        if (!r.ok) { let j = {}; try { j = await r.json(); } catch (e) { /* not json */ } throw new Error(j.error || "The PDF could not be made."); }
+        const blob = await r.blob(), name = ((r.headers.get("Content-Disposition") || "").match(/filename="([^"]+)"/) || [])[1] || `location_${b.dataset.locpdf}_detailed_report.pdf`;
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      } catch (e) { alert(e.message && e.message !== "Failed to fetch" ? e.message : "We couldn’t reach the server. Please try again."); }
+      b.disabled = false; b.textContent = old;
+    };
+  });
   if (!box) return;
   if (!okPdf) { box.innerHTML = ""; return; }
   box.innerHTML = `<button class="ghost-btn" id="pdfBtn" style="width:100%;margin-bottom:12px">Download PDF report · ${D.layers.candidates.length} location${D.layers.candidates.length === 1 ? "" : "s"}</button><div class="note" id="pdfMsg" style="margin:-6px 0 12px" hidden></div>`;
@@ -869,6 +883,7 @@ function renderExpansion() {
       ${c.marginal_units != null ? `<div class="cand-persona" style="margin:2px 0 6px"><b>Pick #${c.plan_rank}</b> · adds ${fmt(c.marginal_units)} ${esc(UNIT())} to the network (total ${fmt(c.cumulative_units)})</div>` : ""}
       <div class="cand-stats"><div>${UNIT()}<b>${fmt(c.projected_daily_units)}</b></div><div>₹ L/mo<b>${fmt(c.projected_monthly_revenue_lakhs, 1)}</b>${c.ci_rev_p10 != null ? `<small style="display:block;color:#6e6e73;font-weight:400">${fmt(c.ci_rev_p10, 1)}–${fmt(c.ci_rev_p90, 1)}</small>` : ""}</div>
         <div>Payback<b>${fmt(c.est_payback_months, 1)} mo</b></div><div>${c.ci_rev_p10 != null ? "Own-outlet loss" : "Risk"}<b>${fmt(c.cannibalization_risk_pct, 1)}%</b></div></div>
+      <button class="ghost-btn" data-locpdf="${c.plan_rank || c.rank}" hidden style="width:100%;margin-top:8px">Detailed PDF report · location ${c.plan_rank || c.rank}</button>
     </div>`).join("")}
     <div class="note"${["alternatives", "area"].includes(role) ? " hidden" : ""}>Candidates are restricted to the 10 busiest peak-hour shop fronts in the golden band (≥1.5 km apart; expressways and ramps excluded), then ranked by area score. Score = ${Math.round(w.demographic * 100)}% demographic + ${Math.round(w.commercial * 100)}% commercial + ${Math.round(w.synergy * 100)}% synergy + ${Math.round(w.white_space * 100)}% white space, each a percentile within the study area. ${esc(UNIT())} and revenue are heuristic projections from a baseline of ${fmt((B().economics || {}).baseline_daily_units)} ${esc((DEM().unit || "units"))}/day at ₹${fmt((B().economics || {}).avg_ticket_inr)} per bill; risk is the Huff-model share of the candidate’s 1.5 km demand pulled by the nearest existing outlet.</div>${(ly.candidates[0] || {}).ci_rev_lakhs != null ? ciNote() : ""}`;
   paintPdf();
