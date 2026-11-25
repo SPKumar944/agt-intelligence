@@ -13,7 +13,7 @@ const S = {
   streetScope: "all", hexMode: "landuse", hexScope: "all", hexOpacity: 0.55,
   compScope: "direct", diningType: "all", kidsType: "all", eduType: "all", transitScope: "rail", poiCat: "all",
   walkType: "both", selected: null, selCandidate: null,
-  on: { streets: true, stores: true, walkshed: false, rings: false, hexes: false, competitors: false, candidates: false,
+  on: { streets: true, stores: false, walkshed: false, rings: true, hexes: false, competitors: false, candidates: false,
         dining: false, kids: false, education: false, transit: false, techparks: false, offices: false, allpoints: false },
   openGroups: new Set(["foot"]),
 };
@@ -985,9 +985,9 @@ const ALL_TOGGLES = ["streets", "walkshed", "rings", "hexes", "competitors", "ca
   "techparks", "offices", "allpoints", "stores"];
 function applyBusinessDefaults(site) {
   const db = (site.business || {}).dashboard || {};
-  const on = new Set(["streets", "stores"]);   // calm by default: everything else is opt-in from the Data layers panel
+  const on = new Set(["streets", "rings"]);   // global rule: only the footfall streets and the study rings load at start; every other layer is switched on by the user
   const cp = (site.business || {}).client_priorities;   // the customer's request-form answers: layers they scored 7+ (or listed brands for) start on
-  if (cp) {
+  if (false && cp) {   // client-priority auto-enable switched off by the global rule above
     const m = cp.minor || {}, hi = (k) => (m[k] || 0) >= 7;
     [["dining", "dining"], ["kidsvenues", "kids"], ["education", "education"], ["techparks", "techparks"], ["offices", "offices"]].forEach(([q, l]) => { if (hi(q)) on.add(l); });
     if (hi("rail") || hi("bus")) on.add("transit");
