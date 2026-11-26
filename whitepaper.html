@@ -359,6 +359,8 @@ details.sub .pm{width:30px;height:30px}
   <div class="cards" id="gov-cards"></div>
   <figure class="fig"><div class="scroll" id="fig-sec"></div>
     <figcaption><b>Figure 22.</b> Controls by layer. No individual movement traces have ever been handled.</figcaption></figure>
+  <details class="sub" id="terms"><summary><span class="sn">9.1</span><span class="st"><b>Privacy, data use and terms</b><small>What the numbers can be relied on for, how data is handled, and the terms of use</small></span><span class="pm" aria-hidden="true"></span></summary>
+  <div class="sub-body" id="terms-body"></div></details>
 </div></details>
 
 <details class="sec" id="roadmap"><summary><span class="sn">10</span><span class="st"><span class="kick">Limitations and roadmap</span><span class="ttl">What the engine does not yet do</span><span class="dsc">Where the engine can fail today, how outputs show it, and what comes next</span></span><span class="pm" aria-hidden="true"></span></summary>
@@ -740,5 +742,7 @@ put('gov-cards',[['users','Aggregate only','People enter models only as counts b
   });
 })();
 </script>
+<script src="site/legal.js?v=1"></script>
+<script>(function(){var L=window.AGT_LEGAL,b=document.getElementById('terms-body');if(!L||!b)return;var e=function(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};b.innerHTML=L.items.map(function(x,i){return '<p class="col"><b>'+(i+1)+'. '+e(x[0])+'.</b> '+e(x[1])+'</p>'}).join('')+'<p class="col" style="opacity:.7">Last updated '+e(L.updated)+'.</p>';})();</script>
 </body>
 </html>

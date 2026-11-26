@@ -584,3 +584,9 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 .xc-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; margin-top: 14px; font-size: 11px; color: var(--text-3) }
 .xc-facts b { display: block; font-size: 12px; color: var(--text); font-weight: 600; margin-top: 1px }
 .xc-grid b { white-space: nowrap } .xc-grid { gap: 8px 6px }
+
+.legal-m { display: grid; gap: 0 }
+.legal-mi { padding: 10px 0; border-top: 1px solid var(--border) }
+.legal-mi:first-child { border-top: 0 }
+.legal-mi b { font-size: 12.5px; font-weight: 600 }
+.legal-mi p { margin: 4px 0 0; font-size: 12px; line-height: 1.55; color: var(--text-2) }
