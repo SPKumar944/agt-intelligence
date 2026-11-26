@@ -276,9 +276,10 @@ let HSC = {};
 const activeModes = () => (S.on.hexes ? (S.hexModes.length ? S.hexModes : [S.hexMode]) : []);
 function hexValue(i, mk = S.hexMode) {
   const m = HEX_MODES[mk];
-  if (m.calc) return m.calc(i);
-  return D.hexes[m.field][i] ?? 0;
+  if (m.calc) { try { return m.calc(i) || 0; } catch (e) { return 0; } }
+  const c = D.hexes[m.field]; return c ? (c[i] ?? 0) : 0;
 }
+const hexAvail = (k) => { const m = HEX_MODES[k]; return m.kind === "cat" ? !!D.hexes.cls : m.calc ? !!D.hexes.floating_adults : !!D.hexes[m.field]; };
 function buildHexScale() { HSC = {}; }
 function scaleFor(mk) {
   if (HSC[mk]) return HSC[mk];
@@ -838,7 +839,7 @@ function renderLayersPanel() {
     ${layerCard("rings", "Study rings", `${D.site.radius_km} km study area · ${D.site.golden_band_km.join("–")} km golden band`, "#6e6e73")}
     </div></details>
     <details class="lgroup" data-g="mesh" ${S.openGroups.has("mesh") ? "open" : ""}><summary><span>Demand mesh · H3 res ${D.hexes.res}</span><em data-gcount="mesh"></em></summary><div class="lgroup-body">
-    <div class="hm-wrap" style="padding:2px 2px 4px"><div class="sub-label">Hexagon factors · switch on as many as you need</div><div class="hm-list">${Object.entries(HEX_MODES).map(([k, m]) => hmRow(k, m)).join("")}</div>
+    <div class="hm-wrap" style="padding:2px 2px 4px"><div class="sub-label">Hexagon factors · switch on as many as you need</div><div class="hm-list">${Object.entries(HEX_MODES).filter(([k]) => hexAvail(k)).map(([k, m]) => hmRow(k, m)).join("")}</div>
        <div class="sub-label">Opacity</div><input type="range" min="15" max="90" value="${Math.round(S.hexOpacity * 100)}" data-range="hexOpacity" style="width:100%;accent-color:var(--text)"></div>
     </div></details>
     <details class="lgroup" data-g="comp" ${S.openGroups.has("comp") ? "open" : ""}><summary><span>Competition, anchors &amp; places</span><em data-gcount="comp"></em></summary><div class="lgroup-body">
@@ -1110,8 +1111,8 @@ function legendHtml(mk) {
 function renderHexLegend() {
   const modes = activeModes(), el = $("hexLegend");
   document.querySelectorAll("[data-hm]").forEach((b) => { const on = modes.includes(b.dataset.hm); b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
-  document.querySelectorAll("[data-hml]").forEach((d) => { const on = modes.includes(d.dataset.hml); d.innerHTML = on ? legendHtml(d.dataset.hml) : ""; d.style.display = on ? "" : "none"; });
-  el.innerHTML = modes.length ? modes.map((mk) => `<div class="hl-one">${legendHtml(mk)}</div>`).join("") : `<span style="color:var(--text-3)">Hexagon mesh hidden</span>`;
+  document.querySelectorAll("[data-hml]").forEach((d) => { const on = modes.includes(d.dataset.hml); d.innerHTML = on ? (() => { try { return legendHtml(d.dataset.hml); } catch (e) { return ""; } })() : ""; d.style.display = on ? "" : "none"; });
+  el.innerHTML = modes.length ? modes.map((mk) => { try { return `<div class="hl-one">${legendHtml(mk)}</div>`; } catch (e) { return ""; } }).join("") : `<span style="color:var(--text-3)">Hexagon mesh hidden</span>`;
 }
 function updateTime() {
   computeFlows();
