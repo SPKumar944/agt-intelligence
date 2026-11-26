@@ -64,8 +64,8 @@ function phaseOf(h) {
 // Chosen because it is a perceptually uniform, colour-blind-safe sequential map, earth-toned for population / density data, and it stays
 // clear of the blue-to-red footfall street scale it is drawn under. Land use (categorical) uses samples of Crameri "Batlow".
 const LANDUSE = { residential: "#CAAEAA", commercial: "#185562", mixed: "#9A915B", industrial: "#8d8d93", open_space: "#577647" };
-const RAMP = ["#FFFECA", "#F8DD81", "#ECAA5D", "#CF7C48", "#9D5735", "#5B391B", "#1C1B02"];
-const SUIT = [[75, "#683F20", "Prime 75–100"], [60, "#B7633F", "High 60–74"], [45, "#E79452", "Moderate 45–59"], [0, "#F6D672", "Low <45"]];
+const RAMP = ["#ffffff", "#daeeff", "#aed8f5", "#74b8ec", "#3a93d9", "#1a6ab5", "#0d4a8a", "#053060", "#01193a"];   // one blue ramp for every sequential hexagon layer and the population graphs
+const SUIT = [[75, "#053060", "Prime 75–100"], [60, "#1a6ab5", "High 60–74"], [45, "#74b8ec", "Moderate 45–59"], [0, "#daeeff", "Low <45"]];
 const COMP_TIER = { "Artisanal/Premium": "#7c3aed", "Mass-Premium": "#db2777", "Classic Thick Shakes": "#ea580c",
                     "Sundaes/Heritage": "#b45309", "Mass": "#0891b2", "Independent / Local": "#64748b" };
 const DINING = { "Family Vegetarian Dining": "#16a34a", "Youth Casual QSR": "#ef4444", "Microbreweries & Pubs": "#9333ea",
@@ -264,8 +264,8 @@ function buildHexScale() {
   if (m.kind === "seq") {
     const vals = D.hexes.all.map(hexValue).filter((v) => v > 0).sort((a, b) => a - b);
     const q = (p) => vals.length ? vals[Math.min(vals.length - 1, Math.floor(p * vals.length))] : 0;
-    hexScale = { breaks: [q(0.15), q(0.3), q(0.45), q(0.6), q(0.75), q(0.9)], min: vals[0] || 0, max: vals[vals.length - 1] || 0 };
-  } else if (m.kind === "idx") hexScale = { breaks: [15, 30, 45, 60, 75, 90], min: 0, max: 100 };
+    hexScale = { breaks: [q(0.1), q(0.22), q(0.34), q(0.46), q(0.58), q(0.7), q(0.82), q(0.92)], min: vals[0] || 0, max: vals[vals.length - 1] || 0 };
+  } else if (m.kind === "idx") hexScale = { breaks: [11, 22, 33, 44, 56, 67, 78, 89], min: 0, max: 100 };
   else hexScale = null;
 }
 function hexColor(i) {
@@ -288,7 +288,7 @@ function layers() {
     const data = S.hexScope === "band" ? hx.band : hx.all;
     L.push(new deck.PolygonLayer({
       id: "hexes", data, getPolygon: (i) => hx.polys[i], getFillColor: hexColor,
-      getLineColor: [255, 255, 255, 170], lineWidthUnits: "pixels", getLineWidth: 0.5, stroked: true, filled: true,
+      getLineColor: [90, 130, 180, 80], lineWidthUnits: "pixels", getLineWidth: 0.5, stroked: true, filled: true,
       pickable: true, autoHighlight: true, highlightColor: [15, 23, 42, 60],
       updateTriggers: { getFillColor: [S.hexMode, S.hexOpacity] },
     }));
@@ -625,6 +625,36 @@ function mixSquares(mix) {
   }).join("")}</div>`;
 }
 
+
+/* Population insights: the pyramid plus the numbers that explain it (all from the study's own model cells). Blue ramp matches the hexagon layers. */
+function popInsights(s, pop, pyr, pmax) {
+  const hx = D.hexes, n = hx.all.length, tot = pop.pop || 1;
+  const kids = pop.k, youth = pop.y, work = pop.w, sen = pop.s;
+  const sexRatio = pop.m ? Math.round((pop.f / pop.m) * 1000) : null, dep = (youth + work) ? Math.round(((kids + sen) / (youth + work)) * 100) : null;
+  const under25 = ((kids + youth) / tot) * 100, dayChg = pop.pop ? ((pop.day_pop - pop.pop) / pop.pop) * 100 : 0;
+  const cells = hx.all.map((i) => ({ i, p: hx.pop[i] || 0 })).sort((a, b) => b.p - a.p), topN = Math.max(1, Math.round(n * 0.1));
+  const conc = (cells.slice(0, topN).reduce((t, c) => t + c.p, 0) / (cells.reduce((t, c) => t + c.p, 0) || 1)) * 100;
+  const byLoc = {}; cells.forEach((c) => { const l = dec(hx.locality, c.i) || "Unnamed area"; byLoc[l] = (byLoc[l] || 0) + c.p; });
+  const locs = Object.entries(byLoc).sort((a, b) => b[1] - a[1]).slice(0, 6), lmax = locs.length ? locs[0][1] : 1;
+  const bands = [["Kids 0–14", kids, RAMP[3]], ["Youth 15–24", youth, RAMP[4]], ["Working 25–59", work, RAMP[6]], ["Seniors 60+", sen, RAMP[8]]];
+  const tile = (v, l, tip) => `<div class="pi-tile"><b>${v}</b><span>${l}${tip ? info(tip) : ""}</span></div>`;
+  return `<div class="section"><div class="section-title"><h4>Population insights${info("Who lives here and how they are spread. Male and female counts come from the age and sex shares applied to WorldPop 100 m counts. Dependency ratio is children plus seniors for every 100 people aged 15 to 59.")}</h4><span>${compact(tot)} residents</span></div>
+    <div class="pi-tiles">${tile(sexRatio != null ? fmt(sexRatio) : "—", "females per 1,000 males", "Above 1,000 means more women than men.")}${tile(dep != null ? fmt(dep) : "—", "dependants per 100 adults", "Children under 15 plus seniors 60+, for every 100 people aged 15 to 59.")}
+      ${tile(fmt(under25, 0) + "%", "under 25", "Share of residents aged 0 to 24. Higher means a younger area.")}${tile((dayChg >= 0 ? "+" : "") + fmt(dayChg, 0) + "%", "daytime vs night", "Daytime population compared with residents. Positive means more people are here by day (offices, colleges); negative means people leave to work elsewhere.")}</div>
+    <div class="pi-sub">Age and sex</div>
+    <div class="pyramid">${pyr.map(([l, m, f]) => `
+      <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end"><span class="pyr-val m">${compact(m)}</span><div class="pyr-bar m" style="width:${(m / pmax) * 100}%"></div></div>
+      <div class="pyr-label">${l}</div>
+      <div style="display:flex;align-items:center;gap:6px"><div class="pyr-bar f" style="width:${(f / pmax) * 100}%"></div><span class="pyr-val">${compact(f)}</span></div>`).join("")}</div>
+    <div class="pi-legend"><span><i style="background:${RAMP[7]}"></i>Male</span><span><i style="background:${RAMP[4]}"></i>Female</span></div>
+    <div class="pi-sub">Share of residents by age</div>
+    <div class="pi-stack">${bands.map(([, v, c]) => `<div style="width:${(v / tot) * 100}%;background:${c}" title="${fmt((v / tot) * 100, 1)}%"></div>`).join("")}</div>
+    <div class="pi-legend">${bands.map(([l, v, c]) => `<span><i style="background:${c}"></i>${l} ${fmt((v / tot) * 100, 0)}%</span>`).join("")}</div>
+    <div class="pi-sub">Where people live${info("Residents summed over the map cells of each locality. The densest 10% of cells hold " + fmt(conc, 0) + "% of all residents.")}</div>
+    ${locs.map(([l, v]) => `<div class="hbar"><span class="lbl">${esc(l)}</span><div class="track"><div class="fill" style="width:${(v / lmax) * 100}%;background:${RAMP[5]}"></div></div><span class="num">${compact(v)}</span></div>`).join("")}
+    <div class="pi-note-row"><b>${fmt(conc, 0)}%</b> of residents live in the densest 10% of cells.</div></div>`;
+}
+
 /* ----------------------------------------------------------------- site panel */
 function renderSite() {
   const s = D.site, p = s.profile, pop = s.population, rf = p.regional_footfall || {}, ly = D.layers;
@@ -668,12 +698,7 @@ function renderSite() {
       <div class="kpi"><div class="eyebrow">Direct competitors</div><div class="v">${fmt(direct.length)}</div><div class="s">${direct15} within 1.5 km by road</div></div>
       <div class="kpi"><div class="eyebrow">Businesses mapped</div><div class="v">${compact(businesses)}</div><div class="s">F&amp;B share ${fmt(rf.f_and_b_share_pct, 1)}% in walkshed</div></div>`}
     </div>
-    <div class="section"><div class="section-title"><h4>Population pyramid</h4><span>male · female</span></div>
-      <div class="pyramid">${pyr.map(([l, m, f]) => `
-        <div style="display:flex;align-items:center;gap:6px;justify-content:flex-end"><span class="pyr-val m">${compact(m)}</span><div class="pyr-bar m" style="width:${(m / pmax) * 100}%"></div></div>
-        <div class="pyr-label">${l}</div>
-        <div style="display:flex;align-items:center;gap:6px"><div class="pyr-bar f" style="width:${(f / pmax) * 100}%"></div><span class="pyr-val">${compact(f)}</span></div>`).join("")}
-      </div></div>
+    ${popInsights(s, pop, pyr, pmax)}
     ${comp.length ? `<div class="section"><div class="section-title"><h4>How residents are counted</h4><span>${compact(pop.pop)} total</span></div>
       <div class="stack">${comp.map(([, v, c]) => `<div style="width:${(v / pop.pop) * 100}%;background:${c}"></div>`).join("")}</div>
       <div class="stack-legend">${comp.map(([l, v, c]) => `<span><i style="background:${c}"></i>${l} ${compact(v)}</span>`).join("")}</div>
@@ -691,7 +716,7 @@ function renderSite() {
     <div class="section"><div class="section-title"><h4>Business mix · ${s.radius_km} km</h4><span>${fmt(businesses)} points</span></div>
       ${mixSquares(mix)}
     <div class="note">Sources: OpenStreetMap, Overture Maps, ${pop.voters_registered ? "electoral-roll booth aggregates" : "WorldPop / Meta HRSL population"}, Overture buildings. Footfall, workforce and projections are modelled. Open “Data &amp; method” for details.</div>`;
-  tidy($("sitePanel"), { fold: true, keepOpen: /corridor|competitor|assessment|benchmark/i });
+  tidy($("sitePanel"), { fold: true, keepOpen: /corridor|competitor|assessment|benchmark|population insights/i });
   $("sitePanel").querySelectorAll("[data-corridor]").forEach((el) => el.onclick = () => flyToCorridor(el.dataset.corridor));
   $("sitePanel").querySelectorAll("[data-lng]").forEach((el) => el.onclick = () => map.flyTo({ center: [+el.dataset.lng, +el.dataset.lat], zoom: 17 }));
 }

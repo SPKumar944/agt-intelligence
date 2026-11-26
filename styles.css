@@ -123,8 +123,8 @@ button, select, input { font: inherit; color: inherit; }
 .section-title span { font-size: 10.5px; color: var(--text-3); }
 .pyramid { display: grid; grid-template-columns: 1fr 64px 1fr; gap: 5px 6px; align-items: center; }
 .pyr-bar { height: 16px; border-radius: 4px; position: relative; }
-.pyr-bar.m { background: var(--text); justify-self: end; }
-.pyr-bar.f { background: var(--text-3); }
+.pyr-bar.m { background: #053060; justify-self: end; }
+.pyr-bar.f { background: #3a93d9; }
 .pyr-label { text-align: center; font-size: 10.5px; color: var(--text-2); font-weight: 600; }
 .pyr-val { font-family: var(--mono); font-size: 10px; color: var(--text-2); white-space: nowrap; }
 .pyr-val.m { text-align: right; }
@@ -444,3 +444,14 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 
 .list-row > div:first-child { min-width: 0 }
 .list-row .r { white-space: nowrap }
+
+/* population insights */
+.pi-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px }
+.pi-tile { background: var(--soft); border-radius: 10px; padding: 8px 10px }
+.pi-tile b { display: block; font-size: 19px; font-weight: 600; letter-spacing: -.02em; color: var(--text) }
+.pi-tile span { font-size: 10.5px; color: var(--text-3) }
+.pi-sub { font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); margin: 12px 0 6px }
+.pi-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 6px; font-size: 10.5px; color: var(--text-2) }
+.pi-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: -1px }
+.pi-stack { display: flex; height: 14px; border-radius: 4px; overflow: hidden; gap: 1px }
+.pi-note-row { font-size: 11px; color: var(--text-2); margin-top: 8px }
