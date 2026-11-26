@@ -92,6 +92,7 @@
       <button type="button" data-rail="legend" title="Legend" aria-label="Legend"><svg data-ic="palette"></svg></button>
       <i class="rail-sep"></i>
       <button type="button" data-rail="method" title="Data &amp; method" aria-label="Data and method"><svg data-ic="file-text"></svg></button>
+      <button type="button" data-feedback="feature" title="Request a feature or dataset" aria-label="Request a feature or dataset"><svg viewBox="0 0 24 24" style="stroke-width:1.6"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/><path d="M12 8.5v7M8.5 12h7"/></svg></button>
     </nav>
 
     <!-- ================= LEGEND ================= -->
@@ -180,6 +181,6 @@
       $("signOutBtn").onclick = () => AGT.logout().then(() => location.replace("login.html"));
     })();
   </script>
-<script src="site/feedback.js?v=2"></script>
+<script src="site/feedback.js?v=3"></script>
 </body>
 </html>

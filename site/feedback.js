@@ -4,8 +4,8 @@
   if (document.getElementById("fbBtn")) return;
   const base = (window.AGT_API || "").replace(/\/$/, "");
   const css = `
-  #fbBtn{position:fixed;right:18px;bottom:18px;z-index:900;display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border-radius:22px;border:1px solid var(--rule,#333);background:var(--bg,#000);color:var(--ink,#fff);font:500 12px/1 var(--mono,monospace);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.28)}
-  #fbBtn svg{width:20px;height:20px;flex:none} #fbBtn:hover{background:color-mix(in srgb,var(--ink,#fff) 8%,var(--bg,#000))}
+  #fbBtn{position:fixed;right:18px;bottom:18px;z-index:900;display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border-radius:22px;border:1px solid var(--rule,#333);background:var(--bg,#000);color:var(--ink,var(--text,#fff));font:500 12px/1 var(--mono,monospace);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.28)}
+  #fbBtn svg{width:20px;height:20px;flex:none} #fbBtn:hover{background:color-mix(in srgb,var(--ink,var(--text,#fff)) 8%,var(--bg,#000))}
   #fbBtn span{max-width:0;overflow:hidden;white-space:nowrap;transition:max-width .25s} #fbBtn:hover span,#fbBtn:focus-visible span{max-width:170px}
   @media (max-width:640px){#fbBtn{right:12px;bottom:12px}}
   #fbDlg{border:1px solid var(--rule,#333);border-radius:10px;background:var(--bg,#000);color:var(--ink,#fff);padding:0;width:min(480px,calc(100vw - 32px));font-family:inherit}
@@ -22,6 +22,7 @@
   btn.id = "fbBtn"; btn.type = "button"; btn.setAttribute("aria-label", "Request a feature or dataset");
   btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/><path d="M12 8.5v7M8.5 12h7"/></svg><span>Request a feature</span>';
   document.body.appendChild(btn);
+  if (document.getElementById("rail")) btn.style.display = "none";   // the dashboard has its own button in the side rail
   const dlg = document.createElement("dialog"); dlg.id = "fbDlg"; dlg.setAttribute("aria-labelledby", "fbT");
   dlg.innerHTML = `<form method="dialog" novalidate><div><h2 id="fbT">What should we build or add?</h2><p>Tell us a feature, a dataset or a city you need. It goes straight to our team.</p></div>
     <div class="fb-k" role="group" aria-label="Type of request"><button type="button" data-k="feature" aria-pressed="true">Feature</button><button type="button" data-k="dataset" aria-pressed="false">Dataset</button><button type="button" data-k="city" aria-pressed="false">City</button><button type="button" data-k="other" aria-pressed="false">Other</button></div>
