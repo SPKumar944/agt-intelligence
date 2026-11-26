@@ -471,9 +471,9 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 .right-panel .tabs, .panel-reopen { display: none !important; }
 #rightTitle { font-size: 15px; font-weight: 800; }
 /* both panels open in the same slot beside the rail */
-.left-panel, .right-panel { right: 64px; left: auto; top: 12px; bottom: 12px; width: 372px; }
-.panel.collapsed.left-panel, .panel.collapsed.right-panel { transform: translateX(440px); }
-.legend { right: 450px; } .legend.wide { right: 64px; }
+.left-panel, .right-panel { right: 52px; left: auto; top: 0; bottom: 0; width: 372px; border-radius: 0; box-shadow: -4px 0 16px rgba(0,0,0,.08); }
+.panel.collapsed.left-panel, .panel.collapsed.right-panel { transform: translateX(440px); box-shadow: none; }
+.legend { right: 438px; } .legend.wide { right: 66px; }
 .inspector, .inspector.wide { left: 14px; } .coords, .coords.wide { left: 14px; }
 .maplibregl-ctrl-bottom-right { right: 52px; }
 /* one section at a time from the rail */
@@ -482,4 +482,4 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 #sitePanel[data-solo="sec"] > .section:not(.solo) { display: none; }
 #sitePanel[data-solo="sec"] > .section.solo > .section-title { display: none; }
 #sitePanel[data-solo="sec"] > .section.solo.closed > :not(.section-title) { display: block; }
-@media (max-width: 860px) { .left-panel, .right-panel { width: calc(100vw - 80px); } }
+@media (max-width: 860px) { .left-panel, .right-panel { width: calc(100vw - 52px); } }
