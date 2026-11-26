@@ -951,7 +951,7 @@ let USER_LEVEL = null;
 if (window.AGT) AGT.session().then((s) => { USER_LEVEL = s.level || (s.role === "admin" ? "admin" : "client"); paintPdf(); }).catch(() => {});
 function paintPdf() {
   const box = $("pdfBox"), eb = $("execPdfBtn"), okPdf = ["partner", "admin"].includes(USER_LEVEL) && D && D.layers.candidates.length;
-  if (eb) { eb.hidden = !okPdf; eb.onclick = () => { const t = document.querySelector('[data-tab="expansionTab"]'); if (t) t.click(); if ($("pdfBtn")) $("pdfBtn").click(); }; }
+  if (eb) { eb.hidden = !okPdf; eb.onclick = () => { if (window.railOpen) window.railOpen("expansionTab"); if ($("pdfBtn")) $("pdfBtn").click(); }; }
   document.querySelectorAll("[data-locpdf]").forEach((b) => {
     b.hidden = !okPdf;
     b.onclick = async (ev) => {
@@ -1202,7 +1202,41 @@ function bindUI() {
     if (e.key === "ArrowRight") setHour(S.hour + 1); else if (e.key === "ArrowLeft") setHour(S.hour - 1);
     else if (e.key === " ") { e.preventDefault(); togglePlay(); } else if (e.key === "Escape") { $("inspector").classList.add("hidden"); $("methodModal").classList.add("hidden"); }
   });
-  if (window.innerWidth < 1180) { collapse("leftPanel", true); }
+  // ---- icon rail: every major section is one icon; a panel opens only when asked for
+  const TITLES = { layersTab: "Data layers", expansionTab: "Expansion", modelTab: "Model" };
+  document.querySelectorAll("#rail [data-ic]").forEach((s) => { s.setAttribute("viewBox", "0 0 16 16"); s.innerHTML = (typeof ICONS !== "undefined" && ICONS[s.dataset.ic]) || ""; });
+  const head = document.querySelector("#rightPanel .panel-head .tabs");
+  if (head && !$("rightTitle")) head.insertAdjacentHTML("beforebegin", '<div id="rightTitle">Data layers</div>');
+  const railSync = () => {
+    const rOpen = !$("rightPanel").classList.contains("collapsed"), tab = (document.querySelector(".tab.active") || {}).dataset?.tab;
+    document.querySelectorAll("#rail [data-rail]").forEach((b) => {
+      const k = b.dataset.rail;
+      b.classList.toggle("on", k === "site" ? !$("leftPanel").classList.contains("collapsed") : k === "legend" ? !$("legend").classList.contains("off") : rOpen && k === tab);
+    });
+    if ($("rightTitle")) $("rightTitle").textContent = TITLES[tab] || "Data layers";
+    const mb = $("modelTabBtn"); if ($("railModel")) $("railModel").hidden = !mb || mb.style.display === "none";
+    $("railCount").textContent = ($("activeCount") || {}).textContent === "0" ? "" : ($("activeCount") || {}).textContent || "";
+  };
+  window.railOpen = (tab) => {
+    const t = document.querySelector('.tab[data-tab="' + tab + '"]'); if (t) t.click();
+    collapse("rightPanel", false); railSync();
+  };
+  document.querySelectorAll("#rail [data-rail]").forEach((b) => b.onclick = () => {
+    const k = b.dataset.rail;
+    if (k === "site") collapse("leftPanel", !$("leftPanel").classList.contains("collapsed"));
+    else if (k === "legend") $("legend").classList.toggle("off");
+    else if (k === "method") $("methodBtn").click();
+    else {
+      const tab = (document.querySelector(".tab.active") || {}).dataset?.tab, open = !$("rightPanel").classList.contains("collapsed");
+      if (open && tab === k) collapse("rightPanel", true); else window.railOpen(k);
+    }
+    railSync();
+  });
+  document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", railSync));
+  document.querySelectorAll("[data-collapse]").forEach((b) => b.addEventListener("click", railSync));
+  new MutationObserver(railSync).observe($("activeCount"), { childList: true, characterData: true, subtree: true });
+  new MutationObserver(railSync).observe($("modelTabBtn"), { attributes: true, attributeFilter: ["style"] });
+  collapse("leftPanel", true); collapse("rightPanel", true); railSync();   // start with the map clear; the rail stays
 }
 // Shareable view: #business/site?h=19&d=1&c=12.96,77.58&z=15.5&on=streets,transit
 const VIEW = (() => { const q = decodeURIComponent(location.hash.slice(1)).split("?")[1]; return q ? Object.fromEntries(new URLSearchParams(q)) : null; })();
