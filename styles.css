@@ -435,3 +435,9 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 .cand-toggle:hover { color: var(--text) }
 .cand-toggle i { width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform .15s }
 .cand.open .cand-toggle i, .cand.sel .cand-toggle i { transform: rotate(-135deg) translateY(-1px) }
+
+/* business mix squares */
+.sq-wrap { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-start; margin-top: 4px }
+.sq { box-sizing: border-box; border-radius: 4px; padding: 7px 8px; display: flex; flex-direction: column; overflow: hidden }
+.sq b { font-size: 11px; font-weight: 600; line-height: 1.15; text-transform: capitalize }
+.sq span { font-size: 16px; font-weight: 300; letter-spacing: -.01em; margin-top: 1px }

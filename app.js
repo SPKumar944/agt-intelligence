@@ -593,6 +593,18 @@ function candidateGrid(o) {
     ...(B().custom_layers || []).map((c) => [`${c.label} ≤1.5 km`, fmt(o[`custom_${c.id}_15k`])]), ["Ward", o.ward]]);
 }
 
+
+/* Business mix as proportional squares: each square's AREA is its share of the businesses (largest first). */
+const MIX_PAL = [["#1f2a5a", "#fff"], ["#c2273a", "#fff"], ["#ff5a45", "#fff"], ["#14808a", "#fff"], ["#e8a317", "#2b1d00"], ["#5b5bd6", "#fff"], ["#2f7fd0", "#fff"], ["#a33fb5", "#fff"], ["#4a8f3f", "#fff"], ["#6b7280", "#fff"]];
+function mixSquares(mix) {
+  if (!mix.length) return "";
+  const W = Math.max(240, (($("sitePanel") || {}).clientWidth || 340) - 28), H = 300, sum = mix.reduce((t, [, v]) => t + v, 0) || 1, k = Math.sqrt(0.5 * W * H / sum);
+  return `<div class="sq-wrap">${mix.map(([cat, v], n) => {
+    const side = Math.min(W, Math.max(40, Math.round(k * Math.sqrt(v)))), [bg, fg] = MIX_PAL[n % MIX_PAL.length], name = cat.replace(/_/g, " ");
+    return `<div class="sq" style="width:${side}px;height:${side}px;background:${bg};color:${fg}" title="${esc(name)} · ${fmt(v)} businesses">${side >= 56 ? `<b>${esc(name)}</b>` : ""}<span>${compact(v)}</span></div>`;
+  }).join("")}</div>`;
+}
+
 /* ----------------------------------------------------------------- site panel */
 function renderSite() {
   const s = D.site, p = s.profile, pop = s.population, rf = p.regional_footfall || {}, ly = D.layers;
@@ -657,7 +669,7 @@ function renderSite() {
         <div><div class="t">${ico(iconFor(c.competitor_type, "store"), compColor(c.category_tier), 14, 1.5)}${esc(c.store_name)}</div><div class="st">${esc(c.competitor_type || c.brand)} · ${esc(c.category_tier)}</div></div>
         <div class="r">${km(c.network_dist_m)}<small>${esc(c.direction || "")}</small></div></div>`).join("")}</div></div>
     <div class="section"><div class="section-title"><h4>Business mix · ${s.radius_km} km</h4><span>${fmt(businesses)} points</span></div>
-      ${mix.map(([k, v]) => `<div class="hbar"><span class="lbl">${ico(iconFor(k), CAT_COLORS[k] || "#6366f1", 13, 1.5)}${k.replace(/_/g, " ")}</span><div class="track"><div class="fill" style="width:${(v / mixmax) * 100}%;background:${CAT_COLORS[k] || "#6366f1"}"></div></div><span class="num">${compact(v)}</span></div>`).join("")}</div>
+      ${mixSquares(mix)}
     <div class="note">Sources: OpenStreetMap, Overture Maps, ${pop.voters_registered ? "electoral-roll booth aggregates" : "WorldPop / Meta HRSL population"}, Overture buildings. Footfall, workforce and projections are modelled. Open “Data &amp; method” for details.</div>`;
   tidy($("sitePanel"), { fold: true, keepOpen: /corridor|competitor|assessment|benchmark/i });
   $("sitePanel").querySelectorAll("[data-corridor]").forEach((el) => el.onclick = () => flyToCorridor(el.dataset.corridor));
