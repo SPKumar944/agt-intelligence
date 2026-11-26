@@ -435,3 +435,6 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 .cand-toggle:hover { color: var(--text) }
 .cand-toggle i { width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform .15s }
 .cand.open .cand-toggle i, .cand.sel .cand-toggle i { transform: rotate(-135deg) translateY(-1px) }
+
+/* the business picker is hidden: each person only sees their own dashboard (select stays in the page so nothing else breaks) */
+#bizWrap { display: none !important; }
