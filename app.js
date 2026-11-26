@@ -809,8 +809,36 @@ function layerCard(key, name, desc, swatch, sub = "") {
         ${grad ? `<i style="background:${swatch}"></i>` : ""}</div></label>
     ${sub ? `<div class="layer-sub">${sub}</div>` : ""}</div>`;
 }
+/* Footfall insights shown under the footfall layer: every figure comes from the same modelled street flows as the map */
+function ffHours(day) {
+  D._ffh = D._ffh || {};
+  if (!D._ffh[day]) { const st = D.streets, a = new Array(24).fill(0); for (let s = 0; s < st.n; s++) for (let h = 0; h < 24; h++) a[h] += segFlow(s, day, h, "footfall") / st.n; D._ffh[day] = a; }
+  return D._ffh[day];
+}
+function renderFootInsights() {
+  const el = $("footIns"); if (!el || !D) return;
+  try {
+    const st = D.streets, hrs = ffHours(S.day), cur = hrs[S.hour], pk = hrs.indexOf(Math.max(...hrs)), pkv = hrs[pk];
+    const dayT = (d) => ffHours(d).reduce((a, x) => a + x, 0), wd = dayT(2), we = dayT(5);
+    let top = 0, topI = 0; const fl = Array.from(st.flow);
+    for (let s = 0; s < st.n; s++) if (fl[s] > top) { top = fl[s]; topI = s; }
+    const sorted = fl.slice().sort((a, b) => b - a), tot = sorted.reduce((a, x) => a + x, 0) || 1;
+    const share = sorted.slice(0, Math.ceil(st.n * 0.1)).reduce((a, x) => a + x, 0) / tot * 100;
+    const T = D.site.tiers, cnt = (f) => { let n = 0; for (let s = 0; s < st.n; s++) if (f(st.tier[s])) n++; return n; };
+    const hi = cnt((l) => l >= 8), mid = cnt((l) => l >= 5 && l < 8), lo = st.n - hi - mid;
+    const nm = st.names[st.name[topI]] || "Unnamed road";
+    el.innerHTML = `<div class="ff-title">Footfall insights · ${DAYS[S.day]}</div>
+      <div class="kpi ff-wide"><div class="eyebrow">Average street, through the day</div><div class="v">${compact(cur)}<small> people / hr at ${hh(S.hour)}</small></div>${kgCols(hrs, S.hour)}<div class="kg-cap"><span>Peak ${hh(pk)} · ${compact(pkv)} / hr</span><span>Now is ${fmt(cur / pkv * 100, 0)}% of peak</span></div></div>
+      <div class="kpi-grid" style="margin:8px 0 0">
+        <div class="kpi"><div class="eyebrow">Weekend vs weekday</div><div class="v">${we >= wd ? "+" : "−"}${fmt(Math.abs(we / wd - 1) * 100, 0)}%</div>${kgBars([["Weekday", wd / 24], ["Saturday", we / 24]], (v) => compact(v) + "/hr")}</div>
+        <div class="kpi"><div class="eyebrow">Busiest street now</div><div class="v">${compact(top)}<small> / hr</small></div><div class="ff-street">${esc(nm)}</div></div>
+        <div class="kpi"><div class="eyebrow">Concentration</div><div class="v">${fmt(share, 0)}%</div><div class="ff-street">of footfall is on the busiest 10% of streets</div></div>
+        <div class="kpi"><div class="eyebrow">Streets by footfall</div><div class="v">${fmt(hi / st.n * 100, 0)}%<small> high</small></div>${kgStack([["High", hi, "#8f1c12"], ["Medium", mid, "#e0a030"], ["Low", lo, "#6b5bd6"]])}</div>
+      </div>`;
+  } catch (e) { el.innerHTML = ""; }
+}
 const LGROUPS = {
-  foot: ["Footfall & catchment", ["streets", "walkshed", "rings"]],
+  foot: ["Footfall", ["streets"]],
   mesh: ["Demand mesh", ["hexes"]],
   comp: ["Competition & synergy", null],
   exp: ["Expansion", ["candidates"]],
@@ -849,14 +877,9 @@ function renderLayersPanel() {
   const T = (s) => s;
   $("layersTab").innerHTML = `
     <div class="layers-intro">Switch layers on as you need them.</div>
-    <details class="lgroup" data-g="foot" ${S.openGroups.has("foot") ? "open" : ""}><summary><span>Footfall &amp; catchment</span><em data-gcount="foot"></em></summary><div class="lgroup-body">
-    ${layerCard("streets", "Street footfall flow", `${fmt(st.n)} OSM road segments · 11-step index · live by hour`, ramp,
-      `<div class="sub-label">Metric</div>${seg("streetMetric", [["footfall", "Footfall"], ["demand", `Business demand (× ${esc((DEM().propensity_label || "propensity").toLowerCase())})`]], S.streetMetric)}
-       <div class="sub-label">Road scope</div>${seg("streetScope", [["all", `All roads (${fmt(st.n)})`], ["walk", `${D.site.walkshed_m || 350} m walkshed (${st.walk.length})`]], S.streetScope)}
-       <div class="note">Click tiers in the legend to filter. Footfall is modelled from road class, nearby businesses, transit and residents.</div>`)}
-    ${layerCard("walkshed", `${D.site.walkshed_m || 350} m store catchment`, "Radial buffer and along-road walking polygon", "#3a3a3c",
-      seg("walkType", [["both", "Both"], ["radial_buffer", "Radial"], ["road_network_walk", "Along roads"]], S.walkType))}
-    ${layerCard("rings", "Study rings", `${D.site.radius_km} km study area · ${D.site.golden_band_km.join("–")} km golden band`, "#6e6e73")}
+    <details class="lgroup" data-g="foot" ${S.openGroups.has("foot") ? "open" : ""}><summary><span>Footfall</span><em data-gcount="foot"></em></summary><div class="lgroup-body">
+    ${layerCard("streets", "Street footfall flow", `${fmt(st.n)} road segments · live by hour`, ramp)}
+    <div id="footIns" class="ff-ins"></div>
     </div></details>
     <details class="lgroup" data-g="mesh" ${S.openGroups.has("mesh") ? "open" : ""}><summary><span>Demand mesh · H3 res ${D.hexes.res}</span><em data-gcount="mesh"></em></summary><div class="lgroup-body">
     <div class="hm-wrap" style="padding:2px 2px 4px"><div class="sub-label">Hexagon factors · switch on as many as you need</div><div class="hm-list">${Object.entries(HEX_MODES).filter(([k]) => hexAvail(k)).map(([k, m]) => hmRow(k, m)).join("")}</div>
@@ -890,7 +913,7 @@ function renderLayersPanel() {
     <details class="lgroup" data-g="exp" ${S.openGroups.has("exp") ? "open" : ""}><summary><span>Expansion</span><em data-gcount="exp"></em></summary><div class="lgroup-body">
     ${layerCard("candidates", `Expansion candidates (${ly.candidates.length})`, "Top-10 peak-footfall shop fronts in the golden band, ranked by area score", "#6e6e73")}</div></details>`;
   updateGroupCounts();
-  tidy($("layersTab"));
+  renderFootInsights(); tidy($("layersTab"));
   bindLayerControls($("layersTab"));
 }
 function bindLayerControls(root) {
@@ -1100,7 +1123,7 @@ function renderHexLegend() {
   el.innerHTML = modes.length ? modes.map((mk) => { try { return `<div class="hl-one">${legendHtml(mk)}</div>`; } catch (e) { return ""; } }).join("") : `<span style="color:var(--text-3)">Hexagon mesh hidden</span>`;
 }
 function updateTime() {
-  computeFlows();
+  computeFlows(); renderFootInsights();
   const st = D.streets;
   $("tlHour").textContent = hh(S.hour); $("tlHour12").textContent = h12(S.hour); $("hourRange").value = S.hour;
   $("tlDay").textContent = DAYS[S.day]; $("tlPhase").textContent = `${phaseOf(S.hour)} · ${(DEM().propensity_label || "propensity").toLowerCase()} ${Math.round(PROP()[S.hour] * 100)}%`;
@@ -1177,7 +1200,7 @@ const ALL_TOGGLES = ["streets", "walkshed", "rings", "hexes", "competitors", "ca
   "techparks", "offices", "allpoints", "stores"];
 function applyBusinessDefaults(site) {
   const db = (site.business || {}).dashboard || {};
-  const on = new Set(["streets", "rings"]);   // global rule: only the footfall streets and the study rings load at start; every other layer is switched on by the user
+  const on = new Set(["streets"]);   // global rule: only the footfall streets and the study rings load at start; every other layer is switched on by the user
   const cp = (site.business || {}).client_priorities;   // the customer's request-form answers: layers they scored 7+ (or listed brands for) start on
   if (false && cp) {   // client-priority auto-enable switched off by the global rule above
     const m = cp.minor || {}, hi = (k) => (m[k] || 0) >= 7;

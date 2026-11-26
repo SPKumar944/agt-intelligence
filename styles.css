@@ -539,3 +539,11 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 .kg-row b { font-weight: 600; color: var(--text-2); font-variant-numeric: tabular-nums; min-width: 22px; text-align: right }
 .kpi-grid > * { min-width: 0 }
 .kpi .eyebrow { letter-spacing: .05em; white-space: normal; overflow: visible; font-size: 9px }
+
+.ff-ins { margin-top: 12px }
+.ff-title { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); font-weight: 600; margin: 0 2px 8px }
+.ff-wide { grid-column: 1 / -1 }
+.kpi .v small { font-size: 11px; font-weight: 500; letter-spacing: 0; color: var(--text-3) }
+.kg-cols { display: flex; align-items: flex-end; gap: 2px; height: 44px }
+.kg-cols i { flex: 1; border-radius: 2px 2px 0 0; display: block }
+.ff-street { font-size: 10.5px; color: var(--text-3); margin-top: 8px; line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical }
