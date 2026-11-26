@@ -526,6 +526,7 @@ function tidy(root, opts = {}) {
     h.insertAdjacentHTML("beforeend", info(n.textContent.trim().replace(/\s+/g, " ")));
     n.remove();
   });
+  root.querySelectorAll(".layer-name,.eyebrow,.section-title h4").forEach((h) => { const all = h.querySelectorAll(":scope > .info"); for (let i = 1; i < all.length; i++) all[i].remove(); });   // one i per heading
   if (opts.fold) root.querySelectorAll(".section").forEach((sec) => {          // sections fold; the most useful stay open
     const t = sec.querySelector(":scope > .section-title"), key = t && (t.querySelector("h4") || t).textContent.trim();
     if (!t || !key) return;
@@ -841,7 +842,6 @@ const LGROUPS = {
   foot: ["Footfall", ["streets"]],
   mesh: ["Demand mesh", ["hexes"]],
   comp: ["Competition & synergy", null],
-  exp: ["Expansion", ["candidates"]],
 };
 function groupOf(key) { for (const [g, [, keys]] of Object.entries(LGROUPS)) if (keys && keys.includes(key)) return g; return "comp"; }
 function lgroup(id, title, body, keys) {
@@ -909,9 +909,7 @@ function renderLayersPanel() {
     ${layerCard("allpoints", `All businesses (${fmt(P.n)})`, "Every OSM + Overture point in the study area", "#6366f1",
       select("poiCat", [["all", "All categories"], ...Object.entries(catCounts).sort((a, b) => b[1] - a[1]).map(([k, v]) => [k, `${k.replace(/_/g, " ")} (${fmt(v)})`])], S.poiCat) +
       iconKey(Object.entries(catCounts).sort((a, b) => b[1] - a[1]).map(([k]) => [iconFor(k), k.replace(/_/g, " "), CAT_COLORS[k]])))}
-    </div></details>
-    <details class="lgroup" data-g="exp" ${S.openGroups.has("exp") ? "open" : ""}><summary><span>Expansion</span><em data-gcount="exp"></em></summary><div class="lgroup-body">
-    ${layerCard("candidates", `Expansion candidates (${ly.candidates.length})`, "Top-10 peak-footfall shop fronts in the golden band, ranked by area score", "#6e6e73")}</div></details>`;
+    </div></details>`;
   updateGroupCounts();
   renderFootInsights(); tidy($("layersTab"));
   bindLayerControls($("layersTab"));
@@ -1045,7 +1043,7 @@ function renderExpansion() {
   const w = D.site.weights, role = D.site.profile.site_role, alt = D.site.profile.alternatives;
   const head = role === "alternatives" && alt ? altHeader(alt) : role === "area" ? planHeader() : `
     <div class="section-title"><h4>Golden band ${b0}–${b1} km</h4><span>${fmt(elig.length)} eligible cells</span></div>`;
-  $("expansionTab").innerHTML = `<div id="pdfBox"></div>${head}
+  $("expansionTab").innerHTML = `<div id="pdfBox"></div><div class="lgroup-body" style="padding:0 0 10px">${layerCard("candidates", `Expansion candidates (${ly.candidates.length})`, "Top-10 peak-footfall shop fronts in the golden band, ranked by area score", "#6e6e73")}</div>${head}
     <div class="tier-counts"${["alternatives", "area"].includes(role) ? ' style="display:none"' : ""}>${SUIT.map(([, c, l], k) => `<div class="tier-count" style="border-top:3px solid ${c}"><div class="n">${fmt(cnt[k])}</div><div class="l">${l}</div></div>`).join("")}</div>
     <button class="ghost-btn" id="showSuit" style="width:100%;margin-bottom:12px${["alternatives", "area"].includes(role) ? ";display:none" : ""}">Show suitability mesh on map</button>
     ${ly.candidates.map((c) => `<div class="cand ${c.candidate_id === S.selCandidate ? "sel" : ""}" data-cand="${c.candidate_id}">
@@ -1065,7 +1063,7 @@ function renderExpansion() {
   paintPdf();
   $("expansionTab").querySelectorAll("[data-cand]").forEach((el) => el.onclick = () => selectCandidate(el.dataset.cand, true));
   $("expansionTab").querySelectorAll("[data-candtoggle]").forEach((b) => b.onclick = (e) => { e.stopPropagation(); b.closest(".cand").classList.toggle("open"); });
-  tidy($("expansionTab"));
+  tidy($("expansionTab")); bindLayerControls($("expansionTab"));
   $("expansionTab").querySelectorAll("[data-plan]").forEach((el) => el.onclick = () => openPlanPick(el.dataset.plan).catch(fail));
   $("showSuit").onclick = () => { S.hexMode = "suit_score"; S.hexModes = ["suit_score"]; S.on.hexes = true; S.hexOpacity = 0.7; S.openGroups.add("mesh"); buildHexScale(); renderLayersPanel(); renderHexLegend(); redraw(); };
 }
