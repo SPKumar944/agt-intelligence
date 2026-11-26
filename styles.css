@@ -436,8 +436,8 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 .cand-toggle i { width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg) translateY(-2px); transition: transform .15s }
 .cand.open .cand-toggle i, .cand.sel .cand-toggle i { transform: rotate(-135deg) translateY(-1px) }
 
-/* business mix squares */
-.sq-wrap { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-start; margin-top: 4px }
-.sq { box-sizing: border-box; border-radius: 4px; padding: 7px 8px; display: flex; flex-direction: column; overflow: hidden }
-.sq b { font-size: 11px; font-weight: 600; line-height: 1.15; text-transform: capitalize }
-.sq span { font-size: 16px; font-weight: 300; letter-spacing: -.01em; margin-top: 1px }
+/* business mix treemap: one square, tiles flush against each other (a thin light line separates them, there are no gaps) */
+.tm { position: relative; margin-top: 6px; border-radius: 6px; overflow: hidden }
+.tmc { position: absolute; box-sizing: border-box; padding: 7px 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255,255,255,.45) }
+.tmc b { font-size: 11px; font-weight: 600; line-height: 1.15; text-transform: capitalize }
+.tmc span { font-size: 16px; font-weight: 300; letter-spacing: -.01em; margin-top: 1px }

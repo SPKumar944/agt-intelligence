@@ -594,14 +594,33 @@ function candidateGrid(o) {
 }
 
 
-/* Business mix as proportional squares: each square's AREA is its share of the businesses (largest first). */
-const MIX_PAL = [["#1f2a5a", "#fff"], ["#c2273a", "#fff"], ["#ff5a45", "#fff"], ["#14808a", "#fff"], ["#e8a317", "#2b1d00"], ["#5b5bd6", "#fff"], ["#2f7fd0", "#fff"], ["#a33fb5", "#fff"], ["#4a8f3f", "#fff"], ["#6b7280", "#fff"]];
+/* Business mix as a treemap: ONE square, split into tiles whose area is each category's share (squarified layout, no gaps).
+   Colours: Crameri "Batlow" (GeoPalettes, dominicroye.github.io/color-for-geoscience), perceptually uniform and colour-blind safe; the biggest share gets the deepest tone. */
+const BATLOW = ["#031C5A", "#185562", "#577647", "#9A915B", "#CAAEAA", "#F8CAF6"];
+function batlow(t) {
+  const p = Math.min(0.9999, Math.max(0, t)) * (BATLOW.length - 1), i = Math.floor(p), f = p - i;
+  const a = BATLOW[i].match(/\w\w/g).map((h) => parseInt(h, 16)), b = BATLOW[i + 1].match(/\w\w/g).map((h) => parseInt(h, 16));
+  return a.map((v, k) => Math.round(v + (b[k] - v) * f));
+}
+function squarify(vals, W, H) {
+  const total = vals.reduce((s, v) => s + v, 0) || 1, areas = vals.map((v) => (v / total) * W * H), out = [];
+  let x = 0, y = 0, w = W, h = H, row = [];
+  const worst = (r, side) => { const s = r.reduce((p, q) => p + q, 0), mx = Math.max(...r), mn = Math.min(...r); return Math.max((side * side * mx) / (s * s), (s * s) / (side * side * mn)); };
+  const place = (r) => {
+    const s = r.reduce((p, q) => p + q, 0);
+    if (w >= h) { const rw = s / h; let yy = y; r.forEach((q) => { const rh = q / rw; out.push([x, yy, rw, rh]); yy += rh; }); x += rw; w -= rw; }
+    else { const rh = s / w; let xx = x; r.forEach((q) => { const rw = q / rh; out.push([xx, y, rw, rh]); xx += rw; }); y += rh; h -= rh; }
+  };
+  areas.forEach((q) => { const side = Math.min(w, h); if (!row.length || worst([...row, q], side) <= worst(row, side)) row.push(q); else { place(row); row = [q]; } });
+  if (row.length) place(row);
+  return out;
+}
 function mixSquares(mix) {
   if (!mix.length) return "";
-  const W = Math.max(240, (($("sitePanel") || {}).clientWidth || 340) - 28), H = 300, sum = mix.reduce((t, [, v]) => t + v, 0) || 1, k = Math.sqrt(0.5 * W * H / sum);
-  return `<div class="sq-wrap">${mix.map(([cat, v], n) => {
-    const side = Math.min(W, Math.max(40, Math.round(k * Math.sqrt(v)))), [bg, fg] = MIX_PAL[n % MIX_PAL.length], name = cat.replace(/_/g, " ");
-    return `<div class="sq" style="width:${side}px;height:${side}px;background:${bg};color:${fg}" title="${esc(name)} · ${fmt(v)} businesses">${side >= 56 ? `<b>${esc(name)}</b>` : ""}<span>${compact(v)}</span></div>`;
+  const W = Math.max(240, (($("sitePanel") || {}).clientWidth || 340) - 28), rects = squarify(mix.map(([, v]) => v), W, W), n = mix.length;
+  return `<div class="tm" style="width:${W}px;height:${W}px">${mix.map(([cat, v], i) => {
+    const [x, y, w, h] = rects[i], c = batlow(n > 1 ? i / (n - 1) : 0), lum = (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255, fg = lum > 0.55 ? "#14213d" : "#fff", name = cat.replace(/_/g, " ");
+    return `<div class="tmc" style="left:${((x / W) * 100).toFixed(3)}%;top:${((y / W) * 100).toFixed(3)}%;width:${((w / W) * 100).toFixed(3)}%;height:${((h / W) * 100).toFixed(3)}%;background:rgb(${c});color:${fg}" title="${esc(name)} · ${fmt(v)} businesses">${w >= 44 && h >= 40 ? `<b>${esc(name)}</b>` : ""}${w >= 34 && h >= 22 ? `<span>${compact(v)}</span>` : ""}</div>`;
   }).join("")}</div>`;
 }
 
