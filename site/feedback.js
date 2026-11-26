@@ -4,18 +4,18 @@
   if (document.getElementById("fbBtn")) return;
   const base = (window.AGT_API || "").replace(/\/$/, "");
   const css = `
-  #fbBtn{position:fixed;right:18px;bottom:18px;z-index:900;display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border-radius:22px;border:1px solid var(--rule,#333);background:var(--bg,#000);color:var(--ink,var(--text,#fff));font:500 12px/1 var(--mono,monospace);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.28)}
+  #fbBtn{position:fixed;right:18px;bottom:18px;z-index:900;display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border-radius:22px;border:1px solid var(--rule,var(--border-strong,#333));background:var(--bg,#000);color:var(--ink,var(--text,#fff));font:500 12px/1 var(--mono,monospace);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.28)}
   #fbBtn svg{width:20px;height:20px;flex:none} #fbBtn:hover{background:color-mix(in srgb,var(--ink,var(--text,#fff)) 8%,var(--bg,#000))}
   #fbBtn span{max-width:0;overflow:hidden;white-space:nowrap;transition:max-width .25s} #fbBtn:hover span,#fbBtn:focus-visible span{max-width:170px}
   @media (max-width:640px){#fbBtn{right:12px;bottom:12px}}
-  #fbDlg{border:1px solid var(--rule,#333);border-radius:10px;background:var(--bg,#000);color:var(--ink,#fff);padding:0;width:min(480px,calc(100vw - 32px));font-family:inherit}
+  #fbDlg{border:1px solid var(--rule,var(--border-strong,#333));border-radius:10px;background:var(--bg,#000);color:var(--ink,var(--text,#fff));padding:0;width:min(480px,calc(100vw - 32px));font-family:inherit}
   #fbDlg::backdrop{background:rgba(0,0,0,.55)} #fbDlg form{padding:22px;display:grid;gap:14px}
-  #fbDlg h2{margin:0;font:400 26px/1.1 var(--serif,'Instrument Serif',serif)} #fbDlg p{margin:0;font-size:13px;color:var(--ink-3,#999)}
-  #fbDlg .fb-k{display:flex;flex-wrap:wrap;gap:6px} #fbDlg .fb-k button{font:500 11px/1 var(--mono,monospace);letter-spacing:.05em;text-transform:uppercase;padding:8px 10px;border-radius:14px;border:1px solid var(--rule,#333);background:none;color:var(--ink-3,#999);cursor:pointer}
-  #fbDlg .fb-k button[aria-pressed=true]{color:var(--bg,#000);background:var(--ink,#fff);border-color:var(--ink,#fff)}
-  #fbDlg textarea,#fbDlg input[type=email]{width:100%;box-sizing:border-box;font:400 14px/1.45 inherit;font-family:inherit;color:var(--ink,#fff);background:color-mix(in srgb,var(--ink,#fff) 5%,var(--bg,#000));border:1px solid var(--rule,#333);border-radius:6px;padding:10px}
+  #fbDlg h2{margin:0;font:400 26px/1.1 var(--serif,'Instrument Serif',serif)} #fbDlg p{margin:0;font-size:13px;color:var(--ink-3,var(--text-3,#999))}
+  #fbDlg .fb-k{display:flex;flex-wrap:wrap;gap:6px} #fbDlg .fb-k button{font:500 11px/1 var(--mono,monospace);letter-spacing:.05em;text-transform:uppercase;padding:8px 10px;border-radius:14px;border:1px solid var(--rule,var(--border-strong,#333));background:none;color:var(--ink-3,var(--text-3,#999));cursor:pointer}
+  #fbDlg .fb-k button[aria-pressed=true]{color:var(--bg,#000);background:var(--ink,var(--text,#fff));border-color:var(--ink,var(--text,#fff))}
+  #fbDlg textarea,#fbDlg input[type=email]{width:100%;box-sizing:border-box;font:400 14px/1.45 inherit;font-family:inherit;color:var(--ink,var(--text,#fff));background:color-mix(in srgb,var(--ink,var(--text,#fff)) 5%,var(--bg,#000));border:1px solid var(--rule,var(--border-strong,#333));border-radius:6px;padding:10px}
   #fbDlg textarea{min-height:110px;resize:vertical} #fbDlg .fb-r{display:flex;gap:10px;justify-content:flex-end;align-items:center}
-  #fbDlg .fb-go{font:500 12px/1 var(--mono,monospace);letter-spacing:.06em;text-transform:uppercase;padding:11px 16px;border-radius:6px;border:0;background:var(--ink,#fff);color:var(--bg,#000);cursor:pointer} #fbDlg .fb-x{background:none;border:0;color:var(--ink-3,#999);cursor:pointer;font-size:13px}
+  #fbDlg .fb-go{font:500 12px/1 var(--mono,monospace);letter-spacing:.06em;text-transform:uppercase;padding:11px 16px;border-radius:6px;border:0;background:var(--ink,var(--text,#fff));color:var(--bg,#000);cursor:pointer} #fbDlg .fb-x{background:none;border:0;color:var(--ink-3,var(--text-3,#999));cursor:pointer;font-size:13px}
   #fbDlg .fb-m{min-height:18px;font-size:13px} #fbDlg .fb-hp{position:absolute;left:-9999px;opacity:0}`;
   const st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
   const btn = document.createElement("button");
