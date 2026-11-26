@@ -721,23 +721,22 @@ function renderSite() {
 
   $("sitePanel").innerHTML = `
     <div class="store-card">
-      <div class="eyebrow">${p.site_role === "area" ? "SEARCH AREA · " + esc(String(s.radius_km)) + " KM RADIUS" : esc(p.serial_no) + " · " + esc(p.zone || "") + " ZONE"} ${p.site_role === "area" ? '<span class="pass" style="background:var(--soft);color:var(--text-2)">SEARCH AREA</span>' : p.site_role !== "existing" ? '<span class="pass" style="background:var(--soft);color:var(--text-2)">PROSPECTIVE SITE</span>' : '<span class="pass">EXISTING OUTLET</span>'}</div>
+      ${p.site_role === "area" ? `<div class="eyebrow">Search area · ${esc(String(s.radius_km))} km radius</div>
+      <div class="note" style="margin-top:4px">${esc(B().format || "")}</div>` : `<div class="eyebrow">${esc(p.serial_no)} · ${esc(p.zone || "")} ZONE ${p.site_role !== "existing" ? '<span class="pass" style="background:var(--soft);color:var(--text-2)">PROSPECTIVE SITE</span>' : '<span class="pass">EXISTING OUTLET</span>'}</div>
       <div class="note" style="margin-top:4px">${esc(B().format || "")}</div>
       <div class="store-meta">
-        ${p.site_role === "area" ? `<div style="grid-column:1/3">Search area<b>${esc(p.store_name)} · ${esc(String(s.radius_km))} km around this point</b></div>
-        <div>Map cells<b>${fmt(D.hexes.n)}</b></div><div>Streets analysed<b>${fmt(D.streets.n)}</b></div>` : `
         <div>Locality<b>${esc(p.locality)}</b></div><div>Ward<b>${esc(p.ward)}</b></div>
         <div>Faces<b>${esc(p.corridor_name)}</b></div><div>Corridor<b>${esc((p.corridor_tier || "").replace("Designated ", ""))}</b></div>
-        <div style="grid-column:1/3">Address<b>${esc(p.address || "—")}</b></div>`}
-      </div>
+        <div style="grid-column:1/3">Address<b>${esc(p.address || "—")}</b></div>
+      </div>`}
     </div>
     ${p.site_assessment ? siteAssessment(p.site_assessment, p.site_role) : ""}
     <div class="kpi-grid">
       <div class="kpi"><div class="eyebrow">Residents · ${s.radius_km} km</div><div class="v">${compact(pop.pop)}</div><div class="s">${fmt(pop.pop / (Math.PI * s.radius_km ** 2))} per km²</div></div>
-      <div class="kpi"><div class="eyebrow">Daytime population${info("Residents, minus people who commute out, plus people who work here.")}</div><div class="v">${compact(pop.day_pop)}</div><div class="s"></div></div>
+      <div class="kpi"><div class="eyebrow">Daytime population${info("Residents, minus people who commute out, plus people who work here.")}</div><div class="v">${compact(pop.day_pop)}</div><div class="s">${pop.pop ? (pop.day_pop >= pop.pop ? "+" : "−") + fmt(Math.abs(pop.day_pop / pop.pop - 1) * 100, 0) + "% vs residents" : ""}</div></div>
       ${p.site_role === "area" ? `
-      <div class="kpi"><div class="eyebrow">Streets analysed</div><div class="v">${compact(D.streets.n)}</div><div class="s">footfall modelled for every hour</div></div>
-      <div class="kpi"><div class="eyebrow">Suggested locations</div><div class="v">${fmt(ly.candidates.length)}</div><div class="s">busiest shop fronts, spread out</div></div>
+      <div class="kpi"><div class="eyebrow">Streets analysed</div><div class="v">${compact(D.streets.n)}</div><div class="s">modelled hour by hour</div></div>
+      <div class="kpi"><div class="eyebrow">Suggested locations</div><div class="v">${fmt(ly.candidates.length)}</div><div class="s">busiest, spread apart</div></div>
       <div class="kpi"><div class="eyebrow">Direct competitors</div><div class="v">${fmt(direct.length)}</div><div class="s">in the whole area</div></div>
       <div class="kpi"><div class="eyebrow">Businesses mapped</div><div class="v">${compact(businesses)}</div><div class="s">in the whole area</div></div>` : `
       <div class="kpi"><div class="eyebrow">Walkshed footfall<span class="tag">MODEL</span></div><div class="v">${compact(rf.weekday_daily_footfall)}</div><div class="s">per street / weekday</div></div>

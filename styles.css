@@ -514,3 +514,12 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 .rng input::-webkit-slider-thumb { -webkit-appearance: none; pointer-events: auto; cursor: ew-resize; width: 12px; height: 16px; border-radius: 4px; background: var(--bg); border: 2px solid var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.35); }
 .rng input::-moz-range-thumb { pointer-events: auto; cursor: ew-resize; width: 9px; height: 13px; border-radius: 4px; background: var(--bg); border: 2px solid var(--text); }
 .legend-ramp .ends { margin-top: 5px; } .legend-ramp .rng-v { color: var(--text-2); }
+
+/* KPI cards: quieter labels, bigger figures, smaller info icon */
+.kpi { padding: 12px 13px 11px; display: flex; flex-direction: column; gap: 0; min-height: 84px }
+.kpi .eyebrow { font-size: 9.5px; letter-spacing: .1em; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+.kpi .v { font-size: 26px; font-weight: 700; letter-spacing: -.04em; margin-top: 6px; line-height: 1.05 }
+.kpi .s { font-size: 10.5px; margin-top: auto; padding-top: 5px; color: var(--text-3) }
+.kpi .info { width: 11px; height: 11px; font-size: 7.5px; margin-left: 4px; vertical-align: 0; opacity: .75 }
+.info { width: 12px; height: 12px; font-size: 8px }
+.store-card .eyebrow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap }
