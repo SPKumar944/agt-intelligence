@@ -33,11 +33,21 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 const hh = (h) => String(h).padStart(2, "0") + ":00";
 const h12 = (h) => `(${((h + 11) % 12) + 1} ${h < 12 ? "AM" : "PM"})`;
 const isWeekend = (d) => d >= 5;
+/* House rule: Google Plus codes (e.g. "F25H+43X") are never shown in the dashboard; place names stay (e.g. "Gurugram, Haryana"). */
+const PLUS_RE = /\b[2-9CFGHJMPQRVWX]{4,8}\+[2-9CFGHJMPQRVWX]{2,3}\b[,\s]*/g;
+const PLUS_KEEP = /^(plus_code|code|id|serial|candidate_id|site_id|business_id|key|ref)$/;
+function noPlus(v, k) {
+  if (typeof v === "string") { if (PLUS_KEEP.test(k || "") || !PLUS_RE.test(v)) { PLUS_RE.lastIndex = 0; return v; } PLUS_RE.lastIndex = 0; const o = v.replace(PLUS_RE, "").replace(/^[\s,—–-]+/, "").trim(); return o || "This location"; }
+  if (Array.isArray(v)) { for (let i = 0; i < v.length; i++) { const x = v[i]; if (x && typeof x === "object" || typeof x === "string") v[i] = noPlus(x, k); } return v; }
+  if (v && typeof v === "object") { for (const key of Object.keys(v)) { const x = v[key]; if (x && typeof x === "object" || typeof x === "string") v[key] = noPlus(x, key); } }
+  return v;
+}
 async function getJSON(url) {   // data files come from the AGT server with the signed-in user's token
   const A = window.AGT, h = A && A.token() ? { Authorization: "Bearer " + A.token() } : {};
   const r = await fetch((A ? A.base : "") + "/" + String(url).replace(/^\//, ""), { cache: "no-store", headers: h });
   if (r.status === 401) { location.replace("login.html"); throw new Error("sign in"); }
-  if (!r.ok) throw new Error(`${url}: ${r.status}`); return r.json();
+  if (!r.ok) throw new Error(`${url}: ${r.status}`);
+  const j = await r.json(); return /(streets|hexes|pois)\.json/.test(String(url)) ? j : noPlus(j);
 }
 const dec = (col, i) => (col && col.dict ? col.dict[col.v[i]] : col ? col[i] : null);
 
@@ -605,7 +615,7 @@ function inspect(info) {
     case "stores": type = "Existing outlet"; title = o.store_name; body = grid([["Serial", o.serial_no], ["Lat, Lng", `${o.lat.toFixed(5)}, ${o.lng.toFixed(5)}`]]); break;
     case "store": { const p = D.site.profile; type = p.site_role === "alternatives" ? "Your site" : p.site_role !== "existing" ? "Prospective site" : "Client store"; title = p.store_name;
       body = grid([["Serial", p.serial_no], ["Locality", p.locality], ["Ward", p.ward], ["Zone", p.zone], ["Corridor", p.corridor_name], ["Corridor tier", p.corridor_tier],
-        ["Address", p.address], ["Phone", p.phone], ["Plus code", p.plus_code], ["Google rating", p.google_rating ?? "not fetched"]]); break; }
+        ["Address", p.address], ["Phone", p.phone], ["Google rating", p.google_rating ?? "not fetched"]]); break; }
     case "walkshed": { const q = o.properties; type = "Catchment"; title = q.walkshed_type === "radial_buffer" ? "350 m radial catchment" : "350 m walk along roads";
       body = grid([["Area", fmt(q.area_m2 / 1e4, 1) + " ha"], ["Residents", fmt(q.resident_population)], ["Businesses", fmt(q.businesses)], ["Food & beverage", fmt(q.food_beverage)],
         ["Competitors", fmt(q.competitors)], ["Direct competitors", fmt(q.direct_competitors)], ["Street segments", fmt(q.street_segments)], ["Weekday footfall", fmt(q.daily_footfall)],
@@ -1108,7 +1118,7 @@ function renderMethod() {
   const row = (a, b, c, tag) => `<tr><td><b>${esc(a)}</b></td><td>${esc(b)}</td><td>${esc(c)}</td><td><span class="tag-m ${tag === "MODELLED" ? "mod" : "obs"}">${tag}</span></td></tr>`;
   const kv = (o) => Object.entries(o || {}).map(([k, v]) => `${k.replace(/_/g, " ")} ${v}`).join(" · ");
   $("methodBody").innerHTML = `<h2>${esc(bz.display_name || "Business")} · data &amp; method</h2>
-    <div class="note">${esc(bz.format || "")}<br>Generated ${esc((pv.generated_at || "").slice(0, 16).replace("T", " "))} UTC · centre ${esc(pv.centre?.plus_code)} · radius ${pv.radius_km} km</div>
+    <div class="note">${esc(bz.format || "")}<br>Generated ${esc((pv.generated_at || "").slice(0, 16).replace("T", " "))} UTC · radius ${pv.radius_km} km</div>
     ${rat ? `<h3>Why the model is weighted this way</h3>${typeof rat === "string" ? `<div class="note" style="font-size:13px;line-height:1.5">${esc(rat)}</div>` : `<table>${Object.entries(rat).map(([k, v]) =>
       `<tr><td style="width:130px"><b>${esc(k.replace(/_/g, " "))}</b></td><td>${esc(typeof v === "string" ? v : JSON.stringify(v))}</td></tr>`).join("")}</table>`}` : ""}
     <h3>Read the full method</h3><div class="note" style="font-size:13px;line-height:1.7">Every step on this page is explained with diagrams in the <a href="whitepaper.html" target="_blank" rel="noopener"><b>white paper</b></a>:
