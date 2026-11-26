@@ -159,7 +159,7 @@ details.sub .pm{width:30px;height:30px}
 <header class="cover">
   <p class="eyebrow">Technology white paper · November 2026</p>
   <h1>AGT Intelligence Platform Architecture</h1>
-  <p class="lead col">How AGT turns open, licensed and administrative data into retail site decisions a committee can defend. This paper describes the system, each data layer, the method and the models, and how the same foundation serves reports, city snapshots and the Data API.</p>
+  <p class="lead col">How AGT turns open, licensed and proprietary data into retail site decisions a committee can defend. This paper describes the system, each data layer, the method and the models, and how the same foundation serves reports, city snapshots and the Data API.</p>
   <div class="meta"><span><b>Audience</b> Expansion, strategy and data teams</span><span><b>Data as of</b> 19 November 2026</span><span><b>Coverage</b> 122 Indian cities</span></div>
   <div class="stats">
     <div><b>122</b><span>city scans</span></div>
@@ -223,13 +223,13 @@ details.sub .pm{width:30px;height:30px}
 </div></details>
 <details class="sub" id="layer-3-2"><summary><span class="sn">3.2</span><span class="st"><b>Population</b><small>Who lives within reach</small></span><span class="pm" aria-hidden="true"></span></summary>
 <div class="sub-body">
-  <p class="col">Who lives nearby. In Bengaluru the layer is built bottom-up from administrative small-area counts; elsewhere it falls back to gridded population, labelled as modelled.</p>
-  <div class="explain"><div><b>Answers</b><p>How many people live within reach of a site, and how densely.</p></div><div><b>How it is built</b><p>In Bengaluru adults are counted per official small area, scaled up to official totals because the source covers only part of the population, and then floating working adults and children are added. Where fewer than 15 small areas fall inside a catchment, gridded population from WorldPop and Meta HRSL is blended in. Other cities use the grids, labelled as modelled.</p></div><div><b>Each hexagon gets</b><p>Residents, density per km², which source was used, a modelled flag and the data version.</p></div><div><b>Watch for</b><p>Standard grids undercount dense older neighbourhoods; Figure 5 shows the size of the gap in south Bengaluru.</p></div></div>
+  <p class="col">Who lives nearby. In Bengaluru the layer is built bottom-up from AGT’s proprietary datasets; elsewhere it falls back to gridded population, labelled as modelled.</p>
+  <div class="explain"><div><b>Answers</b><p>How many people live within reach of a site, and how densely.</p></div><div><b>How it is built</b><p>In Bengaluru adults are counted per area from AGT’s proprietary datasets, scaled up to full-population totals because the datasets cover only part of the population, and then floating working adults and children are added. Where fewer than 15 areas fall inside a catchment, gridded population from WorldPop and Meta HRSL is blended in. Other cities use the grids, labelled as modelled.</p></div><div><b>Each hexagon gets</b><p>Residents, density per km², which source was used, a modelled flag and the data version.</p></div><div><b>Watch for</b><p>Standard grids undercount dense older neighbourhoods; Figure 5 shows the size of the gap in south Bengaluru.</p></div></div>
   
   <figure class="fig"><div class="scroll" id="fig-pop"></div>
-    <figcaption><b>Figure 4.</b> Population layer, with the fallback used when fewer than 15 small areas fall inside a catchment. Only area-level counts are read; never records about individuals.</figcaption></figure>
+    <figcaption><b>Figure 4.</b> Population layer, with the fallback used when fewer than 15 areas fall inside a catchment. Only area-level aggregates are used.</figcaption></figure>
   <figure class="fig"><div class="scroll" id="fig-popchart"></div>
-    <figcaption><b>Figure 5.</b> Residents within 5 km of Jayanagar, Bengaluru, by source. Standard grids show about a third of the residents that administrative counts imply.</figcaption></figure>
+    <figcaption><b>Figure 5.</b> Residents within 5 km of Jayanagar, Bengaluru, by source. Standard grids show about a third of the residents that our proprietary datasets imply.</figcaption></figure>
 </div></details>
 <details class="sub" id="layer-3-3"><summary><span class="sn">3.3</span><span class="st"><b>Roads and travel time</b><small>How far customers really are</small></span><span class="pm" aria-hidden="true"></span></summary>
 <div class="sub-body">
@@ -369,7 +369,7 @@ details.sub .pm{width:30px;height:30px}
     <tbody>
       <tr><td>Forecasts are not yet trained on client sales</td><td>Anchored to a typical baseline for the format; ranges shown</td><td>Calibrate on outlet sales, then back-test on held-out stores</td></tr>
       <tr><td>Mapping is less complete in small towns</td><td>Cities compared on shares, not raw counts</td><td>Add sources and local verification</td></tr>
-      <tr><td>Population outside Bengaluru is gridded</td><td>Labelled as modelled</td><td>Extend the area-count method to other cities</td></tr>
+      <tr><td>Population outside Bengaluru is gridded</td><td>Labelled as modelled</td><td>Extend the proprietary-dataset method to other cities</td></tr>
       <tr><td>Footfall is modelled, not observed</td><td>Labelled as modelled in reports and briefs</td><td>Licensed, aggregated footfall data</td></tr>
       <tr><td>Fixed scan radius per tier</td><td>Delhi and Mumbai noted as partly covered</td><td>Wider scans for the largest metros</td></tr>
     </tbody></table></div>
@@ -384,7 +384,7 @@ details.sub .pm{width:30px;height:30px}
     <tbody>
       <tr><td>WorldPop India 2025</td><td>National</td><td>100 m grid, 1.21 billion cells</td><td>Population</td></tr>
       <tr><td>Meta HRSL</td><td>Regional tiles</td><td>30 m settlement-based counts</td><td>Population</td></tr>
-      <tr><td>Administrative small-area aggregates</td><td>Bengaluru</td><td>Area counts only</td><td>Population</td></tr>
+      <tr><td>AGT proprietary datasets</td><td>Bengaluru</td><td>Area aggregates only</td><td>Population</td></tr>
       <tr><td>Overture Maps places</td><td>Regional tiles</td><td>1.04 million places</td><td>Places and brands</td></tr>
       <tr><td>Overture Maps buildings</td><td>Regional tiles</td><td>1.32 million footprints</td><td>Buildings</td></tr>
       <tr><td>OpenStreetMap places</td><td>Regional</td><td>222,542 places</td><td>Places and brands</td></tr>
@@ -459,7 +459,7 @@ put('principles',[['route','Behaviour, not geometry','Trade areas follow travel 
   let b='';const W=1080;
   b+=Z(12,16,204,604,'Sources','globe',1);b+=Z(232,16,214,604,'Ingest and store','download');b+=Z(462,16,226,604,'Intelligence engine','hexagon');b+=Z(704,16,214,604,'Serve and access','server');b+=Z(934,16,134,604,'Users','users');
   const S=(y,icon,t,l)=>({x:24,y,w:180,h:60,icon,t,l:[l],v:'soft'});
-  const src=[S(56,'map','Overture Maps','places, buildings'),S(126,'route','OpenStreetMap','roads, places, wards'),S(196,'users','WorldPop, HRSL','population grids'),S(266,'attendance','Administrative counts','area aggregates only'),S(336,'mail','India Post','PIN polygons, offices'),S(406,'calendar','Calendar, weather','event inputs'),S(516,'ai-sparkle','Claude API','drafts competitor rules')];
+  const src=[S(56,'map','Overture Maps','places, buildings'),S(126,'route','OpenStreetMap','roads, places, wards'),S(196,'users','WorldPop, HRSL','population grids'),S(266,'attendance','Proprietary datasets','area aggregates only'),S(336,'mail','India Post','PIN polygons, offices'),S(406,'calendar','Calendar, weather','event inputs'),S(516,'ai-sparkle','Claude API','drafts competitor rules')];
   const n2=(y,icon,t,l,n,h)=>({x:244,y,w:190,h:h||76,icon,t,l,n});
   const ing=n2(56,'download','Ingest workers',['parallel mirror race','retries and timeouts'],2), tile=n2(160,'archive','Tile store',['versioned, about 5 km tiles','fresh 30 days, all kept'],3), sch=n2(264,'cron-schedule','Batch scheduler',['unattended city scans','auto re-centre, retry'],4), prof=n2(508,'file-text','Business profiles',['one per client','analyst-approved'],5);
   const n3=(y,icon,t,l,n,h)=>({x:474,y,w:202,h:h||76,icon,t,l,n});
@@ -483,13 +483,13 @@ put('principles',[['route','Behaviour, not geometry','Trade areas follow travel 
   const g=[['lock','Aggregates only',210],['file-text','Provenance per study',375],['user-check','Analyst review',575],['key','Keys stored as hashes',740],['archive','Nothing deleted',935]];
   g.forEach((it,i)=>{const x=it[2];b+=ic(it[0],x,665,17,C.onInk);b+=`<text x="${x+26}" y="678" font-size="12.5" fill="${C.onInk}">${it[1]}</text>`;});
   put('fig-system',svg(W,724,b,'AGT system architecture from sources to users'));
-  const key=[['Sources','Open, licensed and administrative data. Claude drafts competitor rules from business details only.'],['Ingest workers','Query public mirrors in parallel; the first complete answer wins.'],['Tile store','Versioned, about 5 km tiles shared by nearby requests; reused for 30 days, never overwritten.'],['Batch scheduler','Runs city scans unattended, re-centres cities on their commerce, retries failures.'],['Business profiles','One per client, written from the request and approved by an analyst.'],['H3 integration','Every layer summarised onto one hexagonal grid at three resolutions.'],['Travel-time graph','Distances along the street network, respecting rail lines, rivers and expressways.'],['Model engine','Catchments, store choice, cannibalisation and whitespace from one grid.'],['Uncertainty','Monte Carlo ranges and driver decomposition for every output.'],['Output store','City files, studies, the coverage inventory and the PIN layer.'],['App server','Email-code sign-in, credits, the request workflow and analyst review.'],['Data API','The output store, read-only, behind keys, entitlements, limits and metering.'],['Website','Public city snapshots and briefs; every publish is scanned for secrets.'],['Coverage map','Internal map of every scan, study and PIN area, drawn to true scale.'],['Governance','Rules that apply at every layer, from ingest to delivery.']];
+  const key=[['Sources','Open, licensed and proprietary data. Claude drafts competitor rules from business details only.'],['Ingest workers','Query public mirrors in parallel; the first complete answer wins.'],['Tile store','Versioned, about 5 km tiles shared by nearby requests; reused for 30 days, never overwritten.'],['Batch scheduler','Runs city scans unattended, re-centres cities on their commerce, retries failures.'],['Business profiles','One per client, written from the request and approved by an analyst.'],['H3 integration','Every layer summarised onto one hexagonal grid at three resolutions.'],['Travel-time graph','Distances along the street network, respecting rail lines, rivers and expressways.'],['Model engine','Catchments, store choice, cannibalisation and whitespace from one grid.'],['Uncertainty','Monte Carlo ranges and driver decomposition for every output.'],['Output store','City files, studies, the coverage inventory and the PIN layer.'],['App server','Email-code sign-in, credits, the request workflow and analyst review.'],['Data API','The output store, read-only, behind keys, entitlements, limits and metering.'],['Website','Public city snapshots and briefs; every publish is scanned for secrets.'],['Coverage map','Internal map of every scan, study and PIN area, drawn to true scale.'],['Governance','Rules that apply at every layer, from ingest to delivery.']];
   put('system-key',key.map((k,i)=>`<div><i>${i+1}</i><span><b>${k[0]}.</b> ${k[1]}</span></div>`).join(''));
 })();
 
 /* ---------- Figure 2: layer stack ---------- */
 (function(){
-  let b='';const L6=[['places','Places and brands','Overture, OpenStreetMap','map'],['population','Population','area counts, WorldPop, HRSL','users'],['roads','Roads and travel time','OpenStreetMap roads','route'],['buildings','Buildings','Overture footprints','building'],['pin','Boundaries and PIN codes','India Post, wards','mail'],['events','Context and events','calendar, weather','calendar']];
+  let b='';const L6=[['places','Places and brands','Overture, OpenStreetMap','map'],['population','Population','proprietary datasets, WorldPop, HRSL','users'],['roads','Roads and travel time','OpenStreetMap roads','route'],['buildings','Buildings','Overture footprints','building'],['pin','Boundaries and PIN codes','India Post, wards','mail'],['events','Context and events','calendar, weather','calendar']];
   const x0=40,w=430,sk=34;
   L6.forEach((l,i)=>{const y=40+i*62;
     b+=`<path d="M${x0+sk} ${y} H${x0+w+sk} L${x0+w} ${y+44} H${x0} Z" fill="${i%2?C.panel:C.white}" stroke="${C.line}"/>`;
@@ -537,8 +537,8 @@ layer('fig-places',{label:'Places and brands layer',sources:[['map','Overture Ma
   steps:[['download','Fetch by tile',['tiles reused for 30 days','a refresh adds a new version']],['merge','Remove duplicates',['the same place in two sources','matched by name and distance']],['filter','Sort into categories',['food and drink, shops, daily needs','health, education, offices, banks']],['target','Match chain brands',['national chains by name rules','outlet counts per brand']],['store','Assign roles',['rival, complement or anchor','from the business profile']],['hexagon','Count per hexagon',['places per cell and per zone','per 10,000 residents']]],
   side:{at:4,icon:'user-check',t:'Analyst approval',l:['rules checked before','any study runs']},sideLabel:'Human check',
   fields:['places, per 10,000','food and drink, cafés','shops, grocery','health, education','offices, banks','chain outlets by brand','rivals, complements'],feeds:['supply in the model engine','city snapshots','API zones and brands']});
-layer('fig-pop',{label:'Population layer with fallback',sources:[['attendance','Administrative counts','small areas, Bengaluru'],['users','WorldPop 2025','100 m national grid'],['users','Meta HRSL','30 m settlement grid'],['building','Overture buildings','1.32 million footprints']],
-  steps:[['attendance','Count adults per area',['small areas across the city','aggregates only, no names']],['line-chart','Scale to official totals',['source covers part','of the population']],['users','Add who the counts miss',['floating working adults','and children']],['check','Check area coverage',['15 or more areas','inside the catchment?']],['hexagon','Allocate to hexagons',['spread across small areas','summed per cell']]],
+layer('fig-pop',{label:'Population layer with fallback',sources:[['attendance','Proprietary datasets','Bengaluru, area aggregates'],['users','WorldPop 2025','100 m national grid'],['users','Meta HRSL','30 m settlement grid'],['building','Overture buildings','1.32 million footprints']],
+  steps:[['attendance','Count adults per area',['areas across the city','aggregates only']],['line-chart','Scale to full totals',['datasets cover part','of the population']],['users','Add who the counts miss',['floating working adults','and children']],['check','Check area coverage',['15 or more areas','inside the catchment?']],['hexagon','Allocate to hexagons',['spread across areas','summed per cell']]],
   side:{at:3,icon:'layers',t:'Fallback blend',l:['WorldPop and HRSL','labelled as modelled'],back:4},sideLabel:'If fewer than 15',
   fields:['residents','density per km²','source used','modelled flag','data version'],feeds:['demand in every model','snapshot residents','API residents']});
 layer('fig-roads',{label:'Roads and travel-time layer',sources:[['route','OpenStreetMap roads','604,066 segments'],['map','OSM land use','rail, rivers, wards']],
@@ -555,7 +555,7 @@ layer('fig-events',{label:'Context and events layer',sources:[['calendar','Calen
   fields:['demand shift by zone','profile by hour','evidence tier'],feeds:['event briefs','store operations','marketing timing']});
 
 /* ---------- Figure 5: population chart ---------- */
-(function(){const rows=[['Meta HRSL',0.83],['WorldPop 2025',0.91],['AGT area-count model',2.6]];let b='';const x0=210,w=760,mx=3;
+(function(){const rows=[['Meta HRSL',0.83],['WorldPop 2025',0.91],['AGT proprietary datasets',2.6]];let b='';const x0=210,w=760,mx=3;
   rows.forEach((r,i)=>{const y=30+i*52,len=r[1]/mx*w;b+=`<text x="${x0-16}" y="${y+22}" font-size="13" text-anchor="end" fill="${C.ink}">${r[0]}</text><rect x="${x0}" y="${y+4}" width="${len}" height="28" rx="6" fill="${i===2?C.ink:C.onInk2}"/><text x="${x0+len+10}" y="${y+23}" font-size="14" font-weight="600" fill="${C.ink}">${r[1].toFixed(2)} M</text>`;});
   b+=`<text x="${x0}" y="20" font-size="11.5" fill="${C.ink2}">Residents within 5 km of Jayanagar, millions</text>`;
   put('fig-popchart',svg(1080,200,b,'Residents within 5 km of Jayanagar by source'));})();
@@ -663,7 +663,7 @@ put('gov-cards',[['users','Aggregate only','People enter models only as counts b
   months.forEach((m,i)=>{b+=`<text x="${x0+i*mw+mw/2}" y="22" font-size="11.5" text-anchor="middle" fill="${C.ink2}">${m}</text><line x1="${x0+i*mw}" x2="${x0+i*mw}" y1="32" y2="232" stroke="${C.panel2}"/>`;});
   const tiers=[['Tier 1 · metros and hubs',25,1],['Tier 2 · emerging cities',33,2],['Tier 3 · developing cities',34,3],['Tier 4 · regional towns',30,4]];
   tiers.forEach((t,i)=>{const y=40+i*48;b+=`<text x="${x0-14}" y="${y+20}" font-size="13" text-anchor="end" fill="${C.ink}">${t[0]}</text><rect x="${x0}" y="${y+4}" width="${mw*(t[2]+1)-8}" height="24" rx="12" fill="${i===0?C.ink:['#3a3a3c','#6e6e73','#aeaeb2'][i-1]}"/><text x="${x0+12}" y="${y+21}" font-size="12" font-weight="600" fill="${C.onInk}">${t[1]} cities · premium by ${months[t[2]]}</text>`;});
-  b+=lab(20,272,'Next, without committed dates');const nx2=[['line-chart','Models trained on outlet sales'],['users','Area-count method in more cities'],['mail','PIN shapes in every output'],['radar','Licensed, aggregated footfall'],['api','Clients\u2019 own studies via API']];
+  b+=lab(20,272,'Next, without committed dates');const nx2=[['line-chart','Models trained on outlet sales'],['users','Proprietary datasets in more cities'],['mail','PIN shapes in every output'],['radar','Licensed, aggregated footfall'],['api','Clients\u2019 own studies via API']];
   nx2.forEach((n,i)=>{const x=20+i*212,y=288;b+=`<rect x="${x}" y="${y}" width="200" height="44" rx="10" fill="${C.panel}"/>`;b+=ic(n[0],x+14,y+14,16,C.ink);b+=`<text x="${x+38}" y="${y+27}" font-size="12" fill="${C.ink}">${n[1]}</text>`;});
   put('fig-road',svg(1080,344,b,'Roadmap'));})();
 

@@ -594,7 +594,7 @@ function inspect(info) {
       body = (hx.h && hx.h[i] != null ? `<div class="insp-id" style="font-size:10.5px;color:var(--text-3);word-break:break-all">H3 index <b>${esc(String(typeof hx.h[i] === "number" ? hx.h[i].toString(16) : hx.h[i]))}</b></div>` : "")
         + sec("Suitability", [["Overall score", sc], ["Demographic", g("demographic_score", 1)], ["Commercial", g("commercial_score", 1)], ["Synergy", g("synergy_score", 1)],
             ["White space", g("white_space_score", 1)], ["Dist. to store", g("dist_km", 2, " km")], ["Golden band", hx.in_golden_band ? (hx.in_golden_band[i] ? "Yes — eligible" : "No") : null]])
-        + sec("People", [["Land use", dec(hx.cls, i)], ["Residents", g("pop")], ["Daytime pop", g("day_pop")], ["Registered voters", g("voters_registered")], ["Floating adults", g("floating_adults")],
+        + sec("People", [["Land use", dec(hx.cls, i)], ["Residents", g("pop")], ["Daytime pop", g("day_pop")], ["Core adult base", g("adults_core")], ["Floating adults", g("floating_adults")],
             ["IT intensity", pc("it_intensity")], ["Kids 0–14", g("k")], ["Youth 15–24", g("y")], ["Working 25–59", g("w")], ["Seniors 60+", g("s")], ["Workforce", g("com_workers")]])
         + sec("Built space & footfall", [["Office floor", g("off_m2", 0, " m²")], ["Commercial floor", g("com_m2", 0, " m²")], ["Residential floor", g("res_built_m2", 0, " m²")],
             ["Businesses", g("n_pois")], ["Street footfall / day", g("mean_daily_footfall")], ["Res / Com / Syn idx", hx.res_idx ? `${fmt(hx.res_idx[i], 0)} / ${fmt(hx.com_idx[i], 0)} / ${fmt(hx.syn_idx[i], 0)}` : null]])
@@ -717,12 +717,12 @@ function renderSite() {
   const businesses = Object.entries(s.poi_counts).reduce((a, [, v]) => a + v, 0);
   const pyr = [["60+", pop.ms, pop.fs], ["25–59", pop.mw, pop.fw], ["15–24", pop.my, pop.fy], ["0–14", pop.mk, pop.fk]];
   const pmax = Math.max(...pyr.flat().filter((x) => typeof x === "number"));
-  const children = pop.pop - (pop.voters_registered ? Math.round(pop.voters_registered / (s.provenance.roll_completeness || 1)) : 0) - (pop.floating_adults || 0);
-  const comp = pop.voters_registered ? [
-    ["Registered voters", pop.voters_registered, "#1d1d1f"],
-    ["Roll-coverage gap", Math.round(pop.voters_registered / (s.provenance.roll_completeness || 1)) - pop.voters_registered, "#6f7fd6"],
+  const children = pop.pop - (pop.adults_core ? Math.round(pop.adults_core / (s.provenance.coverage_ratio || 1)) : 0) - (pop.floating_adults || 0);
+  const comp = pop.adults_core ? [
+    ["Core adult base", pop.adults_core, "#1d1d1f"],
+    ["Coverage gap", Math.round(pop.adults_core / (s.provenance.coverage_ratio || 1)) - pop.adults_core, "#6f7fd6"],
     ["Floating adults", pop.floating_adults, "#f4b740"], ["Children 0–17", Math.max(0, children), "#e2739a"]] : [];
-  const vb = s.voters_by_band || {}, vbmax = Math.max(1, ...Object.values(vb));
+  const vb = s.adults_by_band || {}, vbmax = Math.max(1, ...Object.values(vb));
   const mix = Object.entries(s.poi_counts).sort((a, b) => b[1] - a[1]).slice(0, 10), mixmax = mix.length ? mix[0][1] : 1;
 
   const ageParts = [["0–14", (pop.mk || 0) + (pop.fk || 0), RAMP[2]], ["15–24", (pop.my || 0) + (pop.fy || 0), RAMP[3]], ["25–59", (pop.mw || 0) + (pop.fw || 0), RAMP[5]], ["60+", (pop.ms || 0) + (pop.fs || 0), RAMP[7]]];
@@ -760,8 +760,8 @@ function renderSite() {
     ${comp.length ? `<div class="section"><div class="section-title"><h4>How residents are counted</h4><span>${compact(pop.pop)} total</span></div>
       <div class="stack">${comp.map(([, v, c]) => `<div style="width:${(v / pop.pop) * 100}%;background:${c}"></div>`).join("")}</div>
       <div class="stack-legend">${comp.map(([l, v, c]) => `<span><i style="background:${c}"></i>${l} ${compact(v)}</span>`).join("")}</div>
-      <div class="note">Voter roll holds ~${Math.round((s.provenance.roll_completeness || 1) * 100)}% of the official electorate; floating adults rise in IT-hub cells; children are not on the roll and are modelled.</div></div>` : ""}
-    ${Object.keys(vb).length ? `<div class="section"><div class="section-title"><h4>Registered voters by age</h4><span>from electoral roll</span></div>
+      <div class="note">Our proprietary datasets cover ~${Math.round((s.provenance.coverage_ratio || 1) * 100)}% of adults; floating adults rise in IT-hub cells and children are modelled.</div></div>` : ""}
+    ${Object.keys(vb).length ? `<div class="section"><div class="section-title"><h4>Adults by age</h4><span>proprietary dataset</span></div>
       ${Object.entries(vb).map(([b, v]) => `<div class="hbar"><span class="lbl">${b.replace("_", "–").replace("60p", "60+")} yrs</span><div class="track"><div class="fill" style="width:${(v / vbmax) * 100}%"></div></div><span class="num">${compact(v)}</span></div>`).join("")}</div>` : ""}
     <div class="section"><div class="section-title"><h4>Top corridors near the store</h4><span>modelled peak / hr</span></div>
       <div class="list">${ly.corridors.slice(0, 8).map((c) => `<div class="list-row" data-corridor="${esc(c.street_name)}">
@@ -773,7 +773,7 @@ function renderSite() {
         <div class="r">${km(c.network_dist_m)}<small>${esc(c.direction || "")}</small></div></div>`).join("")}</div></div>
     <div class="section"><div class="section-title"><h4>Business mix · ${s.radius_km} km</h4><span>${fmt(businesses)} points</span></div>
       ${mixSquares(mix)}
-    <div class="note">Sources: OpenStreetMap, Overture Maps, ${pop.voters_registered ? "electoral-roll booth aggregates" : "WorldPop / Meta HRSL population"}, Overture buildings. Footfall, workforce and projections are modelled. Open “Data &amp; method” for details.</div>`;
+    <div class="note">Sources: OpenStreetMap, Overture Maps, ${pop.adults_core ? "AGT proprietary datasets" : "WorldPop / Meta HRSL population"}, Overture buildings. Footfall, workforce and projections are modelled. Open “Data &amp; method” for details.</div>`;
   tidy($("sitePanel"), { fold: true, keepOpen: /corridor|competitor|assessment|benchmark|population insights/i });
   $("sitePanel").querySelectorAll("[data-corridor]").forEach((el) => el.onclick = () => flyToCorridor(el.dataset.corridor));
   $("sitePanel").querySelectorAll("[data-lng]").forEach((el) => el.onclick = () => map.flyTo({ center: [+el.dataset.lng, +el.dataset.lat], zoom: 17 }));
@@ -1156,7 +1156,7 @@ function togglePlay() {
 
 /* ----------------------------------------------------------------- method modal */
 function renderMethod() {
-  const pv = D.site.provenance, src = pv.sources || {}, vm = pv.voter_model || {}, bz = B(), eco = bz.economics || {}, cp = bz.competitors || {}, rat = bz.rationale && (typeof bz.rationale === "string" ? bz.rationale.trim() : Object.keys(bz.rationale).length ? bz.rationale : null);
+  const pv = D.site.provenance, src = pv.sources || {}, vm = pv.pop_model || {}, bz = B(), eco = bz.economics || {}, cp = bz.competitors || {}, rat = bz.rationale && (typeof bz.rationale === "string" ? bz.rationale.trim() : Object.keys(bz.rationale).length ? bz.rationale : null);
   const row = (a, b, c, tag) => `<tr><td><b>${esc(a)}</b></td><td>${esc(b)}</td><td>${esc(c)}</td><td><span class="tag-m ${tag === "MODELLED" ? "mod" : "obs"}">${tag}</span></td></tr>`;
   const kv = (o) => Object.entries(o || {}).map(([k, v]) => `${k.replace(/_/g, " ")} ${v}`).join(" · ");
   $("methodBody").innerHTML = `<h2>${esc(bz.display_name || "Business")} · data &amp; method</h2>
@@ -1182,14 +1182,13 @@ function renderMethod() {
     ${row("Roads", src.roads, `OSM snapshot ${String(pv.osm_snapshot_utc || "").slice(0, 10)}`, "OBSERVED")}
     ${row("Businesses", src.businesses, `Overture ${pv.overture_release} · ${fmt(pv.points_after_merge_in_radius)} points`, "OBSERVED")}
     ${row("Buildings", src.buildings, `${fmt(pv.overture_buildings_in_radius)} footprints · floors mostly assumed`, "OBSERVED")}
-    ${row("Population", pv.population_counts_source, vm.booths_used ? `${fmt(vm.booths_used)} booths · roll coverage ${pv.roll_completeness}` : "", "OBSERVED")}
-    ${row("Floating adults & children", "Population model", "5–50% unregistered adults by IT intensity; children from adults 25–44", "MODELLED")}
+    ${row("Population", pv.population_counts_source, vm.cells_used ? "Area-level aggregates · proprietary datasets" : "", "OBSERVED")}
+    ${row("Floating adults & children", "Population model", "5–50% additional adults by IT intensity; children from adults 25–44", "MODELLED")}
     ${row("Street footfall", "Gravity model", "Road class × business pull (profile weights) × transit × residents; 24 h curves", "MODELLED")}
     ${row("Business demand", "Profile demand curve", "Footfall × hourly propensity of the product", "MODELLED")}
     ${row("Day-of-week", "Dashboard modifiers", "Fri evening ×1.2, Sun family peak ×1.04", "MODELLED")}
     ${row("Suitability & projections", "Competitive interaction (Huff/MCI) + multi-criteria score", `Percentile scores; ${esc(bz.demand?.unit || "units")} from baseline ${fmt(eco.baseline_daily_units)}/day`, "MODELLED")}
-    ${row("Google ratings", src.google, "Needs a Places API key", "OBSERVED")}</table>
-    <h3>Privacy</h3><div class="note" style="font-size:12px">Only booth-level counts by age band and gender are read from the electoral roll. Names, EPIC numbers, relatives and addresses are never loaded or published.</div>`;
+    ${row("Google ratings", src.google, "Needs a Places API key", "OBSERVED")}</table>`;
 }
 
 /* ----------------------------------------------------------------- boot */
@@ -1290,7 +1289,7 @@ function bindUI() {
   });
   // ---- icon rail: a full-height strip on the right edge; every major section is one icon, stacked top to bottom
   const TITLES = { layersTab: "Data layers", expansionTab: "Expansion", modelTab: "Model" };
-  const SIC = [[/population/i, "apartment-complex"], [/corridor/i, "road"], [/competitor/i, "flag"], [/business mix/i, "shopping-bags"], [/assessment|benchmark/i, "star"], [/residents are counted|voters/i, "library"], [/./, "pin"]];
+  const SIC = [[/population/i, "apartment-complex"], [/corridor/i, "road"], [/competitor/i, "flag"], [/business mix/i, "shopping-bags"], [/assessment|benchmark/i, "star"], [/residents are counted|adults by age/i, "library"], [/./, "pin"]];
   const sIcon = (t) => (SIC.find(([r]) => r.test(t)) || [])[1];
   const svg = (n) => '<svg viewBox="0 0 16 16">' + ((typeof ICONS !== "undefined" && ICONS[n]) || "") + "</svg>";
   const rail = $("rail"), sp = $("sitePanel"), RP = $("rightPanel"), LP = $("leftPanel");
