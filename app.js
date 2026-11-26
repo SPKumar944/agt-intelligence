@@ -1396,3 +1396,40 @@ function applyView(v) {
   });
 })();
 function fail(e) { console.error(e); $("loaderText").innerHTML = `Could not load data: ${esc(e.message)}<br><small>Serve this folder over HTTP (see README) and run scripts/build_dashboard_data.py first.</small>`; }
+
+/* Usage log: which features are opened and for how long. Never typed text, never coordinates. Disclosed in the privacy terms. */
+(function () {
+  if (!window.AGT || !AGT.url) return;
+  const sid = Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+  let q = [], timer = null, active = 0, lastTick = Date.now();
+  const flush = () => {
+    clearTimeout(timer); timer = null; if (!q.length) return;
+    const events = q.splice(0, 50), tok = AGT.token();
+    try { fetch(AGT.url("/api/track"), { method: "POST", keepalive: true, headers: { "Content-Type": "application/json", ...(tok ? { Authorization: "Bearer " + tok } : {}) }, body: JSON.stringify({ sid, now: Date.now(), page: location.hash.slice(1), events }) }).catch(() => {}); } catch (e) { /* tracking never breaks the page */ }
+  };
+  const track = (e, d) => { q.push({ t: Date.now(), e, d: d == null ? "" : String(d) }); if (q.length >= 10) flush(); else if (!timer) timer = setTimeout(flush, 8000); };
+  const ref = (() => { try { return document.referrer ? new URL(document.referrer).hostname : "direct"; } catch (e) { return "direct"; } })();
+  track("session.start", `w${innerWidth}|${document.documentElement.dataset.theme || "light"}|${navigator.language || ""}|ref:${ref}`);
+  document.addEventListener("click", (ev) => {
+    const el = ev.target.closest && ev.target.closest("[data-rail],[data-sec],[data-toggle],[data-hm],[data-cand],[data-plan],#methodBtn,.legal-d > summary,[data-feedback],[data-seg] button,#playBtn,[data-tier]");
+    if (!el) return;
+    if (el.dataset.rail) track("nav.rail", el.dataset.rail);
+    else if (el.dataset.sec) track("nav.section", el.dataset.sec);
+    else if (el.dataset.toggle) track("layer.toggle", el.dataset.toggle);
+    else if (el.dataset.hm) track("hex.factor", el.dataset.hm);
+    else if (el.dataset.cand) track("cand.open", el.dataset.cand);
+    else if (el.dataset.plan) track("plan.pick", el.dataset.plan);
+    else if (el.id === "methodBtn") track("method.open");
+    else if (el.matches(".legal-d > summary")) track("legal.open");
+    else if (el.dataset.feedback != null) track("feedback.open");
+    else if (el.matches("[data-seg] button")) track("option.set", (el.closest("[data-seg]").dataset.seg || "") + ":" + (el.dataset.v || ""));
+    else if (el.id === "playBtn") track("time.play");
+    else if (el.dataset.tier) track("legend.tier", el.dataset.tier);
+  }, true);
+  document.addEventListener("change", (ev) => { const id = ev.target.id; if (id === "siteSelect") track("site.switch", ev.target.value); else if (id === "daySelect") track("time.day", ev.target.value); }, true);
+  let hrT = null; document.addEventListener("input", (ev) => { if (ev.target.id === "hourRange") { clearTimeout(hrT); hrT = setTimeout(() => track("time.hour", ev.target.value), 1500); } }, true);
+  setInterval(() => { if (document.visibilityState === "visible") { active += Math.round((Date.now() - lastTick) / 1000); } lastTick = Date.now(); }, 5000);
+  setInterval(() => { if (document.visibilityState === "visible") track("time.active", active); }, 30000);
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") { track("session.hide", active); flush(); } else lastTick = Date.now(); });
+  addEventListener("pagehide", () => { track("session.end", active); flush(); });
+})();
