@@ -10,7 +10,7 @@ const BASEMAP = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
 const S = {
   bizId: null, siteId: null, hour: 21, day: 5, streetMetric: "footfall", playing: false, timer: null,
   tierOn: new Set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
-  streetScope: "all", hexMode: "landuse", hexModes: [], hexScope: "all", hexOpacity: 0.55,
+  streetScope: "all", hexMode: "landuse", hexModes: [], hexRange: {}, hexScope: "all", hexOpacity: 0.55,
   compScope: "direct", diningType: "all", kidsType: "all", eduType: "all", transitScope: "rail", poiCat: "all",
   walkType: "both", selected: null, selCandidate: null,
   on: { streets: true, stores: false, walkshed: false, rings: true, hexes: false, competitors: false, candidates: false,
@@ -291,7 +291,10 @@ function scaleFor(mk) {
   return (HSC[mk] = s);
 }
 const hexRamp = (m) => PAL[m.pal] || RAMP;
+const hexSpan = (mk) => { const m = HEX_MODES[mk], sc = scaleFor(mk); return m.kind === "idx" ? [0, 100] : [sc.min, sc.max]; };
+function hexHidden(i, mk) { const r = S.hexRange[mk]; if (!r) return false; const v = hexValue(i, mk); return v < r[0] || v > r[1]; }
 function hexColor(i, mk, level = 0) {
+  if (S.hexRange[mk] && hexHidden(i, mk)) return [0, 0, 0, 0];
   const m = HEX_MODES[mk], a = Math.round(255 * S.hexOpacity) + (level ? 50 : 0), A = Math.min(255, a);
   if (m.kind === "cat") return [...hex2rgb(LANDUSE[dec(D.hexes.cls, i)] || "#e2e8f0"), A];
   const v = hexValue(i, mk);
@@ -320,9 +323,9 @@ function layers() {
       const f = (n - lv) / n;
       L.push(new deck.PolygonLayer({
         id: lv ? "hexes_" + lv : "hexes", data: D.hexes.all, getPolygon: f === 1 ? (i) => D.hexes.polys[i] : (i) => shrunk(i, f), getFillColor: (i) => hexColor(i, mk, lv),
-        getLineColor: [90, 130, 180, 80], lineWidthUnits: "pixels", getLineWidth: 0.5, stroked: lv === 0, filled: true,
+        getLineColor: (i) => hexHidden(i, mk) ? [0, 0, 0, 0] : [90, 130, 180, 80], lineWidthUnits: "pixels", getLineWidth: 0.5, stroked: lv === 0, filled: true,
         pickable: true, autoHighlight: lv === n - 1, highlightColor: [15, 23, 42, 60],
-        updateTriggers: { getFillColor: [mk, S.hexOpacity, n], getPolygon: [f] },
+        updateTriggers: { getFillColor: [mk, S.hexOpacity, n, String(S.hexRange[mk])], getLineColor: [String(S.hexRange[mk])], getPolygon: [f] },
       }));
     }); }
   if (S.on.rings) {
@@ -1083,13 +1086,26 @@ function renderLegend() {
   });
   renderHexLegend();
 }
+document.addEventListener("input", (e) => {
+  const box = e.target.closest && e.target.closest(".rng"); if (!box) return;
+  const mk = box.dataset.rng, m = HEX_MODES[mk], [a, b] = hexSpan(mk);
+  let lo = +box.querySelector(".lo").value, hi = +box.querySelector(".hi").value;
+  if (lo > hi) { if (e.target.classList.contains("lo")) lo = hi; else hi = lo; }
+  const val = (t) => a + (b - a) * t / 1000, full = lo <= 0 && hi >= 1000, f = (v) => m.pct ? fmt(v * 100, 0) + "%" : compact(v);
+  S.hexRange[mk] = full ? null : [val(lo), val(hi)];
+  document.querySelectorAll('.rng[data-rng="' + mk + '"]').forEach((bx) => { bx.querySelector(".lo").value = lo; bx.querySelector(".hi").value = hi; });
+  document.querySelectorAll('[data-rv="' + mk + '"]').forEach((s) => { s.textContent = full ? "drag to filter" : "showing " + f(val(lo)) + " – " + f(val(hi)); });
+  redraw();
+});
 function legendHtml(mk) {
   const m = HEX_MODES[mk];
   if (m.kind === "cat") return `<div class="eyebrow" style="margin-bottom:4px">${m.label}</div>` + Object.entries(LANDUSE).map(([k, c]) => `<span><i style="background:${c}"></i>${k.replace("_", " ")}</span>`).join("");
   if (m.kind === "suit") return `<div class="eyebrow" style="margin-bottom:4px">${m.label}</div>` + SUIT.map(([, c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join("");
   const sc = scaleFor(mk), b = sc.breaks, f = (v) => m.pct ? fmt(v * 100, 0) + "%" : compact(v);
+  const [lo0, hi0] = hexSpan(mk), r = S.hexRange[mk] || [lo0, hi0], t = (v) => hi0 > lo0 ? Math.round(1000 * (v - lo0) / (hi0 - lo0)) : 0;
   return `<div class="legend-ramp"><div class="eyebrow" style="margin-bottom:4px">${m.label}</div><div class="ramp" style="background:linear-gradient(90deg,${hexRamp(m).join(",")})"></div>
-    <div class="ends"><span>${f(m.kind === "idx" ? 0 : sc.min)}</span><span>${f(b[2])}</span><span>${f(m.kind === "idx" ? 100 : sc.max)}</span></div></div>`;
+    <div class="rng" data-rng="${mk}" title="Drag the handles to show only the hexagons in this range"><input type="range" class="lo" min="0" max="1000" value="${t(r[0])}" aria-label="Lowest value shown"><input type="range" class="hi" min="0" max="1000" value="${t(r[1])}" aria-label="Highest value shown"></div>
+    <div class="ends"><span>${f(m.kind === "idx" ? 0 : sc.min)}</span><span class="rng-v" data-rv="${mk}">${S.hexRange[mk] ? "showing " + f(r[0]) + " – " + f(r[1]) : "drag to filter"}</span><span>${f(m.kind === "idx" ? 100 : sc.max)}</span></div></div>`;
 }
 function renderHexLegend() {
   const modes = activeModes(), el = $("hexLegend");
