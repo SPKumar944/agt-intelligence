@@ -703,6 +703,11 @@ function popInsights(s, pop, pyr, pmax) {
 }
 
 /* ----------------------------------------------------------------- site panel */
+/* Small graphics for the KPI cards (plain div bars, blue ramp) */
+const cap1 = (k) => { k = String(k).replace(/_/g, " "); return k.charAt(0).toUpperCase() + k.slice(1); };
+const kgStack = (parts) => { const tot = parts.reduce((a, x) => a + x[1], 0) || 1; return `<div class="kg"><div class="kg-stack">${parts.map(([l, v, c]) => `<i style="width:${(v / tot) * 100}%;background:${c}" title="${esc(l)} ${fmt((v / tot) * 100, 0)}%"></i>`).join("")}</div><div class="kg-cap">${parts.map(([l, v, c]) => `<span><i style="background:${c}"></i>${esc(l)} ${fmt((v / tot) * 100, 0)}%</span>`).join("")}</div></div>`; };
+const kgBars = (rows, fmtv = compact) => { const mx = Math.max(1, ...rows.map((r) => r[1])); return `<div class="kg">${rows.map(([l, v], i) => `<div class="kg-row"><span>${esc(l)}</span><div><i style="width:${Math.max(3, (v / mx) * 100)}%;background:${RAMP[Math.max(3, 6 - i)]}"></i></div><b>${fmtv(v)}</b></div>`).join("")}</div>`; };
+const kgCols = (vals, hi) => { const mx = Math.max(1, ...vals); return `<div class="kg"><div class="kg-cols">${vals.map((v, i) => `<i style="height:${Math.max(8, (v / mx) * 100)}%;background:${RAMP[i === hi ? 6 : 3]}"></i>`).join("")}</div></div>`; };
 function renderSite() {
   const s = D.site, p = s.profile, pop = s.population, rf = p.regional_footfall || {}, ly = D.layers;
   $("storeName").textContent = p.store_name;
@@ -719,6 +724,12 @@ function renderSite() {
   const vb = s.voters_by_band || {}, vbmax = Math.max(1, ...Object.values(vb));
   const mix = Object.entries(s.poi_counts).sort((a, b) => b[1] - a[1]).slice(0, 10), mixmax = mix.length ? mix[0][1] : 1;
 
+  const ageParts = [["0–14", (pop.mk || 0) + (pop.fk || 0), RAMP[2]], ["15–24", (pop.my || 0) + (pop.fy || 0), RAMP[3]], ["25–59", (pop.mw || 0) + (pop.fw || 0), RAMP[5]], ["60+", (pop.ms || 0) + (pop.fs || 0), RAMP[7]]];
+  const hwN = {}; for (let i = 0; i < D.streets.n; i++) { const k = D.streets.highways[D.streets.hw[i]] || "other"; hwN[k] = (hwN[k] || 0) + 1; }
+  const hwTop = Object.entries(hwN).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => [cap1(k), v]);
+  const cands = (ly.candidates || []).slice().sort((a, b) => (a.rank || 0) - (b.rank || 0)).slice(0, 5);
+  const dBands = [["≤ 1.5 km", 0, 1500], ["1.5–3 km", 1500, 3000], ["3–5 km", 3000, 5000], ["5 km +", 5000, 1e12]].map(([l, a, b]) => [l, direct.filter((c) => (c.network_dist_m ?? c.dist_m ?? 1e9) > a && (c.network_dist_m ?? c.dist_m ?? 1e9) <= b || (a === 0 && (c.network_dist_m ?? c.dist_m ?? 1e9) <= b)).length]);
+  const mixTop = Object.entries(s.poi_counts).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => [cap1(k), v]);
   $("sitePanel").innerHTML = `
     <div class="store-card">
       ${p.site_role === "area" ? `<div class="eyebrow">Search area · ${esc(String(s.radius_km))} km radius</div>
@@ -732,13 +743,13 @@ function renderSite() {
     </div>
     ${p.site_assessment ? siteAssessment(p.site_assessment, p.site_role) : ""}
     <div class="kpi-grid">
-      <div class="kpi"><div class="eyebrow">Residents · ${s.radius_km} km</div><div class="v">${compact(pop.pop)}</div><div class="s">${fmt(pop.pop / (Math.PI * s.radius_km ** 2))} per km²</div></div>
-      <div class="kpi"><div class="eyebrow">Daytime population${info("Residents, minus people who commute out, plus people who work here.")}</div><div class="v">${compact(pop.day_pop)}</div><div class="s">${pop.pop ? (pop.day_pop >= pop.pop ? "+" : "−") + fmt(Math.abs(pop.day_pop / pop.pop - 1) * 100, 0) + "% vs residents" : ""}</div></div>
+      <div class="kpi"><div class="eyebrow">Residents · ${s.radius_km} km</div><div class="v">${compact(pop.pop)}</div><div class="s">${fmt(pop.pop / (Math.PI * s.radius_km ** 2))} per km²</div>${kgStack(ageParts)}</div>
+      <div class="kpi"><div class="eyebrow">Daytime population${info("Residents, minus people who commute out, plus people who work here.")}</div><div class="v">${compact(pop.day_pop)}</div><div class="s">${pop.pop ? (pop.day_pop >= pop.pop ? "+" : "−") + fmt(Math.abs(pop.day_pop / pop.pop - 1) * 100, 0) + "% vs residents" : ""}</div>${kgBars([["Residents", pop.pop], ["Daytime", pop.day_pop]])}</div>
       ${p.site_role === "area" ? `
-      <div class="kpi"><div class="eyebrow">Streets analysed</div><div class="v">${compact(D.streets.n)}</div><div class="s">modelled hour by hour</div></div>
-      <div class="kpi"><div class="eyebrow">Suggested locations</div><div class="v">${fmt(ly.candidates.length)}</div><div class="s">busiest, spread apart</div></div>
-      <div class="kpi"><div class="eyebrow">Direct competitors</div><div class="v">${fmt(direct.length)}</div><div class="s">in the whole area</div></div>
-      <div class="kpi"><div class="eyebrow">Businesses mapped</div><div class="v">${compact(businesses)}</div><div class="s">in the whole area</div></div>` : `
+      <div class="kpi"><div class="eyebrow">Streets analysed</div><div class="v">${compact(D.streets.n)}</div><div class="s">modelled hour by hour</div>${kgBars(hwTop)}</div>
+      <div class="kpi"><div class="eyebrow">Suggested locations</div><div class="v">${fmt(ly.candidates.length)}</div><div class="s">busiest, spread apart</div>${cands.length ? kgBars(cands.map((c) => ["#" + (c.rank || ""), c.overall_suitability_score || 0]), (v) => fmt(v, 0)) : ""}</div>
+      <div class="kpi"><div class="eyebrow">Direct competitors</div><div class="v">${fmt(direct.length)}</div><div class="s">in the whole area</div>${dBands.some((r) => r[1]) ? kgBars(dBands, (v) => fmt(v)) : ""}</div>
+      <div class="kpi"><div class="eyebrow">Businesses mapped</div><div class="v">${compact(businesses)}</div><div class="s">in the whole area</div>${kgBars(mixTop)}</div>` : `
       <div class="kpi"><div class="eyebrow">Walkshed footfall<span class="tag">MODEL</span></div><div class="v">${compact(rf.weekday_daily_footfall)}</div><div class="s">per street / weekday</div></div>
       <div class="kpi"><div class="eyebrow">Weekend surge<span class="tag">MODEL</span></div><div class="v">+${fmt(rf.weekend_surge_pct, 1)}%</div><div class="s">peak eve ${fmt(rf.peak_evening_hourly_flow)}/hr</div></div>
       <div class="kpi"><div class="eyebrow">Direct competitors</div><div class="v">${fmt(direct.length)}</div><div class="s">${direct15} within 1.5 km by road</div></div>

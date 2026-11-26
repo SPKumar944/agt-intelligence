@@ -523,3 +523,19 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 .kpi .info { width: 11px; height: 11px; font-size: 7.5px; margin-left: 4px; vertical-align: 0; opacity: .75 }
 .info { width: 12px; height: 12px; font-size: 8px }
 .store-card .eyebrow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap }
+
+/* KPI card graphics */
+.kpi { min-height: 0 }
+.kg { margin-top: 10px }
+.kg-stack { display: flex; height: 8px; border-radius: 4px; overflow: hidden; gap: 1px; background: var(--surface) }
+.kg-stack i { display: block; height: 100% }
+.kg-cap { display: flex; flex-wrap: wrap; gap: 2px 8px; margin-top: 6px; font-size: 9.5px; color: var(--text-3) }
+.kg-cap span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap }
+.kg-cap i { width: 6px; height: 6px; border-radius: 2px; display: inline-block }
+.kg-row { display: grid; grid-template-columns: 68px 1fr auto; gap: 7px; align-items: center; font-size: 9.5px; color: var(--text-3); margin-top: 4px }
+.kg-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.kg-row > div { height: 6px; border-radius: 3px; background: var(--surface); overflow: hidden }
+.kg-row > div i { display: block; height: 100%; border-radius: 3px }
+.kg-row b { font-weight: 600; color: var(--text-2); font-variant-numeric: tabular-nums; min-width: 22px; text-align: right }
+.kpi-grid > * { min-width: 0 }
+.kpi .eyebrow { letter-spacing: .05em; white-space: normal; overflow: visible; font-size: 9px }
