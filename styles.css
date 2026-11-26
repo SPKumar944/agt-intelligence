@@ -585,8 +585,14 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 .xc-facts b { display: block; font-size: 12px; color: var(--text); font-weight: 600; margin-top: 1px }
 .xc-grid b { white-space: nowrap } .xc-grid { gap: 8px 6px }
 
-.legal-m { display: grid; gap: 0 }
-.legal-mi { padding: 10px 0; border-top: 1px solid var(--border) }
-.legal-mi:first-child { border-top: 0 }
-.legal-mi b { font-size: 12.5px; font-weight: 600 }
-.legal-mi p { margin: 4px 0 0; font-size: 12px; line-height: 1.55; color: var(--text-2) }
+
+/* Privacy / terms: a dropdown with fine print */
+.legal-d { margin-top: 22px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border) }
+.legal-d > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 2px; cursor: pointer; font-size: 14px; font-weight: 600 }
+.legal-d > summary::-webkit-details-marker { display: none }
+.legal-d > summary i { width: 7px; height: 7px; border-right: 1.5px solid var(--text-3); border-bottom: 1.5px solid var(--text-3); transform: rotate(45deg) translateY(-2px); transition: transform .18s; flex: none }
+.legal-d[open] > summary i { transform: rotate(-135deg) translateY(-1px) }
+.legal-m { padding: 2px 2px 14px }
+.legal-m p { margin: 0 0 8px; font-size: 10.5px; line-height: 1.5; color: var(--text-3) }
+.legal-m p b { color: var(--text-2); font-weight: 600 }
+.legal-m a { color: inherit; text-decoration: underline }

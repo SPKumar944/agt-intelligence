@@ -1189,7 +1189,7 @@ function renderMethod() {
     ${row("Day-of-week", "Dashboard modifiers", "Fri evening ×1.2, Sun family peak ×1.04", "MODELLED")}
     ${row("Suitability & projections", "Competitive interaction (Huff/MCI) + multi-criteria score", `Percentile scores; ${esc(bz.demand?.unit || "units")} from baseline ${fmt(eco.baseline_daily_units)}/day`, "MODELLED")}
     ${row("Google ratings", src.google, "Needs a Places API key", "OBSERVED")}</table>
-    ${(window.AGT_LEGAL ? `<h3>Privacy, data use and terms</h3><div class="legal-m">${window.AGT_LEGAL.items.map(([h, b], k) => `<div class="legal-mi"><b>${k + 1}. ${esc(h)}</b><p>${esc(b)}</p></div>`).join("")}<div class="note" style="font-size:11.5px">Last updated ${esc(window.AGT_LEGAL.updated)}. See also the <a href="whitepaper.html#governance" target="_blank" rel="noopener">white paper</a> and the <a href="methodology.html#legal" target="_blank" rel="noopener">methodology page</a>.</div></div>` : "")}`;
+    ${(window.AGT_LEGAL ? `<details class="legal-d"><summary><span>Privacy, data use and terms</span><i aria-hidden="true"></i></summary><div class="legal-m">${window.AGT_LEGAL.items.map(([h, b], k) => `<p><b>${k + 1}. ${esc(h)}.</b> ${esc(b)}</p>`).join("")}<p class="legal-u">Last updated ${esc(window.AGT_LEGAL.updated)}. See also the <a href="whitepaper.html#governance" target="_blank" rel="noopener">white paper</a> and the <a href="methodology.html#legal" target="_blank" rel="noopener">methodology page</a>.</p></div></details>` : "")}`;
 }
 
 /* ----------------------------------------------------------------- boot */
