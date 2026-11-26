@@ -13,6 +13,21 @@
   <script src="https://unpkg.com/deck.gl@9.0.38/dist.min.js"></script>
   <script src="site/config.js?v=1"></script>
   <script src="site/api.js?v=7"></script>
+  <script>(function () {   // public demo: with no sign-in, open the demo study if that is what the link points at (or nothing), otherwise carry on to sign-in
+    try {
+      if (AGT.token()) return;
+      var b = location.hash.slice(1).split("/")[0], q = new XMLHttpRequest();
+      q.open("GET", AGT.base + "/api/demo", false); q.send();
+      if (q.status !== 200) return;
+      if (b && b !== JSON.parse(q.responseText).business_id) return;
+      q = new XMLHttpRequest();
+      q.open("POST", AGT.base + "/api/demo/open", false); q.setRequestHeader("Content-Type", "application/json"); q.send("{}");
+      if (q.status !== 200) return;
+      var j = JSON.parse(q.responseText);
+      if (b && b !== j.business_id) return;
+      AGT.setToken(j.token); if (!b) location.hash = j.business_id;
+    } catch (e) { /* sign-in page takes over */ }
+  })();</script>
 </head>
 <body>
   <!-- ================= HEADER ================= -->
@@ -156,7 +171,7 @@
   <div class="loader" id="loader"><div class="spinner"></div><div id="loaderText">Loading intelligence layers…</div></div>
   <script src="https://unpkg.com/supercluster@8.0.1/dist/supercluster.min.js"></script>
   <script src="icons.js?v=2"></script>
-  <script src="app.js?v=59"></script>
+  <script src="app.js?v=61"></script>
   <script>
     (function () {   // light / dark (default light)
       const b = document.getElementById("themeBtn"), dk = () => document.documentElement.dataset.theme === "dark";
