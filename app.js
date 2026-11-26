@@ -620,7 +620,8 @@ function mixSquares(mix) {
   const W = Math.max(240, (($("sitePanel") || {}).clientWidth || 340) - 28), rects = squarify(mix.map(([, v]) => v), W, W), n = mix.length;
   return `<div class="tm" style="width:${W}px;height:${W}px">${mix.map(([cat, v], i) => {
     const [x, y, w, h] = rects[i], c = batlow(n > 1 ? i / (n - 1) : 0), lum = (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255, fg = lum > 0.55 ? "#14213d" : "#fff", name = cat.replace(/_/g, " ");
-    return `<div class="tmc" style="left:${((x / W) * 100).toFixed(3)}%;top:${((y / W) * 100).toFixed(3)}%;width:${((w / W) * 100).toFixed(3)}%;height:${((h / W) * 100).toFixed(3)}%;background:rgb(${c});color:${fg}" title="${esc(name)} · ${fmt(v)} businesses">${w >= 44 && h >= 40 ? `<b>${esc(name)}</b>` : ""}${w >= 34 && h >= 22 ? `<span>${compact(v)}</span>` : ""}</div>`;
+    const lines = h >= 66 ? 2 : 1, showName = w >= 44 && h >= 40, nf = Math.max(12, Math.min(20, Math.sqrt(w * h) / 6.2)).toFixed(1);
+    return `<div class="tmc" style="left:${((x / W) * 100).toFixed(3)}%;top:${((y / W) * 100).toFixed(3)}%;width:${((w / W) * 100).toFixed(3)}%;height:${((h / W) * 100).toFixed(3)}%;background:rgb(${c});color:${fg}" title="${esc(name)} · ${fmt(v)} businesses">${showName ? `<b style="-webkit-line-clamp:${lines}">${esc(name)}</b>` : ""}${w >= 30 && h >= 20 ? `<span style="font-size:${nf}px">${compact(v)}</span>` : ""}</div>`;
   }).join("")}</div>`;
 }
 
