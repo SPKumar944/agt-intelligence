@@ -498,6 +498,10 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 .hm-t::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; transition: transform .15s; }
 .hm.on { border-color: var(--text); color: var(--text); font-weight: 600; }
 .hm.on .hm-t { background: var(--text); } .hm.on .hm-t::after { transform: translateX(12px); background: var(--bg); }
-.hm-legend { margin-top: 8px; padding: 9px 10px; border-radius: 10px; background: var(--surface-2); font-size: 10.5px; color: var(--text-2); }
+.hmw { display: grid; gap: 0; }
+.hmw .hm-legend { margin: 3px 0 4px; }
+.hm-legend { margin-top: 0; padding: 8px 10px; border-radius: 10px; background: var(--surface-2); font-size: 10.5px; color: var(--text-2); }
 .hm-legend .legend-ramp .ramp { height: 10px; }
 .hm-legend span { display: inline-flex; align-items: center; margin: 2px 8px 2px 0; } .hm-legend i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 4px; }
+.hl-one + .hl-one { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+.hl-one span { display: inline-flex; align-items: center; margin-right: 8px; }

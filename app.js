@@ -10,7 +10,7 @@ const BASEMAP = "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
 const S = {
   bizId: null, siteId: null, hour: 21, day: 5, streetMetric: "footfall", playing: false, timer: null,
   tierOn: new Set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
-  streetScope: "all", hexMode: "landuse", hexScope: "all", hexOpacity: 0.55,
+  streetScope: "all", hexMode: "landuse", hexModes: [], hexScope: "all", hexOpacity: 0.55,
   compScope: "direct", diningType: "all", kidsType: "all", eduType: "all", transitScope: "rail", poiCat: "all",
   walkType: "both", selected: null, selCandidate: null,
   on: { streets: true, stores: false, walkshed: false, rings: true, hexes: false, competitors: false, candidates: false,
@@ -66,15 +66,23 @@ function phaseOf(h) {
 const LANDUSE = { residential: "#CAAEAA", commercial: "#185562", mixed: "#9A915B", industrial: "#8d8d93", open_space: "#577647" };
 const RAMP = ["#ffffff", "#daeeff", "#aed8f5", "#74b8ec", "#3a93d9", "#1a6ab5", "#0d4a8a", "#053060", "#01193a"];   // one blue ramp for every sequential hexagon layer and the population graphs
 // Crameri scientific colour maps (dominicroye.github.io/color-for-geoscience), low → high, one per hexagon metric
+const lerpHex = (a, b, t) => { const p = (h) => [1, 3, 5].map((k) => parseInt(h.slice(k, k + 2), 16)), x = p(a), y = p(b); return "#" + x.map((v, k) => Math.round(v + (y[k] - v) * t).toString(16).padStart(2, "0")).join(""); };
+const ramp3 = (lo, mid, hi) => Array.from({ length: 9 }, (_, k) => k <= 4 ? lerpHex(lo, mid, k / 4) : lerpHex(mid, hi, (k - 4) / 4));
+// one hue per factor family, light → dark: people & demography share the blue family; footfall is warm; indices are green; model outputs purple / red
 const PAL = {
   blue: RAMP,
-  lajolla: ["#FFFFCB", "#FCE595", "#F7C966", "#EBA24A", "#D97A3C", "#B5532F", "#85372A", "#4F2118", "#1F1109"],
-  bamako: ["#FFE5AD", "#E4CC62", "#BFB43C", "#98A030", "#6F8A2A", "#4A7425", "#2D5C28", "#144630", "#00404D"],
-  tokyo: ["#FEF3D4", "#EBD1B6", "#D3A9A5", "#B88096", "#965F8C", "#6D447A", "#4B2E64", "#2E1C4B", "#1A0D33"],
-  hawaii: ["#B3F2FD", "#7FE0D0", "#5BCB8A", "#8FBF4F", "#C0A33C", "#CB7C3F", "#BF5A4B", "#A3305F", "#8C0273"],
-  acton: ["#F2DCFA", "#E4B8EC", "#D693D6", "#C56CB8", "#A74D9E", "#823C8B", "#5E2E77", "#3E2160", "#26164A"],
-  turku: ["#FFFF99", "#EDE08A", "#CCC47B", "#A5A173", "#7F7F6E", "#5C5C5B", "#3F3F3F", "#232323", "#000000"],
-  batlow: ["#011959", "#103F6E", "#236379", "#4D7D6B", "#7F8B4F", "#B49A39", "#EC9C45", "#FCA77F", "#FAD1E8"],
+  pop: ramp3("#eaf3fb", "#3a93d9", "#053060"),
+  daypop: ramp3("#e6f4f6", "#2a8aa8", "#0b3b4f"),
+  kids: ramp3("#e8f4ee", "#3a9d8f", "#0f4a45"),
+  youth: ramp3("#eaf0fb", "#4a6fd0", "#1c2f78"),
+  seniors: ramp3("#efeaf8", "#7a5fb5", "#2e1f5e"),
+  work: ramp3("#eef2f6", "#5b7690", "#1f3140"),
+  foot: ramp3("#fff3d6", "#e9a04a", "#7a3a1c"),
+  res: ramp3("#eef6e4", "#7fb24a", "#2f5a1e"),
+  com: ramp3("#f3f0e0", "#b9a53f", "#5a4d15"),
+  syn: ramp3("#e5f4ee", "#3fa37a", "#12513a"),
+  net: ramp3("#f3e8f5", "#a64ca6", "#4a1450"),
+  cann: ramp3("#fbe9e5", "#d9644a", "#6d1f12"),
 };
 const SUIT = [[75, "#053060", "Prime 75–100"], [60, "#1a6ab5", "High 60–74"], [45, "#74b8ec", "Moderate 45–59"], [0, "#daeeff", "Low <45"]];
 const COMP_TIER = { "Artisanal/Premium": "#7c3aed", "Mass-Premium": "#db2777", "Classic Thick Shakes": "#ea580c",
@@ -195,20 +203,20 @@ const rgbHex = (c) => "#" + c.slice(0, 3).map((v) => v.toString(16).padStart(2, 
 
 const HEX_MODES = {
   landuse: { label: "Land use class", kind: "cat" },
-  pop: { label: "Residents", kind: "seq", pal: "lajolla", field: "pop" },
-  day_pop: { label: "Daytime population", kind: "seq", pal: "batlow", field: "day_pop" },
-  k: { label: "Kids 0–14", kind: "seq", pal: "bamako", field: "k" },
-  y: { label: "Youth 15–24", kind: "seq", pal: "tokyo", field: "y" },
-  s: { label: "Seniors 60+", kind: "seq", pal: "acton", field: "s" },
-  floating: { label: "Floating adults share", kind: "seq", pal: "hawaii", calc: (i) => { const p = D.hexes.pop[i]; return p ? D.hexes.floating_adults[i] / p : 0; }, pct: true },
-  com_workers: { label: "Daytime workforce", kind: "seq", pal: "turku", field: "com_workers" },
-  mean_daily_footfall: { label: "Street footfall (modelled)", kind: "seq", pal: "lajolla", field: "mean_daily_footfall" },
-  res_idx: { label: "Residential index", kind: "idx", pal: "bamako", field: "res_idx" },
-  com_idx: { label: "Commercial index", kind: "idx", pal: "tokyo", field: "com_idx" },
-  syn_idx: { label: "Retail synergy index", kind: "idx", pal: "hawaii", field: "syn_idx" },
+  pop: { label: "Residents", kind: "seq", pal: "pop", field: "pop" },
+  day_pop: { label: "Daytime population", kind: "seq", pal: "daypop", field: "day_pop" },
+  k: { label: "Kids 0–14", kind: "seq", pal: "kids", field: "k" },
+  y: { label: "Youth 15–24", kind: "seq", pal: "youth", field: "y" },
+  s: { label: "Seniors 60+", kind: "seq", pal: "seniors", field: "s" },
+  floating: { label: "Floating adults share", kind: "seq", pal: "work", calc: (i) => { const p = D.hexes.pop[i]; return p ? D.hexes.floating_adults[i] / p : 0; }, pct: true },
+  com_workers: { label: "Daytime workforce", kind: "seq", pal: "work", field: "com_workers" },
+  mean_daily_footfall: { label: "Street footfall (modelled)", kind: "seq", pal: "foot", field: "mean_daily_footfall" },
+  res_idx: { label: "Residential index", kind: "idx", pal: "res", field: "res_idx" },
+  com_idx: { label: "Commercial index", kind: "idx", pal: "com", field: "com_idx" },
+  syn_idx: { label: "Retail synergy index", kind: "idx", pal: "syn", field: "syn_idx" },
   suit_score: { label: "New-store suitability", kind: "suit", field: "suit_score" },
-  ci_net_units: { label: "Expected net volume (interaction model)", kind: "seq", pal: "batlow", field: "ci_net_units" },
-  ci_cannibal_pct: { label: "Cannibalisation of own outlets (model)", kind: "seq", pal: "acton", field: "ci_cannibal_pct", pct: false },
+  ci_net_units: { label: "Expected net volume (interaction model)", kind: "seq", pal: "net", field: "ci_net_units" },
+  ci_cannibal_pct: { label: "Cannibalisation of own outlets (model)", kind: "seq", pal: "cann", field: "ci_cannibal_pct", pct: false },
 };
 
 function compColor(tier) { const tc = (B().competitors || {}).tier_colors || COMP_TIER; return tc[tier] || COMP_TIER[tier] || "#64748b"; }
@@ -264,30 +272,41 @@ function circle(lng, lat, rMeters, steps = 128) {
 }
 
 /* ----------------------------------------------------------------- hex colouring */
-let hexScale = null;
-function hexValue(i) {
-  const m = HEX_MODES[S.hexMode];
+let HSC = {};
+const activeModes = () => (S.on.hexes ? (S.hexModes.length ? S.hexModes : [S.hexMode]) : []);
+function hexValue(i, mk = S.hexMode) {
+  const m = HEX_MODES[mk];
   if (m.calc) return m.calc(i);
   return D.hexes[m.field][i] ?? 0;
 }
-function buildHexScale() {
-  const m = HEX_MODES[S.hexMode];
+function buildHexScale() { HSC = {}; }
+function scaleFor(mk) {
+  if (HSC[mk]) return HSC[mk];
+  const m = HEX_MODES[mk]; let s = null;
   if (m.kind === "seq") {
-    const vals = D.hexes.all.map(hexValue).filter((v) => v > 0).sort((a, b) => a - b);
+    const vals = D.hexes.all.map((i) => hexValue(i, mk)).filter((v) => v > 0).sort((a, b) => a - b);
     const q = (p) => vals.length ? vals[Math.min(vals.length - 1, Math.floor(p * vals.length))] : 0;
-    hexScale = { breaks: [q(0.1), q(0.22), q(0.34), q(0.46), q(0.58), q(0.7), q(0.82), q(0.92)], min: vals[0] || 0, max: vals[vals.length - 1] || 0 };
-  } else if (m.kind === "idx") hexScale = { breaks: [11, 22, 33, 44, 56, 67, 78, 89], min: 0, max: 100 };
-  else hexScale = null;
+    s = { breaks: [q(0.1), q(0.22), q(0.34), q(0.46), q(0.58), q(0.7), q(0.82), q(0.92)], min: vals[0] || 0, max: vals[vals.length - 1] || 0 };
+  } else if (m.kind === "idx") s = { breaks: [11, 22, 33, 44, 56, 67, 78, 89], min: 0, max: 100 };
+  return (HSC[mk] = s);
 }
 const hexRamp = (m) => PAL[m.pal] || RAMP;
-function hexColor(i) {
-  const m = HEX_MODES[S.hexMode], a = Math.round(255 * S.hexOpacity);
-  if (m.kind === "cat") return [...hex2rgb(LANDUSE[dec(D.hexes.cls, i)] || "#e2e8f0"), a];
-  const v = hexValue(i);
-  if (m.kind === "suit") { for (const [t, c] of SUIT) if (v >= t) return [...hex2rgb(c), a]; }
-  if (!v) return [238, 238, 240, Math.round(a * 0.5)];
-  let k = 0; while (k < hexScale.breaks.length && v >= hexScale.breaks[k]) k++;
-  return [...hex2rgb(hexRamp(m)[k]), a];
+function hexColor(i, mk, level = 0) {
+  const m = HEX_MODES[mk], a = Math.round(255 * S.hexOpacity) + (level ? 50 : 0), A = Math.min(255, a);
+  if (m.kind === "cat") return [...hex2rgb(LANDUSE[dec(D.hexes.cls, i)] || "#e2e8f0"), A];
+  const v = hexValue(i, mk);
+  if (m.kind === "suit") { for (const [t, c] of SUIT) if (v >= t) return [...hex2rgb(c), A]; return [0, 0, 0, 0]; }
+  if (!v) return level ? [0, 0, 0, 0] : [238, 238, 240, Math.round(A * 0.5)];
+  const sc = scaleFor(mk); let k = 0; while (k < sc.breaks.length && v >= sc.breaks[k]) k++;
+  return [...hex2rgb(hexRamp(m)[k]), A];
+}
+// several factors on at once: each is drawn as a smaller hexagon inside the previous one
+function shrunk(i, f) {
+  const hx = D.hexes, c = (hx._sh = hx._sh || {})[f] || (hx._sh[f] = new Array(hx.polys.length));
+  if (c[i]) return c[i];
+  const p = hx.polys[i], n = p.length - (p[0][0] === p[p.length - 1][0] && p[0][1] === p[p.length - 1][1] ? 1 : 0);
+  let x = 0, y = 0; for (let k = 0; k < n; k++) { x += p[k][0]; y += p[k][1]; } x /= n; y /= n;
+  return (c[i] = p.map(([a, b]) => [x + (a - x) * f, y + (b - y) * f]));
 }
 
 /* ----------------------------------------------------------------- deck layers */
@@ -296,15 +315,16 @@ function layers() {
   const L = [], st = D.streets, hx = D.hexes, site = D.site, [clng, clat] = site.centre;
   const trig = `${S.day}-${S.hour}`;
 
-  if (S.on.hexes) {
-    const data = S.hexScope === "band" ? hx.band : hx.all;
-    L.push(new deck.PolygonLayer({
-      id: "hexes", data, getPolygon: (i) => hx.polys[i], getFillColor: hexColor,
-      getLineColor: [90, 130, 180, 80], lineWidthUnits: "pixels", getLineWidth: 0.5, stroked: true, filled: true,
-      pickable: true, autoHighlight: true, highlightColor: [15, 23, 42, 60],
-      updateTriggers: { getFillColor: [S.hexMode, S.hexOpacity] },
-    }));
-  }
+  { const modes = activeModes(), n = modes.length;
+    modes.forEach((mk, lv) => {
+      const f = (n - lv) / n;
+      L.push(new deck.PolygonLayer({
+        id: lv ? "hexes_" + lv : "hexes", data: D.hexes.all, getPolygon: f === 1 ? (i) => D.hexes.polys[i] : (i) => shrunk(i, f), getFillColor: (i) => hexColor(i, mk, lv),
+        getLineColor: [90, 130, 180, 80], lineWidthUnits: "pixels", getLineWidth: 0.5, stroked: lv === 0, filled: true,
+        pickable: true, autoHighlight: lv === n - 1, highlightColor: [15, 23, 42, 60],
+        updateTriggers: { getFillColor: [mk, S.hexOpacity, n], getPolygon: [f] },
+      }));
+    }); }
   if (S.on.rings) {
     const [b0, b1] = site.golden_band_km;
     L.push(new deck.PathLayer({
@@ -422,11 +442,12 @@ function tooltip({ object, layer, index }) {
   if (object && object.cluster) return { html: `<div class="tt-t">${ico(layerIcon(layer.id), null, 14, 1.5)}${fmt(object.count)} ${esc(clusterName(layer.id))} here</div><div class="tt-s">Zoom in or click to see them all</div>`, className: "deck-tooltip" };
   const st = D.streets, hx = D.hexes, P = D.pois;
   let t = "", s = "";
-  switch (layer.id) {
+  switch (layer.id.replace(/^hexes_\d+$/, "hexes")) {
     case "streets": { const i = object; t = st.names[st.name[i]];
       s = `${st.highways[st.hw[i]]} · ${fmt(st.flow[i])}/hr ${S.streetMetric === "demand" ? "demand-weighted " : ""}at ${hh(S.hour)} · tier ${st.tier[i]}`; break; }
-    case "hexes": { const i = object; const m = HEX_MODES[S.hexMode]; const v = m.kind === "cat" ? dec(hx.cls, i) : hexValue(i);
-      t = dec(hx.locality, i) || "H3 cell"; s = `${m.label}: ${m.pct ? fmt(v * 100, 1) + "%" : typeof v === "number" ? fmt(v, m.kind === "idx" || m.kind === "suit" ? 1 : 0) : v} · ${fmt(hx.pop[i])} residents`; break; }
+    case "hexes": { const i = object;
+      t = dec(hx.locality, i) || "H3 cell";
+      s = activeModes().map((mk) => { const m = HEX_MODES[mk], v = m.kind === "cat" ? dec(hx.cls, i) : hexValue(i, mk); return `${m.label}: ${m.pct ? fmt(v * 100, 1) + "%" : typeof v === "number" ? fmt(v, m.kind === "idx" || m.kind === "suit" ? 1 : 0) : v}`; }).join(" · ") + ` · ${fmt(hx.pop[i])} residents`; break; }
     case "allpoints": { const i = object; t = P.name[i] || "(unnamed)"; s = `${P.categories[P.cat[i]].replace(/_/g, " ")} · ${km(P.sd[i])}`; break; }
     case "competitors": t = object.store_name; s = `${object.brand} · ${object.category_tier} · ${km(object.network_dist_m)} by road`; break;
     case "candidates": t = `#${object.rank} ${object.name}`; s = `Score ${object.overall_suitability_score} · ${fmt(object.frontage_peak_hourly)}/hr at peak · ${object.corridor_type}`; break;
@@ -539,7 +560,7 @@ function inspect(info) {
   }
   const { object: o, layer } = info, st = D.streets, hx = D.hexes, P = D.pois;
   let type = "", title = "", body = "";
-  switch (layer.id) {
+  switch (layer.id.replace(/^hexes_\d+$/, "hexes")) {
     case "streets": {
       const i = o, vals = [...Array(24).keys()].map((h) => segFlow(i, S.day, h));
       type = "Street segment · modelled footfall"; title = st.names[st.name[i]];
@@ -789,7 +810,8 @@ function seg(group, options, current, cls = "") {
 }
 function hmSwatch(m) { return m.kind === "cat" ? "linear-gradient(90deg," + Object.values(LANDUSE).slice(0, 7).join(",") + ")" : m.kind === "suit" ? "linear-gradient(90deg," + [...SUIT].reverse().map((s) => s[1]).join(",") + ")" : "linear-gradient(90deg," + hexRamp(m).join(",") + ")"; }
 function hmRow(k, m) {
-  return `<button type="button" class="hm${S.hexMode === k && S.on.hexes ? " on" : ""}" data-hm="${k}" aria-pressed="${S.hexMode === k && S.on.hexes}"><span class="hm-sw" style="background:${hmSwatch(m)}"></span><span class="hm-l">${esc(m.label)}</span><span class="hm-t"></span></button>`;
+  const on = activeModes().includes(k);
+  return `<div class="hmw"><button type="button" class="hm${on ? " on" : ""}" data-hm="${k}" aria-pressed="${on}"><span class="hm-sw" style="background:${hmSwatch(m)}"></span><span class="hm-l">${esc(m.label)}</span><span class="hm-t"></span></button><div class="hm-legend" data-hml="${k}"></div></div>`;
 }
 function select(group, options, current) {
   return `<select class="mini-select" data-select="${group}">${options.map(([v, l]) => `<option value="${esc(v)}" ${v === current ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>`;
@@ -813,10 +835,8 @@ function renderLayersPanel() {
     ${layerCard("rings", "Study rings", `${D.site.radius_km} km study area · ${D.site.golden_band_km.join("–")} km golden band`, "#6e6e73")}
     </div></details>
     <details class="lgroup" data-g="mesh" ${S.openGroups.has("mesh") ? "open" : ""}><summary><span>Demand mesh · H3 res ${D.hexes.res}</span><em data-gcount="mesh"></em></summary><div class="lgroup-body">
-    ${layerCard("hexes", `Hexagon mesh (${fmt(D.hexes.n)})`, "Population, land use, indices and suitability per cell", "linear-gradient(90deg,#FFFECA,#E79452,#683F20)",
-      `<div class="sub-label">Metric · pick one</div><div class="hm-list">${Object.entries(HEX_MODES).map(([k, m]) => hmRow(k, m)).join("")}</div><div class="hm-legend" id="hmLegend"></div>
-       <div class="sub-label">Spatial scope</div>${seg("hexScope", [["all", `All cells (${fmt(D.hexes.n)})`], ["band", `Golden band (${fmt(D.hexes.band.length)})`]], S.hexScope, "green")}
-       <div class="sub-label">Opacity</div><input type="range" min="15" max="90" value="${Math.round(S.hexOpacity * 100)}" data-range="hexOpacity" style="width:100%;accent-color:var(--text)">`)}
+    <div class="hm-wrap" style="padding:2px 2px 4px"><div class="sub-label">Hexagon factors · switch on as many as you need</div><div class="hm-list">${Object.entries(HEX_MODES).map(([k, m]) => hmRow(k, m)).join("")}</div>
+       <div class="sub-label">Opacity</div><input type="range" min="15" max="90" value="${Math.round(S.hexOpacity * 100)}" data-range="hexOpacity" style="width:100%;accent-color:var(--text)"></div>
     </div></details>
     <details class="lgroup" data-g="comp" ${S.openGroups.has("comp") ? "open" : ""}><summary><span>Competition, anchors &amp; places</span><em data-gcount="comp"></em></summary><div class="lgroup-body">
     ${layerCard("stores", `${esc(B().brand || "Client")} outlets (${(D.site.existing_stores || []).length})`, "Existing outlets of the business", "#1d1d1f")}
@@ -862,9 +882,9 @@ function bindLayerControls(root) {
     S[el.dataset.select] = el.value; if (el.dataset.select === "hexMode") { buildHexScale(); renderHexLegend(); } redraw();
   });
   root.querySelectorAll("[data-hm]").forEach((b) => b.onclick = () => {
-    const k = b.dataset.hm, same = S.hexMode === k && S.on.hexes;
-    S.hexMode = k; S.on.hexes = !same; buildHexScale();
-    const cb = root.querySelector("[data-toggle=hexes]"); if (cb) { cb.checked = S.on.hexes; cb.closest(".layer").classList.toggle("on", S.on.hexes); }
+    const k = b.dataset.hm, ms = activeModes().slice(), at = ms.indexOf(k);
+    if (at >= 0) ms.splice(at, 1); else ms.push(k);
+    S.hexModes = ms; S.on.hexes = ms.length > 0; if (ms.length) S.hexMode = ms[ms.length - 1];
     renderHexLegend(); updateActiveCount(); updateGroupCounts(); redraw();
   });
   renderHexLegend();
@@ -1035,7 +1055,7 @@ function renderExpansion() {
   $("expansionTab").querySelectorAll("[data-candtoggle]").forEach((b) => b.onclick = (e) => { e.stopPropagation(); b.closest(".cand").classList.toggle("open"); });
   tidy($("expansionTab"));
   $("expansionTab").querySelectorAll("[data-plan]").forEach((el) => el.onclick = () => openPlanPick(el.dataset.plan).catch(fail));
-  $("showSuit").onclick = () => { S.hexMode = "suit_score"; S.hexScope = "band"; S.on.hexes = true; S.hexOpacity = 0.7; S.openGroups.add("mesh"); buildHexScale(); renderLayersPanel(); renderHexLegend(); redraw(); };
+  $("showSuit").onclick = () => { S.hexMode = "suit_score"; S.hexModes = ["suit_score"]; S.on.hexes = true; S.hexOpacity = 0.7; S.openGroups.add("mesh"); buildHexScale(); renderLayersPanel(); renderHexLegend(); redraw(); };
 }
 function selectCandidate(id, fly) {
   S.selCandidate = id; S.on.candidates = true;
@@ -1063,20 +1083,19 @@ function renderLegend() {
   });
   renderHexLegend();
 }
-function syncHexUi() {
-  document.querySelectorAll("[data-hm]").forEach((b) => { const on = b.dataset.hm === S.hexMode && S.on.hexes; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
-  const box = $("hmLegend"); if (box) { box.innerHTML = S.on.hexes ? $("hexLegend").innerHTML : ""; box.style.display = S.on.hexes ? "" : "none"; }
+function legendHtml(mk) {
+  const m = HEX_MODES[mk];
+  if (m.kind === "cat") return `<div class="eyebrow" style="margin-bottom:4px">${m.label}</div>` + Object.entries(LANDUSE).map(([k, c]) => `<span><i style="background:${c}"></i>${k.replace("_", " ")}</span>`).join("");
+  if (m.kind === "suit") return `<div class="eyebrow" style="margin-bottom:4px">${m.label}</div>` + SUIT.map(([, c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join("");
+  const sc = scaleFor(mk), b = sc.breaks, f = (v) => m.pct ? fmt(v * 100, 0) + "%" : compact(v);
+  return `<div class="legend-ramp"><div class="eyebrow" style="margin-bottom:4px">${m.label}</div><div class="ramp" style="background:linear-gradient(90deg,${hexRamp(m).join(",")})"></div>
+    <div class="ends"><span>${f(m.kind === "idx" ? 0 : sc.min)}</span><span>${f(b[2])}</span><span>${f(m.kind === "idx" ? 100 : sc.max)}</span></div></div>`;
 }
 function renderHexLegend() {
-  const el = $("hexLegend");
-  if (!S.on.hexes) { el.innerHTML = `<span style="color:var(--text-3)">Hexagon mesh hidden</span>`; return; }
-  const m = HEX_MODES[S.hexMode];
-  if (m.kind === "cat") el.innerHTML = Object.entries(LANDUSE).map(([k, c]) => `<span><i style="background:${c}"></i>${k.replace("_", " ")}</span>`).join("");
-  else if (m.kind === "suit") el.innerHTML = SUIT.map(([, c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join("");
-  else { const b = hexScale.breaks, f = (v) => m.pct ? fmt(v * 100, 0) + "%" : compact(v);
-    el.innerHTML = `<div class="legend-ramp"><div class="eyebrow" style="margin-bottom:4px">${m.label}</div><div class="ramp" style="background:linear-gradient(90deg,${hexRamp(m).join(",")})"></div>
-      <div class="ends"><span>${f(m.kind === "idx" ? 0 : hexScale.min)}</span><span>${f(b[2])}</span><span>${f(m.kind === "idx" ? 100 : hexScale.max)}</span></div></div>`; }
-  syncHexUi();
+  const modes = activeModes(), el = $("hexLegend");
+  document.querySelectorAll("[data-hm]").forEach((b) => { const on = modes.includes(b.dataset.hm); b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
+  document.querySelectorAll("[data-hml]").forEach((d) => { const on = modes.includes(d.dataset.hml); d.innerHTML = on ? legendHtml(d.dataset.hml) : ""; d.style.display = on ? "" : "none"; });
+  el.innerHTML = modes.length ? modes.map((mk) => `<div class="hl-one">${legendHtml(mk)}</div>`).join("") : `<span style="color:var(--text-3)">Hexagon mesh hidden</span>`;
 }
 function updateTime() {
   computeFlows();
