@@ -993,41 +993,8 @@ async function openPlanPick(rank) {
   const c = D.layers.candidates.find((x) => x.plan_rank === p.pick_rank);
   if (c) selectCandidate(c.candidate_id, true);
 }
-/* PDF report of the recommended locations: approved partners and the super admin only (the server enforces it too). */
-let USER_LEVEL = null;
-if (window.AGT) AGT.session().then((s) => { USER_LEVEL = s.level || (s.role === "admin" ? "admin" : "client"); paintPdf(); }).catch(() => {});
-function paintPdf() {
-  const box = $("pdfBox"), eb = $("execPdfBtn"), okPdf = ["partner", "admin"].includes(USER_LEVEL) && D && D.layers.candidates.length;
-  if (eb) { eb.hidden = !okPdf; eb.onclick = () => { if (window.railOpen) window.railOpen("expansionTab"); if ($("pdfBtn")) $("pdfBtn").click(); }; }
-  document.querySelectorAll("[data-locpdf]").forEach((b) => {
-    b.hidden = !okPdf;
-    b.onclick = async (ev) => {
-      ev.stopPropagation();
-      const old = b.textContent; b.disabled = true; b.textContent = "Preparing the detailed report… (about a minute)";
-      try {
-        const r = await fetch(AGT.url(`/api/pdf/${encodeURIComponent(BIZ)}/${encodeURIComponent(S.siteId)}/loc/${b.dataset.locpdf}`), { headers: { Authorization: "Bearer " + AGT.token() } });
-        if (!r.ok) { let j = {}; try { j = await r.json(); } catch (e) { /* not json */ } throw new Error(j.error || "The PDF could not be made."); }
-        const blob = await r.blob(), name = ((r.headers.get("Content-Disposition") || "").match(/filename="([^"]+)"/) || [])[1] || `location_${b.dataset.locpdf}_detailed_report.pdf`;
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-      } catch (e) { alert(e.message && e.message !== "Failed to fetch" ? e.message : "We couldn’t reach the server. Please try again."); }
-      b.disabled = false; b.textContent = old;
-    };
-  });
-  if (!box) return;
-  if (!okPdf) { box.innerHTML = ""; return; }
-  box.innerHTML = `<button class="ghost-btn" id="pdfBtn" style="width:100%;margin-bottom:12px">Download PDF report · ${D.layers.candidates.length} location${D.layers.candidates.length === 1 ? "" : "s"}</button><div class="note" id="pdfMsg" style="margin:-6px 0 12px" hidden></div>`;
-  $("pdfBtn").onclick = async () => {
-    const b = $("pdfBtn"), m = $("pdfMsg"), old = b.textContent;
-    b.disabled = true; b.textContent = "Preparing the PDF… (up to a minute)"; m.hidden = true;
-    try {
-      const r = await fetch(AGT.url(`/api/pdf/${encodeURIComponent(BIZ)}/${encodeURIComponent(S.siteId)}`), { headers: { Authorization: "Bearer " + AGT.token() } });
-      if (!r.ok) { let j = {}; try { j = await r.json(); } catch (e) { /* not json */ } throw new Error(j.error || "The PDF could not be made."); }
-      const blob = await r.blob(), name = ((r.headers.get("Content-Disposition") || "").match(/filename="([^"]+)"/) || [])[1] || "recommended_locations.pdf";
-      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-    } catch (e) { m.textContent = e.message && e.message !== "Failed to fetch" ? e.message : "We couldn’t reach the server. Please try again."; m.hidden = false; }
-    b.disabled = false; b.textContent = old;
-  };
-}
+/* Report / PDF downloads are switched off everywhere (the server refuses them too). */
+function paintPdf() {}
 function renderExpansion() {
   const hx = D.hexes, ly = D.layers, [b0, b1] = D.site.golden_band_km;
   const elig = hx.all.filter((i) => hx.eligible && hx.eligible[i]);
@@ -1048,9 +1015,7 @@ function renderExpansion() {
       <div class="cand-more"><div class="cand-bars">${[["DEMO", c.demographic_score], ["COMM", c.commercial_score], ["SYN", c.synergy_score], ["WHITE", c.white_space_score]].map(([l, v]) =>
         `<div class="cbar"><div class="l">${l} ${fmt(v, 0)}</div><div class="tr"><div style="width:${v}%;background-image:${scoreGradient(v)}"></div></div></div>`).join("")}</div>
       ${c.vs_site_pct != null ? `<div class="cand-persona" style="margin:2px 0 6px"><b style="color:${c.vs_site_pct >= 0 ? "#17653a" : "#b42318"}">${c.vs_site_pct >= 0 ? "+" : ""}${fmt(c.vs_site_pct, 0)}% vs your site</b> · ${c.dist_from_site_km} km away · ${fmt(c.footfall_vs_site, 1)}× its street footfall</div>` : ""}
-      ${c.marginal_units != null ? `<div class="cand-persona" style="margin:2px 0 6px"><b>Pick #${c.plan_rank}</b> · adds ${fmt(c.marginal_units)} ${esc(UNIT())} to the network (total ${fmt(c.cumulative_units)})</div>` : ""}
-      
-      <button class="ghost-btn" data-locpdf="${c.plan_rank || c.rank}" hidden style="width:100%;margin-top:8px">Detailed PDF report · location ${c.plan_rank || c.rank}</button></div>
+      ${c.marginal_units != null ? `<div class="cand-persona" style="margin:2px 0 6px"><b>Pick #${c.plan_rank}</b> · adds ${fmt(c.marginal_units)} ${esc(UNIT())} to the network (total ${fmt(c.cumulative_units)})</div>` : ""}</div>
       <button type="button" class="cand-toggle" data-candtoggle aria-label="Show details">Details <i></i></button>
     </div>`).join("")}
     <div class="note"${["alternatives", "area"].includes(role) ? " hidden" : ""}>Candidates are restricted to the 10 busiest peak-hour shop fronts in the golden band (≥1.5 km apart; expressways and ramps excluded), then ranked by area score. Score = ${Math.round(w.demographic * 100)}% demographic + ${Math.round(w.commercial * 100)}% commercial + ${Math.round(w.synergy * 100)}% synergy + ${Math.round(w.white_space * 100)}% white space, each a percentile within the study area. ${esc(UNIT())} and revenue are heuristic projections from a baseline of ${fmt((B().economics || {}).baseline_daily_units)} ${esc((DEM().unit || "units"))}/day at ₹${fmt((B().economics || {}).avg_ticket_inr)} per bill; risk is the Huff-model share of the candidate’s 1.5 km demand pulled by the nearest existing outlet.</div>${(ly.candidates[0] || {}).ci_rev_lakhs != null ? ciNote() : ""}`;
