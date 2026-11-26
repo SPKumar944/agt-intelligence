@@ -1215,7 +1215,7 @@ function bindUI() {
   const secKey = (s) => { const h = s.querySelector(":scope > .section-title h4") || s.querySelector(":scope > .section-title"); if (!h) return ""; const c = h.cloneNode(true); c.querySelectorAll(".info").forEach((x) => x.remove()); return c.textContent.trim().replace(/\s*·.*$/, ""); };
   const buildSections = () => {
     rail.querySelectorAll("[data-sec]").forEach((b) => b.remove());
-    const anchor = rail.querySelector('[data-rail="layersTab"]');
+    const anchor = rail.querySelector('[data-rail="lg:foot"]');
     [...sp.querySelectorAll(":scope > .section")].forEach((s, i) => {
       const k = secKey(s); if (!k) return;
       s.dataset.sk = k;
@@ -1225,6 +1225,9 @@ function bindUI() {
     if (cur && cur.startsWith("sec:") && !sp.querySelector('[data-sk="' + CSS.escape(cur.slice(4)) + '"]')) showRail(null);
     railSync();
   };
+  const GT = { foot: "Footfall & catchment", mesh: "Demand mesh", comp: "Competition, anchors & places", exp: "Expansion layers" };
+  const showGroup = () => { const g = $("layersTab").dataset.solo; if (g) $("layersTab").querySelectorAll('details.lgroup[data-g="' + g + '"]').forEach((d) => { d.open = true; }); railSync(); };
+  new MutationObserver(showGroup).observe($("layersTab"), { childList: true });
   const showRail = (k) => {
     cur = (k === cur) ? null : k;
     const left = cur === "site" || (cur || "").startsWith("sec:");
@@ -1238,7 +1241,9 @@ function bindUI() {
       sp.scrollTop = 0;
     } else {
       collapse("leftPanel", true); collapse("rightPanel", false);
-      const t = document.querySelector('.tab[data-tab="' + cur + '"]'); if (t) t.click();
+      const lg = cur.startsWith("lg:") ? cur.slice(3) : null, lt = $("layersTab");
+      if (lg) { lt.dataset.solo = lg; showGroup(); } else delete lt.dataset.solo;
+      const t = document.querySelector('.tab[data-tab="' + (lg ? "layersTab" : cur) + '"]'); if (t) t.click();
     }
     railSync();
   };
@@ -1248,9 +1253,9 @@ function bindUI() {
       b.classList.toggle("on", k === "site" ? cur === "site" : k === "sec" ? cur === "sec:" + b.dataset.sec : k === "legend" ? !$("legend").classList.contains("off") : k === "method" ? false : cur === k);
     });
     const tab = (document.querySelector(".tab.active") || {}).dataset?.tab;
-    if ($("rightTitle")) $("rightTitle").textContent = TITLES[tab] || "Data layers";
+    const lgk = $("layersTab").dataset.solo; if ($("rightTitle")) $("rightTitle").textContent = tab === "layersTab" && lgk ? GT[lgk] : TITLES[tab] || "Data layers";
     const mb = $("modelTabBtn"); if ($("railModel")) $("railModel").hidden = !mb || mb.style.display === "none";
-    const n = ($("activeCount") || {}).textContent; $("railCount").textContent = !n || n === "0" ? "" : n;
+    rail.querySelectorAll('[data-rail^="lg:"]').forEach((b) => { const em = $("layersTab").querySelector('[data-gcount="' + b.dataset.rail.slice(3) + '"]'), m = em && /^(\d+) of/.exec(em.textContent), sp = b.querySelector(".rail-n") || b.appendChild(Object.assign(document.createElement("span"), { className: "rail-n" })); sp.textContent = m && m[1] !== "0" ? m[1] : ""; });
   }
   window.railOpen = (tab) => { cur = null; showRail(tab); };
   rail.querySelectorAll("[data-rail]").forEach((b) => { const k = b.dataset.rail; if (k === "sec") return; b.onclick = () => {

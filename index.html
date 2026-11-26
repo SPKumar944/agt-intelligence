@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
-  <link href="styles.css?v=24" rel="stylesheet" />
+  <link href="styles.css?v=25" rel="stylesheet" />
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="https://unpkg.com/deck.gl@9.0.38/dist.min.js"></script>
   <script src="site/config.js?v=1"></script>
@@ -86,7 +86,10 @@
     <!-- ================= ICON RAIL ================= -->
     <nav class="rail" id="rail" aria-label="Sections">
       <button type="button" data-rail="site" title="Site overview" aria-label="Site overview"><svg data-ic="home"></svg></button>
-      <button type="button" data-rail="layersTab" title="Data layers" aria-label="Data layers"><svg data-ic="layers"></svg><span class="rail-n" id="railCount"></span></button>
+      <button type="button" data-rail="lg:foot" title="Footfall &amp; catchment" aria-label="Footfall and catchment"><svg data-ic="steps"></svg><span class="rail-n" id="railCount"></span></button>
+      <button type="button" data-rail="lg:mesh" title="Demand mesh" aria-label="Demand mesh"><svg data-ic="hexagon"></svg></button>
+      <button type="button" data-rail="lg:comp" title="Competition, anchors &amp; places" aria-label="Competition, anchors and places"><svg data-ic="signpost"></svg></button>
+      <button type="button" data-rail="lg:exp" title="Expansion layers" aria-label="Expansion layers"><svg data-ic="map-pin-plus"></svg></button>
       <button type="button" data-rail="expansionTab" title="Expansion" aria-label="Expansion"><svg data-ic="target"></svg></button>
       <button type="button" data-rail="modelTab" id="railModel" title="Model" aria-label="Model" hidden><svg data-ic="cpu"></svg></button>
       <button type="button" data-rail="legend" title="Legend" aria-label="Legend"><svg data-ic="palette"></svg></button>
@@ -155,7 +158,7 @@
   <div class="loader" id="loader"><div class="spinner"></div><div id="loaderText">Loading intelligence layers…</div></div>
   <script src="https://unpkg.com/supercluster@8.0.1/dist/supercluster.min.js"></script>
   <script src="icons.js?v=2"></script>
-  <script src="app.js?v=35"></script>
+  <script src="app.js?v=37"></script>
   <script>
     (function () {   // light / dark (default light)
       const b = document.getElementById("themeBtn"), dk = () => document.documentElement.dataset.theme === "dark";

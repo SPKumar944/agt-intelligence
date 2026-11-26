@@ -483,3 +483,7 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 #sitePanel[data-solo="sec"] > .section.solo > .section-title { display: none; }
 #sitePanel[data-solo="sec"] > .section.solo.closed > :not(.section-title) { display: block; }
 @media (max-width: 860px) { .left-panel, .right-panel { width: calc(100vw - 52px); } }
+#layersTab[data-solo] .lgroup { display: none; }
+#layersTab[data-solo="foot"] .lgroup[data-g="foot"], #layersTab[data-solo="mesh"] .lgroup[data-g="mesh"], #layersTab[data-solo="comp"] .lgroup[data-g="comp"], #layersTab[data-solo="exp"] .lgroup[data-g="exp"] { display: block; }
+#layersTab[data-solo] .lgroup > summary { display: none; }
+#layersTab[data-solo] > .note, #layersTab[data-solo] > p { display: none; }
