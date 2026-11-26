@@ -438,3 +438,6 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 
 /* the business picker is hidden: each person only sees their own dashboard (select stays in the page so nothing else breaks) */
 #bizWrap { display: none !important; }
+
+/* coverage and data-date badges are hidden from the top bar (the sources and dates are in "Data & method") */
+#covBadge, #snapshotBadge { display: none !important; }
