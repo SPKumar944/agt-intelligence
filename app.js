@@ -1019,12 +1019,14 @@ function altHeader(a) {   // request type "site + N alternatives": the client's 
 }
 function planHeader() {   // request type "N new locations in an area": the whole plan across tiles
   if (!PLAN) return `<div class="section-title"><h4>Recommended new locations</h4></div>`;
-  const P0 = PLAN.picks, mx = Math.max(1, ...P0.map((p) => p.marginal_units));
+  const P0 = PLAN.picks, ffMax = Math.max(1, ...(D.layers.candidates || []).map((c) => c.frontage_peak_hourly || 0));
   return `<div class="section-title"><h4>Recommended new locations</h4><span>${P0.length} of ${PLAN.area.n} · ${esc(PLAN.area.label || "")} ${PLAN.area.radius_km} km</span></div>
-    <div class="note" style="margin:0 0 10px">Footfall first, spread evenly: the area is split into ${PLAN.area.n} equal zones and each gets its busiest shop front by peak-hour footfall (top ${PLAN.footfall_top_pct || 5}% of the area). The picks are at least ${((PLAN.min_gap_m || 0) / 1000).toFixed(1)} km apart${PLAN.gap_target_m && PLAN.min_gap_m < PLAN.gap_target_m ? ` (the aim was ${(PLAN.gap_target_m / 1000).toFixed(0)} km; the area is too small to fit them further apart)` : ""}. The bars show the ${esc(PLAN.unit_label || "sales")} each store is expected to add after sharing customers with your outlets and the earlier picks; they are for information and do not decide the ranking.</div>
-    ${P0.map((p) => `<button class="plan-row ${p.site_id === S.siteId ? "here" : ""}" data-plan="${p.pick_rank}" style="display:grid;grid-template-columns:28px 1fr 64px;gap:8px;align-items:center;width:100%;text-align:left;border:0;background:none;padding:6px 2px;cursor:pointer;color:inherit;font:inherit">
-      <b>#${p.pick_rank}</b><span><span style="display:block;font-size:12.5px">${esc(p.name || "")}</span><span style="display:block;height:6px;border-radius:3px;background:currentColor;opacity:${p.site_id === S.siteId ? 1 : .45};width:${Math.max(4, p.marginal_units / mx * 100)}%;margin-top:4px"></span></span>
-      <span style="text-align:right;font-size:12.5px">+${fmt(p.marginal_units)}<small style="display:block;color:#6e6e73">₹${fmt(p.ci_rev_lakhs, 1)} L/mo</small></span></button>`).join("")}
+    <div class="note" style="margin:0 0 10px">Footfall first, spread evenly: the area is split into ${PLAN.area.n} equal zones and each gets its busiest shop front by peak-hour footfall (top ${PLAN.footfall_top_pct || 5}% of the area). The picks are at least ${((PLAN.min_gap_m || 0) / 1000).toFixed(1)} km apart${PLAN.gap_target_m && PLAN.min_gap_m < PLAN.gap_target_m ? ` (the aim was ${(PLAN.gap_target_m / 1000).toFixed(0)} km; the area is too small to fit them further apart)` : ""}. The order is by peak-hour footfall; expected sales are shown alongside and do not decide the order, so a lower pick can sell more.</div>
+    <div class="xl-head"><span>Pick · peak footfall</span><span>Expected sales</span></div>
+    ${P0.map((p) => { const cd = (D.layers.candidates || []).find((c) => c.plan_rank === p.pick_rank), ff = cd ? cd.frontage_peak_hourly : null;
+      return `<button class="xl-row ${p.site_id === S.siteId ? "here" : ""}" data-plan="${p.pick_rank}"><b class="xl-n">${p.pick_rank}</b>
+      <span class="xl-main"><span class="xl-name">${esc(p.name || "")}</span>${ff != null ? `<span class="xl-bar"><i style="width:${Math.max(4, ff / ffMax * 100)}%"></i></span><span class="xl-sub">${fmt(ff)} people / hr at peak</span>` : ""}</span>
+      <span class="xl-val"><b>${fmt(p.marginal_units)}</b><span>${esc(PLAN.unit_label || "sales")}</span><em>₹${fmt(p.ci_rev_lakhs, 1)} L / mo</em></span></button>`; }).join("")}
     <div class="note" style="margin:8px 0 14px">Network total: ${fmt((P0[P0.length - 1] || {}).cumulative_units)} ${esc(PLAN.unit_label || "")} across the ${P0.length} suggested locations.${(PLAN.incomplete_tiles || []).length ? ` Part of the area could not be analysed (${PLAN.incomplete_tiles.length} map tile${PLAN.incomplete_tiles.length === 1 ? "" : "s"}), so these picks do not cover all of it.` : ""}</div>`;
 }
 async function openPlanPick(rank) {
@@ -1046,17 +1048,26 @@ function renderExpansion() {
   $("expansionTab").innerHTML = `<div id="pdfBox"></div><div class="lgroup-body" style="padding:0 0 10px">${layerCard("candidates", `Expansion candidates (${ly.candidates.length})`, "Top-10 peak-footfall shop fronts in the golden band, ranked by area score", "#6e6e73")}</div>${head}
     <div class="tier-counts"${["alternatives", "area"].includes(role) ? ' style="display:none"' : ""}>${SUIT.map(([, c, l], k) => `<div class="tier-count" style="border-top:3px solid ${c}"><div class="n">${fmt(cnt[k])}</div><div class="l">${l}</div></div>`).join("")}</div>
     <button class="ghost-btn" id="showSuit" style="width:100%;margin-bottom:12px${["alternatives", "area"].includes(role) ? ";display:none" : ""}">Show suitability mesh on map</button>
-    ${ly.candidates.map((c) => `<div class="cand ${c.candidate_id === S.selCandidate ? "sel" : ""}" data-cand="${c.candidate_id}">
-      <div class="cand-head"><div class="rank">${c.rank}</div>
-        <div><div class="cand-name">${esc(c.name)}</div><div class="cand-persona">${esc(c.corridor_type)} · ${c.min_distance_km} km <span class="pass">PASS</span></div>
-          ${c.frontage_peak_hourly != null ? `<div class="cand-persona">${ico("walking", null, 12, 1.4)} ${fmt(c.frontage_peak_hourly)}/hr at peak ${esc(c.peak_window || "")} ${(D.site.profile.site_role || "existing") === "existing" || D.site.profile.site_role === "prospective" ? ` · footfall #${c.peak_footfall_rank} of 10` : ""}</div>` : ""}</div>
-        <div class="score" style="color:${scoreColor(c.overall_suitability_score)}">${fmt(c.overall_suitability_score, 1)}<small>/ 100</small></div></div>
-      <div class="cand-stats"><div>${UNIT()}<b>${fmt(c.projected_daily_units)}</b></div><div>₹ L/mo<b>${fmt(c.projected_monthly_revenue_lakhs, 1)}</b>${c.ci_rev_p10 != null ? `<small style="display:block;color:#6e6e73;font-weight:400">${fmt(c.ci_rev_p10, 1)}–${fmt(c.ci_rev_p90, 1)}</small>` : ""}</div>
-        <div>Payback<b>${fmt(c.est_payback_months, 1)} mo</b></div><div>${c.ci_rev_p10 != null ? "Own-outlet loss" : "Risk"}<b>${fmt(c.cannibalization_risk_pct, 1)}%</b></div></div>
-      <div class="cand-more"><div class="cand-bars">${[["DEMO", c.demographic_score], ["COMM", c.commercial_score], ["SYN", c.synergy_score], ["WHITE", c.white_space_score]].map(([l, v]) =>
-        `<div class="cbar"><div class="l">${l} ${fmt(v, 0)}</div><div class="tr"><div style="width:${v}%;background-image:${scoreGradient(v)}"></div></div></div>`).join("")}</div>
-      ${c.vs_site_pct != null ? `<div class="cand-persona" style="margin:2px 0 6px"><b style="color:${c.vs_site_pct >= 0 ? "#17653a" : "#b42318"}">${c.vs_site_pct >= 0 ? "+" : ""}${fmt(c.vs_site_pct, 0)}% vs your site</b> · ${c.dist_from_site_km} km away · ${fmt(c.footfall_vs_site, 1)}× its street footfall</div>` : ""}
-      ${c.marginal_units != null ? `<div class="cand-persona" style="margin:2px 0 6px"><b>Pick #${c.plan_rank}</b> · adds ${fmt(c.marginal_units)} ${esc(UNIT())} to the network (total ${fmt(c.cumulative_units)})</div>` : ""}</div>
+    ${ly.candidates.map((c) => `<div class="cand xc ${c.candidate_id === S.selCandidate ? "sel" : ""}" data-cand="${c.candidate_id}">
+      <div class="xc-head"><div class="xc-rank">${c.rank}</div>
+        <div class="xc-title"><div class="xc-name">${esc(c.name)}</div><div class="xc-sub">${esc(c.corridor_type)} · ${c.min_distance_km} km from your outlets</div></div>
+        <div class="xc-score"><b>${fmt(c.overall_suitability_score, 0)}</b><span>Suitability</span></div></div>
+      <div class="xc-grid">
+        ${c.frontage_peak_hourly != null ? `<div><span>Peak footfall</span><b>${fmt(c.frontage_peak_hourly)}<u> / hr</u></b></div>` : ""}
+        <div><span>${esc(UNIT())}</span><b>${fmt(c.projected_daily_units)}</b></div>
+        <div><span>Revenue</span><b>₹${fmt(c.projected_monthly_revenue_lakhs, 1)}<u> L / mo</u></b></div>
+        <div><span>Payback</span><b>${fmt(c.est_payback_months, 0)}<u> months</u></b></div>
+      </div>
+      <div class="cand-more">
+        <div class="xc-bars">${[["Demographics", c.demographic_score], ["Commercial", c.commercial_score], ["Synergy", c.synergy_score], ["White space", c.white_space_score]].map(([l, v]) =>
+          `<div class="xc-bar"><span>${l}</span><div><i style="width:${Math.max(2, v)}%"></i></div><b>${fmt(v, 0)}</b></div>`).join("")}</div>
+        <div class="xc-facts">
+          ${c.peak_window ? `<span>Peak window <b>${esc(c.peak_window)}</b></span>` : ""}
+          ${c.ci_rev_p10 != null ? `<span>Revenue range <b>₹${fmt(c.ci_rev_p10, 1)}–${fmt(c.ci_rev_p90, 1)} L</b></span>` : ""}
+          <span>${c.ci_rev_p10 != null ? "Own-outlet loss" : "Risk"} <b>${fmt(c.cannibalization_risk_pct, 1)}%</b></span>
+          ${c.marginal_units != null ? `<span>Adds to network <b>${fmt(c.marginal_units)} ${esc(UNIT())}</b></span>` : ""}
+          ${c.vs_site_pct != null ? `<span>Vs your site <b style="color:${c.vs_site_pct >= 0 ? "#17653a" : "#b42318"}">${c.vs_site_pct >= 0 ? "+" : ""}${fmt(c.vs_site_pct, 0)}%</b></span>` : ""}
+        </div></div>
       <button type="button" class="cand-toggle" data-candtoggle aria-label="Show details">Details <i></i></button>
     </div>`).join("")}
     <div class="note"${["alternatives", "area"].includes(role) ? " hidden" : ""}>Candidates are restricted to the 10 busiest peak-hour shop fronts in the golden band (≥1.5 km apart; expressways and ramps excluded), then ranked by area score. Score = ${Math.round(w.demographic * 100)}% demographic + ${Math.round(w.commercial * 100)}% commercial + ${Math.round(w.synergy * 100)}% synergy + ${Math.round(w.white_space * 100)}% white space, each a percentile within the study area. ${esc(UNIT())} and revenue are heuristic projections from a baseline of ${fmt((B().economics || {}).baseline_daily_units)} ${esc((DEM().unit || "units"))}/day at ₹${fmt((B().economics || {}).avg_ticket_inr)} per bill; risk is the Huff-model share of the candidate’s 1.5 km demand pulled by the nearest existing outlet.</div>${(ly.candidates[0] || {}).ci_rev_lakhs != null ? ciNote() : ""}`;
