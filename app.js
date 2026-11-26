@@ -1104,13 +1104,18 @@ function togglePlay() {
 
 /* ----------------------------------------------------------------- method modal */
 function renderMethod() {
-  const pv = D.site.provenance, src = pv.sources || {}, vm = pv.voter_model || {}, bz = B(), eco = bz.economics || {}, cp = bz.competitors || {};
+  const pv = D.site.provenance, src = pv.sources || {}, vm = pv.voter_model || {}, bz = B(), eco = bz.economics || {}, cp = bz.competitors || {}, rat = bz.rationale && (typeof bz.rationale === "string" ? bz.rationale.trim() : Object.keys(bz.rationale).length ? bz.rationale : null);
   const row = (a, b, c, tag) => `<tr><td><b>${esc(a)}</b></td><td>${esc(b)}</td><td>${esc(c)}</td><td><span class="tag-m ${tag === "MODELLED" ? "mod" : "obs"}">${tag}</span></td></tr>`;
   const kv = (o) => Object.entries(o || {}).map(([k, v]) => `${k.replace(/_/g, " ")} ${v}`).join(" · ");
   $("methodBody").innerHTML = `<h2>${esc(bz.display_name || "Business")} · data &amp; method</h2>
     <div class="note">${esc(bz.format || "")}<br>Generated ${esc((pv.generated_at || "").slice(0, 16).replace("T", " "))} UTC · centre ${esc(pv.centre?.plus_code)} · radius ${pv.radius_km} km</div>
-    ${bz.rationale && Object.keys(bz.rationale).length ? `<h3>Why the model is weighted this way</h3><table>${Object.entries(bz.rationale).map(([k, v]) =>
-      `<tr><td style="width:130px"><b>${esc(k.replace(/_/g, " "))}</b></td><td>${esc(v)}</td></tr>`).join("")}</table>` : ""}
+    ${rat ? `<h3>Why the model is weighted this way</h3>${typeof rat === "string" ? `<div class="note" style="font-size:13px;line-height:1.5">${esc(rat)}</div>` : `<table>${Object.entries(rat).map(([k, v]) =>
+      `<tr><td style="width:130px"><b>${esc(k.replace(/_/g, " "))}</b></td><td>${esc(typeof v === "string" ? v : JSON.stringify(v))}</td></tr>`).join("")}</table>`}` : ""}
+    <h3>Read the full method</h3><div class="note" style="font-size:13px;line-height:1.7">Every step on this page is explained with diagrams in the <a href="whitepaper.html" target="_blank" rel="noopener"><b>white paper</b></a>:
+      <a href="whitepaper.html#layers" target="_blank" rel="noopener">data layers</a> ·
+      <a href="whitepaper.html#method" target="_blank" rel="noopener">methodology</a> ·
+      <a href="whitepaper.html#revenue" target="_blank" rel="noopener">revenue calculator</a> ·
+      <a href="whitepaper.html#uncertainty" target="_blank" rel="noopener">uncertainty</a></div>
     <h3>Business parameters</h3><table>
       <tr><td><b>Customer cohorts</b></td><td>${esc(kv((bz.demand || {}).cohort_weights))}</td></tr>
       <tr><td><b>Demand curve</b></td><td>${esc(bz.demand?.propensity_label || "")} · peak ${esc((bz.demand?.peak_hours || []).join("–"))}h (${esc(bz.demand?.peak_label || "")})</td></tr>
