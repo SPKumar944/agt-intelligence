@@ -17,7 +17,7 @@ const S = {
         dining: false, kids: false, education: false, transit: false, techparks: false, offices: false, allpoints: false },
   openGroups: new Set(["foot"]),
 };
-let D = null, map = null, overlay = null, BIZ = null, REG = null, PLAN = null;
+let D = null, map = null, overlay = null, BIZ = null, REG = null, PLAN = null, BIZ_IDS = [];
 const B = () => (D && D.site.business) || {};
 const DEM = () => B().demand || {};
 const PROP = () => (D && (D.site.propensity || D.site.dessert_propensity)) || new Array(24).fill(1);
@@ -1094,13 +1094,6 @@ async function loadSite(id, isNewBusiness = false) {
   if (isNewBusiness) applyBusinessDefaults(site);
   D.tierRGB = {}; site.tiers.forEach((t) => { D.tierRGB[t.level] = hex2rgb(t.color); });
   prepStreets(); prepHexes(); prepPois(); await initWeights(); buildHexScale();
-  { // coverage tier badge (high-precision = locally calibrated city; otherwise standard coverage)
-    const hi = /^Electoral roll/.test(site.provenance.population_counts_source || "");
-    let cb = $("covBadge"); if (!cb) { cb = document.createElement("div"); cb.id = "covBadge"; cb.className = "badge"; $("snapshotBadge").before(cb); }
-    cb.textContent = hi ? "Premium intelligence" : "Pan-India insights"; cb.title = hi ? "Built on our premium, high-precision, locally calibrated models for this city." : "Wide, city-level insights. This city is being upgraded to premium, Bengaluru-level precision between December 2026 and March 2027.";
-    cb.style.fontWeight = "600"; if (hi) { cb.style.background = "var(--ink, #1d1d1f)"; cb.style.color = "var(--bg, #fff)"; }
-  }
-  $("snapshotBadge").textContent = `OSM ${String(site.provenance.osm_snapshot_utc || "").slice(0, 10)} · Overture ${site.provenance.overture_release || ""}`;
   document.querySelector(".brand-text span").textContent = (site.business || {}).display_name || "Site Footfall Intelligence";
   document.title = `AGT Intelligence · ${(site.business || {}).display_name || "Site intelligence"}`;
   const pk = DEM().peak_hours || [21, 22];
@@ -1129,7 +1122,6 @@ async function loadBusiness(bid) {
 function bindUI() {
   $("daySelect").onchange = (e) => { S.day = +e.target.value; updateTime(); };
   $("siteSelect").onchange = (e) => { S.siteId = e.target.value; location.hash = `${BIZ}/${S.siteId}`; loadSite(S.siteId).catch(fail); };
-  $("bizSelect").onchange = (e) => { location.hash = e.target.value; loadBusiness(e.target.value).catch(fail); };
   $("hourRange").oninput = (e) => setHour(+e.target.value);
   $("prevHour").onclick = () => setHour(S.hour - 1); $("nextHour").onclick = () => setHour(S.hour + 1); $("playBtn").onclick = togglePlay;
   document.querySelector(".timeline").addEventListener("wheel", (e) => { e.preventDefault(); setHour(S.hour + (e.deltaY > 0 ? 1 : -1)); }, { passive: false });
@@ -1173,15 +1165,12 @@ function applyView(v) {
     let biz;
     try { biz = await getJSON("data/businesses.json"); } catch { biz = null; }
     if (biz && biz.businesses.length) {
-      $("bizSelect").innerHTML = biz.businesses.map((b) => `<option value="${b.id}">${esc(b.name)}</option>`).join("");
+      BIZ_IDS = biz.businesses.map((b) => b.id);
       const want = decodeURIComponent(location.hash.slice(1)).split("?")[0].split("/")[0];
       const bid = biz.businesses.some((b) => b.id === want) ? want : biz.businesses[biz.businesses.length - 1].id;
-      $("bizSelect").value = bid;
-      $("bizWrap").classList.toggle("hidden", biz.businesses.length < 2);
       await loadBusiness(bid);
       applyView(VIEW);
     } else {                                   // legacy single-business layout: data/sites.json
-      $("bizWrap").classList.add("hidden");
       REG = await getJSON("data/sites.json");
       $("siteSelect").innerHTML = REG.sites.map((s, i) => `<option value="${s.id}">#${String(i + 1).padStart(2, "0")} ${esc(s.label)}</option>`).join("");
       S.siteId = REG.sites[0].id;
@@ -1192,8 +1181,7 @@ function applyView(v) {
   // Typing / pasting a #business/site link into an open tab switches to it.
   window.addEventListener("hashchange", () => {
     const [bid, sid] = decodeURIComponent(location.hash.slice(1)).split("?")[0].split("/");
-    const opts = [...$("bizSelect").options].map((o) => o.value);
-    if (bid && opts.includes(bid) && bid !== $("bizSelect").value) { $("bizSelect").value = bid; loadBusiness(bid).catch(fail); }
+    if (bid && BIZ_IDS.includes(bid) && bid !== BIZ) { loadBusiness(bid).catch(fail); }
     else if (sid && sid !== S.siteId && [...$("siteSelect").options].some((o) => o.value === sid)) {
       $("siteSelect").value = sid; S.siteId = sid; loadSite(sid).catch(fail);
     }

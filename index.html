@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
-  <link href="styles.css?v=15" rel="stylesheet" />
+  <link href="styles.css?v=16" rel="stylesheet" />
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="https://unpkg.com/deck.gl@9.0.38/dist.min.js"></script>
   <script src="site/config.js?v=1"></script>
@@ -26,8 +26,6 @@
       <div class="brand-text"><b>AGT</b>INTELLIGENCE<span>Site Footfall Intelligence</span></div>
     </div>
     <div class="controls">
-      <label class="select-wrap" id="bizWrap"><span class="select-icon">◆</span><span class="select-label">BUSINESS</span>
-        <select id="bizSelect" style="min-width:170px"></select></label>
       <label class="select-wrap"><span class="select-icon">⌂</span><span class="select-label">SITE</span>
         <select id="siteSelect"></select></label>
       <label class="select-wrap"><span class="select-icon">▦</span><span class="select-label">DAY</span>
@@ -39,7 +37,6 @@
         </select></label>
     </div>
     <div class="header-right">
-      <div class="badge mono" id="snapshotBadge">—</div>
       <button class="ghost-btn" id="execPdfBtn" hidden title="One PDF with every recommended location">Executive report PDF</button>
       <button class="ghost-btn" id="methodBtn" title="Data sources & methodology">ⓘ Data &amp; method</button>
       <button class="theme-btn" id="themeBtn" type="button" aria-label="Switch to dark mode" title="Light / dark"></button>
@@ -147,7 +144,7 @@
   <div class="loader" id="loader"><div class="spinner"></div><div id="loaderText">Loading intelligence layers…</div></div>
   <script src="https://unpkg.com/supercluster@8.0.1/dist/supercluster.min.js"></script>
   <script src="icons.js?v=2"></script>
-  <script src="app.js?v=27"></script>
+  <script src="app.js?v=28"></script>
   <script>
     (function () {   // light / dark (default light)
       const b = document.getElementById("themeBtn"), dk = () => document.documentElement.dataset.theme === "dark";
