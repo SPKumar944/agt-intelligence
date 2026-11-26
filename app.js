@@ -1202,41 +1202,67 @@ function bindUI() {
     if (e.key === "ArrowRight") setHour(S.hour + 1); else if (e.key === "ArrowLeft") setHour(S.hour - 1);
     else if (e.key === " ") { e.preventDefault(); togglePlay(); } else if (e.key === "Escape") { $("inspector").classList.add("hidden"); $("methodModal").classList.add("hidden"); }
   });
-  // ---- icon rail: every major section is one icon; a panel opens only when asked for
+  // ---- icon rail: a full-height strip on the right edge; every major section is one icon, stacked top to bottom
   const TITLES = { layersTab: "Data layers", expansionTab: "Expansion", modelTab: "Model" };
-  document.querySelectorAll("#rail [data-ic]").forEach((s) => { s.setAttribute("viewBox", "0 0 16 16"); s.innerHTML = (typeof ICONS !== "undefined" && ICONS[s.dataset.ic]) || ""; });
+  const SIC = [[/population/i, "apartment-complex"], [/corridor/i, "road"], [/competitor/i, "flag"], [/business mix/i, "shopping-bags"], [/assessment|benchmark/i, "star"], [/residents are counted|voters/i, "library"], [/./, "pin"]];
+  const sIcon = (t) => (SIC.find(([r]) => r.test(t)) || [])[1];
+  const svg = (n) => '<svg viewBox="0 0 16 16">' + ((typeof ICONS !== "undefined" && ICONS[n]) || "") + "</svg>";
+  const rail = $("rail"), sp = $("sitePanel"), RP = $("rightPanel"), LP = $("leftPanel");
+  rail.querySelectorAll("[data-ic]").forEach((s) => { s.setAttribute("viewBox", "0 0 16 16"); s.innerHTML = (typeof ICONS !== "undefined" && ICONS[s.dataset.ic]) || ""; });
   const head = document.querySelector("#rightPanel .panel-head .tabs");
   if (head && !$("rightTitle")) head.insertAdjacentHTML("beforebegin", '<div id="rightTitle">Data layers</div>');
-  const railSync = () => {
-    const rOpen = !$("rightPanel").classList.contains("collapsed"), tab = (document.querySelector(".tab.active") || {}).dataset?.tab;
-    document.querySelectorAll("#rail [data-rail]").forEach((b) => {
-      const k = b.dataset.rail;
-      b.classList.toggle("on", k === "site" ? !$("leftPanel").classList.contains("collapsed") : k === "legend" ? !$("legend").classList.contains("off") : rOpen && k === tab);
+  let cur = null;                                   // what the open panel shows: "site", a site-section key, or a right-panel tab id
+  const secKey = (s) => { const h = s.querySelector(":scope > .section-title h4") || s.querySelector(":scope > .section-title"); if (!h) return ""; const c = h.cloneNode(true); c.querySelectorAll(".info").forEach((x) => x.remove()); return c.textContent.trim().replace(/\s*·.*$/, ""); };
+  const buildSections = () => {
+    rail.querySelectorAll("[data-sec]").forEach((b) => b.remove());
+    const anchor = rail.querySelector('[data-rail="layersTab"]');
+    [...sp.querySelectorAll(":scope > .section")].forEach((s, i) => {
+      const k = secKey(s); if (!k) return;
+      s.dataset.sk = k;
+      const b = document.createElement("button"); b.type = "button"; b.dataset.sec = k; b.dataset.rail = "sec"; b.title = k; b.setAttribute("aria-label", k); b.innerHTML = svg(sIcon(k));
+      anchor.before(b); b.onclick = () => showRail("sec:" + k);
     });
-    if ($("rightTitle")) $("rightTitle").textContent = TITLES[tab] || "Data layers";
-    const mb = $("modelTabBtn"); if ($("railModel")) $("railModel").hidden = !mb || mb.style.display === "none";
-    $("railCount").textContent = ($("activeCount") || {}).textContent === "0" ? "" : ($("activeCount") || {}).textContent || "";
+    if (cur && cur.startsWith("sec:") && !sp.querySelector('[data-sk="' + CSS.escape(cur.slice(4)) + '"]')) showRail(null);
+    railSync();
   };
-  window.railOpen = (tab) => {
-    const t = document.querySelector('.tab[data-tab="' + tab + '"]'); if (t) t.click();
-    collapse("rightPanel", false); railSync();
-  };
-  document.querySelectorAll("#rail [data-rail]").forEach((b) => b.onclick = () => {
-    const k = b.dataset.rail;
-    if (k === "site") collapse("leftPanel", !$("leftPanel").classList.contains("collapsed"));
-    else if (k === "legend") $("legend").classList.toggle("off");
-    else if (k === "method") $("methodBtn").click();
-    else {
-      const tab = (document.querySelector(".tab.active") || {}).dataset?.tab, open = !$("rightPanel").classList.contains("collapsed");
-      if (open && tab === k) collapse("rightPanel", true); else window.railOpen(k);
+  const showRail = (k) => {
+    cur = (k === cur) ? null : k;
+    const left = cur === "site" || (cur || "").startsWith("sec:");
+    if (!cur) { collapse("leftPanel", true); collapse("rightPanel", true); }
+    else if (left) {
+      collapse("rightPanel", true); collapse("leftPanel", false);
+      const key = cur.slice(4);
+      sp.dataset.solo = cur === "site" ? "overview" : "sec";
+      sp.querySelectorAll(":scope > .section").forEach((s) => { const on = cur !== "site" && s.dataset.sk === key; s.classList.toggle("solo", on); if (on) s.classList.remove("closed"); });
+      const ey = LP.querySelector(".eyebrow"); if (ey) ey.textContent = cur === "site" ? "SITE OVERVIEW" : key.toUpperCase();
+      sp.scrollTop = 0;
+    } else {
+      collapse("leftPanel", true); collapse("rightPanel", false);
+      const t = document.querySelector('.tab[data-tab="' + cur + '"]'); if (t) t.click();
     }
     railSync();
-  });
-  document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", railSync));
-  document.querySelectorAll("[data-collapse]").forEach((b) => b.addEventListener("click", railSync));
+  };
+  function railSync() {
+    rail.querySelectorAll("[data-rail],[data-sec]").forEach((b) => {
+      const k = b.dataset.rail;
+      b.classList.toggle("on", k === "site" ? cur === "site" : k === "sec" ? cur === "sec:" + b.dataset.sec : k === "legend" ? !$("legend").classList.contains("off") : k === "method" ? false : cur === k);
+    });
+    const tab = (document.querySelector(".tab.active") || {}).dataset?.tab;
+    if ($("rightTitle")) $("rightTitle").textContent = TITLES[tab] || "Data layers";
+    const mb = $("modelTabBtn"); if ($("railModel")) $("railModel").hidden = !mb || mb.style.display === "none";
+    const n = ($("activeCount") || {}).textContent; $("railCount").textContent = !n || n === "0" ? "" : n;
+  }
+  window.railOpen = (tab) => { cur = null; showRail(tab); };
+  rail.querySelectorAll("[data-rail]").forEach((b) => { const k = b.dataset.rail; if (k === "sec") return; b.onclick = () => {
+    if (k === "legend") { $("legend").classList.toggle("off"); railSync(); }
+    else if (k === "method") $("methodBtn").click();
+    else showRail(k);
+  }; });
+  document.querySelectorAll("[data-collapse]").forEach((b) => b.addEventListener("click", () => { cur = null; railSync(); }));
   new MutationObserver(railSync).observe($("activeCount"), { childList: true, characterData: true, subtree: true });
   new MutationObserver(railSync).observe($("modelTabBtn"), { attributes: true, attributeFilter: ["style"] });
-  collapse("leftPanel", true); collapse("rightPanel", true); railSync();   // start with the map clear; the rail stays
+  new MutationObserver(() => { clearTimeout(window._rb); window._rb = setTimeout(buildSections, 60); }).observe(sp, { childList: true });
+  collapse("leftPanel", true); collapse("rightPanel", true); buildSections();   // start with the map clear; the rail stays
 }
 // Shareable view: #business/site?h=19&d=1&c=12.96,77.58&z=15.5&on=streets,transit
 const VIEW = (() => { const q = decodeURIComponent(location.hash.slice(1)).split("?")[1]; return q ? Object.fromEntries(new URLSearchParams(q)) : null; })();
