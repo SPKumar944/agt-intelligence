@@ -1302,7 +1302,7 @@ function bindUI() {
     if (cur && cur.startsWith("sec:") && !sp.querySelector('[data-sk="' + CSS.escape(cur.slice(4)) + '"]')) showRail(null);
     railSync();
   };
-  const GT = { foot: "Footfall & catchment", mesh: "Demand mesh", comp: "Competition, anchors & places", exp: "Expansion layers" };
+  const GT = { foot: "Footfall", mesh: "Demand mesh", comp: "Competition, anchors & places", exp: "Expansion layers" };
   const showGroup = () => { const g = $("layersTab").dataset.solo; if (g) $("layersTab").querySelectorAll('details.lgroup[data-g="' + g + '"]').forEach((d) => { d.open = true; }); railSync(); };
   new MutationObserver(showGroup).observe($("layersTab"), { childList: true });
   const showRail = (k) => {
