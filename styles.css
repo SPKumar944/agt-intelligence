@@ -487,3 +487,17 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 #layersTab[data-solo="foot"] .lgroup[data-g="foot"], #layersTab[data-solo="mesh"] .lgroup[data-g="mesh"], #layersTab[data-solo="comp"] .lgroup[data-g="comp"], #layersTab[data-solo="exp"] .lgroup[data-g="exp"] { display: block; }
 #layersTab[data-solo] .lgroup > summary { display: none; }
 #layersTab[data-solo] > .note, #layersTab[data-solo] > p { display: none; }
+
+/* hexagon metric buttons + legend */
+.hm-list { display: grid; gap: 4px; }
+.hm { display: flex; align-items: center; gap: 9px; width: 100%; padding: 7px 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text-2); font-size: 12px; font-weight: 500; text-align: left; cursor: pointer; }
+.hm:hover { border-color: var(--border-strong); color: var(--text); }
+.hm-sw { flex: none; width: 34px; height: 10px; border-radius: 5px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.1); }
+.hm-l { flex: 1; min-width: 0; }
+.hm-t { flex: none; position: relative; width: 28px; height: 16px; border-radius: 9px; background: var(--border-strong, #c7c7cc); transition: background .15s; }
+.hm-t::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; transition: transform .15s; }
+.hm.on { border-color: var(--text); color: var(--text); font-weight: 600; }
+.hm.on .hm-t { background: var(--text); } .hm.on .hm-t::after { transform: translateX(12px); background: var(--bg); }
+.hm-legend { margin-top: 8px; padding: 9px 10px; border-radius: 10px; background: var(--surface-2); font-size: 10.5px; color: var(--text-2); }
+.hm-legend .legend-ramp .ramp { height: 10px; }
+.hm-legend span { display: inline-flex; align-items: center; margin: 2px 8px 2px 0; } .hm-legend i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 4px; }

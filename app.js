@@ -65,6 +65,17 @@ function phaseOf(h) {
 // clear of the blue-to-red footfall street scale it is drawn under. Land use (categorical) uses samples of Crameri "Batlow".
 const LANDUSE = { residential: "#CAAEAA", commercial: "#185562", mixed: "#9A915B", industrial: "#8d8d93", open_space: "#577647" };
 const RAMP = ["#ffffff", "#daeeff", "#aed8f5", "#74b8ec", "#3a93d9", "#1a6ab5", "#0d4a8a", "#053060", "#01193a"];   // one blue ramp for every sequential hexagon layer and the population graphs
+// Crameri scientific colour maps (dominicroye.github.io/color-for-geoscience), low → high, one per hexagon metric
+const PAL = {
+  blue: RAMP,
+  lajolla: ["#FFFFCB", "#FCE595", "#F7C966", "#EBA24A", "#D97A3C", "#B5532F", "#85372A", "#4F2118", "#1F1109"],
+  bamako: ["#FFE5AD", "#E4CC62", "#BFB43C", "#98A030", "#6F8A2A", "#4A7425", "#2D5C28", "#144630", "#00404D"],
+  tokyo: ["#FEF3D4", "#EBD1B6", "#D3A9A5", "#B88096", "#965F8C", "#6D447A", "#4B2E64", "#2E1C4B", "#1A0D33"],
+  hawaii: ["#B3F2FD", "#7FE0D0", "#5BCB8A", "#8FBF4F", "#C0A33C", "#CB7C3F", "#BF5A4B", "#A3305F", "#8C0273"],
+  acton: ["#F2DCFA", "#E4B8EC", "#D693D6", "#C56CB8", "#A74D9E", "#823C8B", "#5E2E77", "#3E2160", "#26164A"],
+  turku: ["#FFFF99", "#EDE08A", "#CCC47B", "#A5A173", "#7F7F6E", "#5C5C5B", "#3F3F3F", "#232323", "#000000"],
+  batlow: ["#011959", "#103F6E", "#236379", "#4D7D6B", "#7F8B4F", "#B49A39", "#EC9C45", "#FCA77F", "#FAD1E8"],
+};
 const SUIT = [[75, "#053060", "Prime 75–100"], [60, "#1a6ab5", "High 60–74"], [45, "#74b8ec", "Moderate 45–59"], [0, "#daeeff", "Low <45"]];
 const COMP_TIER = { "Artisanal/Premium": "#7c3aed", "Mass-Premium": "#db2777", "Classic Thick Shakes": "#ea580c",
                     "Sundaes/Heritage": "#b45309", "Mass": "#0891b2", "Independent / Local": "#64748b" };
@@ -184,20 +195,20 @@ const rgbHex = (c) => "#" + c.slice(0, 3).map((v) => v.toString(16).padStart(2, 
 
 const HEX_MODES = {
   landuse: { label: "Land use class", kind: "cat" },
-  pop: { label: "Residents", kind: "seq", field: "pop" },
-  day_pop: { label: "Daytime population", kind: "seq", field: "day_pop" },
-  k: { label: "Kids 0–14", kind: "seq", field: "k" },
-  y: { label: "Youth 15–24", kind: "seq", field: "y" },
-  s: { label: "Seniors 60+", kind: "seq", field: "s" },
-  floating: { label: "Floating adults share", kind: "seq", calc: (i) => { const p = D.hexes.pop[i]; return p ? D.hexes.floating_adults[i] / p : 0; }, pct: true },
-  com_workers: { label: "Daytime workforce", kind: "seq", field: "com_workers" },
-  mean_daily_footfall: { label: "Street footfall (modelled)", kind: "seq", field: "mean_daily_footfall" },
-  res_idx: { label: "Residential index", kind: "idx", field: "res_idx" },
-  com_idx: { label: "Commercial index", kind: "idx", field: "com_idx" },
-  syn_idx: { label: "Retail synergy index", kind: "idx", field: "syn_idx" },
+  pop: { label: "Residents", kind: "seq", pal: "lajolla", field: "pop" },
+  day_pop: { label: "Daytime population", kind: "seq", pal: "batlow", field: "day_pop" },
+  k: { label: "Kids 0–14", kind: "seq", pal: "bamako", field: "k" },
+  y: { label: "Youth 15–24", kind: "seq", pal: "tokyo", field: "y" },
+  s: { label: "Seniors 60+", kind: "seq", pal: "acton", field: "s" },
+  floating: { label: "Floating adults share", kind: "seq", pal: "hawaii", calc: (i) => { const p = D.hexes.pop[i]; return p ? D.hexes.floating_adults[i] / p : 0; }, pct: true },
+  com_workers: { label: "Daytime workforce", kind: "seq", pal: "turku", field: "com_workers" },
+  mean_daily_footfall: { label: "Street footfall (modelled)", kind: "seq", pal: "lajolla", field: "mean_daily_footfall" },
+  res_idx: { label: "Residential index", kind: "idx", pal: "bamako", field: "res_idx" },
+  com_idx: { label: "Commercial index", kind: "idx", pal: "tokyo", field: "com_idx" },
+  syn_idx: { label: "Retail synergy index", kind: "idx", pal: "hawaii", field: "syn_idx" },
   suit_score: { label: "New-store suitability", kind: "suit", field: "suit_score" },
-  ci_net_units: { label: "Expected net volume (interaction model)", kind: "seq", field: "ci_net_units" },
-  ci_cannibal_pct: { label: "Cannibalisation of own outlets (model)", kind: "seq", field: "ci_cannibal_pct", pct: false },
+  ci_net_units: { label: "Expected net volume (interaction model)", kind: "seq", pal: "batlow", field: "ci_net_units" },
+  ci_cannibal_pct: { label: "Cannibalisation of own outlets (model)", kind: "seq", pal: "acton", field: "ci_cannibal_pct", pct: false },
 };
 
 function compColor(tier) { const tc = (B().competitors || {}).tier_colors || COMP_TIER; return tc[tier] || COMP_TIER[tier] || "#64748b"; }
@@ -268,6 +279,7 @@ function buildHexScale() {
   } else if (m.kind === "idx") hexScale = { breaks: [11, 22, 33, 44, 56, 67, 78, 89], min: 0, max: 100 };
   else hexScale = null;
 }
+const hexRamp = (m) => PAL[m.pal] || RAMP;
 function hexColor(i) {
   const m = HEX_MODES[S.hexMode], a = Math.round(255 * S.hexOpacity);
   if (m.kind === "cat") return [...hex2rgb(LANDUSE[dec(D.hexes.cls, i)] || "#e2e8f0"), a];
@@ -275,7 +287,7 @@ function hexColor(i) {
   if (m.kind === "suit") { for (const [t, c] of SUIT) if (v >= t) return [...hex2rgb(c), a]; }
   if (!v) return [238, 238, 240, Math.round(a * 0.5)];
   let k = 0; while (k < hexScale.breaks.length && v >= hexScale.breaks[k]) k++;
-  return [...hex2rgb(RAMP[k]), a];
+  return [...hex2rgb(hexRamp(m)[k]), a];
 }
 
 /* ----------------------------------------------------------------- deck layers */
@@ -775,6 +787,10 @@ function iconKey(items, color = "#334155") {
 function seg(group, options, current, cls = "") {
   return `<div class="seg" data-seg="${group}">${options.map(([v, l]) => `<button class="${cls} ${v === current ? "active" : ""}" data-v="${v}">${l}</button>`).join("")}</div>`;
 }
+function hmSwatch(m) { return m.kind === "cat" ? "linear-gradient(90deg," + Object.values(LANDUSE).slice(0, 7).join(",") + ")" : m.kind === "suit" ? "linear-gradient(90deg," + [...SUIT].reverse().map((s) => s[1]).join(",") + ")" : "linear-gradient(90deg," + hexRamp(m).join(",") + ")"; }
+function hmRow(k, m) {
+  return `<button type="button" class="hm${S.hexMode === k && S.on.hexes ? " on" : ""}" data-hm="${k}" aria-pressed="${S.hexMode === k && S.on.hexes}"><span class="hm-sw" style="background:${hmSwatch(m)}"></span><span class="hm-l">${esc(m.label)}</span><span class="hm-t"></span></button>`;
+}
 function select(group, options, current) {
   return `<select class="mini-select" data-select="${group}">${options.map(([v, l]) => `<option value="${esc(v)}" ${v === current ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>`;
 }
@@ -798,7 +814,7 @@ function renderLayersPanel() {
     </div></details>
     <details class="lgroup" data-g="mesh" ${S.openGroups.has("mesh") ? "open" : ""}><summary><span>Demand mesh · H3 res ${D.hexes.res}</span><em data-gcount="mesh"></em></summary><div class="lgroup-body">
     ${layerCard("hexes", `Hexagon mesh (${fmt(D.hexes.n)})`, "Population, land use, indices and suitability per cell", "linear-gradient(90deg,#FFFECA,#E79452,#683F20)",
-      `<div class="sub-label">Metric</div>${select("hexMode", Object.entries(HEX_MODES).map(([k, m]) => [k, m.label]), S.hexMode)}
+      `<div class="sub-label">Metric · pick one</div><div class="hm-list">${Object.entries(HEX_MODES).map(([k, m]) => hmRow(k, m)).join("")}</div><div class="hm-legend" id="hmLegend"></div>
        <div class="sub-label">Spatial scope</div>${seg("hexScope", [["all", `All cells (${fmt(D.hexes.n)})`], ["band", `Golden band (${fmt(D.hexes.band.length)})`]], S.hexScope, "green")}
        <div class="sub-label">Opacity</div><input type="range" min="15" max="90" value="${Math.round(S.hexOpacity * 100)}" data-range="hexOpacity" style="width:100%;accent-color:var(--text)">`)}
     </div></details>
@@ -845,6 +861,13 @@ function bindLayerControls(root) {
   root.querySelectorAll("[data-select]").forEach((el) => el.onchange = () => {
     S[el.dataset.select] = el.value; if (el.dataset.select === "hexMode") { buildHexScale(); renderHexLegend(); } redraw();
   });
+  root.querySelectorAll("[data-hm]").forEach((b) => b.onclick = () => {
+    const k = b.dataset.hm, same = S.hexMode === k && S.on.hexes;
+    S.hexMode = k; S.on.hexes = !same; buildHexScale();
+    const cb = root.querySelector("[data-toggle=hexes]"); if (cb) { cb.checked = S.on.hexes; cb.closest(".layer").classList.toggle("on", S.on.hexes); }
+    renderHexLegend(); updateActiveCount(); updateGroupCounts(); redraw();
+  });
+  renderHexLegend();
   root.querySelectorAll("[data-range]").forEach((el) => el.oninput = () => { S[el.dataset.range] = el.value / 100; redraw(); });
 }
 function updateActiveCount() { $("activeCount").textContent = Object.values(S.on).filter(Boolean).length; }
@@ -1040,6 +1063,10 @@ function renderLegend() {
   });
   renderHexLegend();
 }
+function syncHexUi() {
+  document.querySelectorAll("[data-hm]").forEach((b) => { const on = b.dataset.hm === S.hexMode && S.on.hexes; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
+  const box = $("hmLegend"); if (box) { box.innerHTML = S.on.hexes ? $("hexLegend").innerHTML : ""; box.style.display = S.on.hexes ? "" : "none"; }
+}
 function renderHexLegend() {
   const el = $("hexLegend");
   if (!S.on.hexes) { el.innerHTML = `<span style="color:var(--text-3)">Hexagon mesh hidden</span>`; return; }
@@ -1047,8 +1074,9 @@ function renderHexLegend() {
   if (m.kind === "cat") el.innerHTML = Object.entries(LANDUSE).map(([k, c]) => `<span><i style="background:${c}"></i>${k.replace("_", " ")}</span>`).join("");
   else if (m.kind === "suit") el.innerHTML = SUIT.map(([, c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join("");
   else { const b = hexScale.breaks, f = (v) => m.pct ? fmt(v * 100, 0) + "%" : compact(v);
-    el.innerHTML = `<div class="legend-ramp"><div class="eyebrow" style="margin-bottom:4px">${m.label}</div><div class="ramp" style="background:linear-gradient(90deg,${RAMP.join(",")})"></div>
+    el.innerHTML = `<div class="legend-ramp"><div class="eyebrow" style="margin-bottom:4px">${m.label}</div><div class="ramp" style="background:linear-gradient(90deg,${hexRamp(m).join(",")})"></div>
       <div class="ends"><span>${f(m.kind === "idx" ? 0 : hexScale.min)}</span><span>${f(b[2])}</span><span>${f(m.kind === "idx" ? 100 : hexScale.max)}</span></div></div>`; }
+  syncHexUi();
 }
 function updateTime() {
   computeFlows();
