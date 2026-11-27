@@ -596,3 +596,54 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 .legal-m p { margin: 0 0 8px; font-size: 10.5px; line-height: 1.5; color: var(--text-3) }
 .legal-m p b { color: var(--text-2); font-weight: 600 }
 .legal-m a { color: inherit; text-decoration: underline }
+
+/* In-dashboard reports (view only) */
+.rp-modal { z-index: 60 }
+.modal-card.rp { width: min(960px, 95vw); max-height: 90vh; padding: 0; display: flex; flex-direction: column; overflow: hidden }
+.rp-tabs { display: flex; gap: 6px; padding: 14px 56px 0 20px; border-bottom: 1px solid var(--border) }
+.rp-tabs button { border: 0; background: none; color: var(--text-3); font-size: 13px; font-weight: 600; padding: 10px 12px 12px; cursor: pointer; border-bottom: 2px solid transparent }
+.rp-tabs button.on { color: var(--text); border-bottom-color: var(--text) }
+.rp-body { overflow-y: auto; padding: 22px 26px 30px; user-select: none; -webkit-user-select: none }
+.rp-hd { margin-bottom: 16px }
+.rp-eb { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); font-weight: 600 }
+.rp-hd h2 { font-size: 24px; letter-spacing: -.03em; margin: 4px 0 4px; line-height: 1.15 }
+.rp-meta { font-size: 12px; color: var(--text-3) }
+.rp-body h3 { font-size: 13px; margin: 22px 0 8px; font-weight: 650 }
+.rp-sub { font-size: 11px; color: var(--text-3); margin: -4px 0 8px }
+.rp-kg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 6px 0 0 }
+.rp-k { background: var(--surface-2); border-radius: 14px; padding: 13px 14px; display: flex; flex-direction: column; gap: 3px; min-width: 0 }
+.rp-k span { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3) }
+.rp-k b { font-size: 24px; letter-spacing: -.035em; font-weight: 700; line-height: 1.1; white-space: nowrap }
+.rp-k b u { text-decoration: none; font-size: 11px; font-weight: 500; color: var(--text-3); letter-spacing: 0 }
+.rp-k em { font-style: normal; font-size: 10.5px; color: var(--text-3) }
+.rp-ul { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.6; color: var(--text-2) }
+.rp-ul b { color: var(--text) }
+.rp-p, .rp-note { font-size: 12.5px; line-height: 1.6; color: var(--text-2); margin: 0 }
+.rp-note { font-size: 11.5px; color: var(--text-3); margin-top: 8px }
+.rp-tw { overflow-x: auto }
+.rp-t { width: 100%; border-collapse: collapse; font-size: 12px }
+.rp-t th { text-align: left; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); font-weight: 600; padding: 8px 8px; border-bottom: 1px solid var(--border) }
+.rp-t td { padding: 9px 8px; border-bottom: 1px solid var(--border); vertical-align: top }
+.rp-t .n { text-align: right; white-space: nowrap }
+.rp-t tr.top td { background: var(--surface-2) }
+.rp-two { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 4px }
+.rp-card { background: var(--surface-2); border-radius: 14px; padding: 4px 16px 14px }
+.rp-bars { display: grid; gap: 9px }
+.rp-b { display: grid; grid-template-columns: 130px 1fr 44px; gap: 10px; align-items: center; font-size: 12px; color: var(--text-2) }
+.rp-b > div { height: 7px; border-radius: 4px; background: var(--border); overflow: hidden }
+.rp-b i { display: block; height: 100%; border-radius: 4px; background: #3a93d9 }
+.rp-b b { text-align: right; color: var(--text); font-weight: 600 }
+.rp-cols { display: flex; align-items: flex-end; gap: 3px; height: 90px }
+.rp-cols i { flex: 1; background: #74b8ec; border-radius: 2px 2px 0 0; display: block }
+.rp-cols i.pk { background: #1a6ab5 }
+.rp-ax { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-3); margin-top: 4px }
+.rp-mini { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px }
+.rp-mini div { background: var(--surface-2); border-radius: 12px; padding: 10px 12px }
+.rp-mini span { display: block; font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em }
+.rp-mini b { font-size: 18px; letter-spacing: -.03em }
+.rp-rv { display: flex; justify-content: space-between; font-size: 12.5px; padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--text-2) }
+.rp-rv b { color: var(--text); font-weight: 600 }
+.rp-go { margin-top: 18px; border: 0; background: var(--text); color: var(--bg); padding: 11px 18px; border-radius: 999px; font-size: 13px; font-weight: 600; cursor: pointer }
+@media (max-width: 760px) { .rp-kg { grid-template-columns: 1fr 1fr } .rp-two { grid-template-columns: 1fr } .rp-body { padding: 18px 16px 26px } .rp-b { grid-template-columns: 100px 1fr 40px } }
+@media print { body > * { display: none !important } }
+@media (max-width: 760px) { .rp-t th:nth-child(3), .rp-t td:nth-child(3) { display: none } .rp-t th, .rp-t td { padding: 8px 5px } }

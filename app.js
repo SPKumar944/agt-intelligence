@@ -1336,7 +1336,7 @@ function bindUI() {
   function railSync() {
     rail.querySelectorAll("[data-rail],[data-sec]").forEach((b) => {
       const k = b.dataset.rail;
-      b.classList.toggle("on", k === "site" ? cur === "site" : k === "sec" ? cur === "sec:" + b.dataset.sec : k === "legend" ? !$("legend").classList.contains("off") : k === "method" ? false : cur === k);
+      b.classList.toggle("on", k === "site" ? cur === "site" : k === "sec" ? cur === "sec:" + b.dataset.sec : k === "legend" ? !$("legend").classList.contains("off") : k === "method" || k === "report" ? false : cur === k);
     });
     const tab = (document.querySelector(".tab.active") || {}).dataset?.tab;
     const lgk = $("layersTab").dataset.solo; if ($("rightTitle")) $("rightTitle").textContent = tab === "layersTab" && lgk ? GT[lgk] : TITLES[tab] || "Data layers";
@@ -1347,6 +1347,7 @@ function bindUI() {
   rail.querySelectorAll("[data-rail]").forEach((b) => { const k = b.dataset.rail; if (k === "sec") return; b.onclick = () => {
     if (k === "legend") { $("legend").classList.toggle("off"); railSync(); }
     else if (k === "method") $("methodBtn").click();
+    else if (k === "report") window.openReports && window.openReports();
     else showRail(k);
   }; });
   document.querySelectorAll("[data-collapse]").forEach((b) => b.addEventListener("click", () => { cur = null; railSync(); }));
@@ -1420,6 +1421,7 @@ function fail(e) { console.error(e); $("loaderText").innerHTML = `Could not load
     else if (el.dataset.cand) track("cand.open", el.dataset.cand);
     else if (el.dataset.plan) track("plan.pick", el.dataset.plan);
     else if (el.id === "methodBtn") track("method.open");
+    else if (el.dataset.rail === "report") track("report.open");
     else if (el.matches(".legal-d > summary")) track("legal.open");
     else if (el.dataset.feedback != null) track("feedback.open");
     else if (el.matches("[data-seg] button")) track("option.set", (el.closest("[data-seg]").dataset.seg || "") + ":" + (el.dataset.v || ""));
