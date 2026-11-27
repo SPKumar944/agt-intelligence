@@ -1408,6 +1408,7 @@ function fail(e) { console.error(e); $("loaderText").innerHTML = `Could not load
     const events = q.splice(0, 50), tok = AGT.token();
     try { fetch(AGT.url("/api/track"), { method: "POST", keepalive: true, headers: { "Content-Type": "application/json", ...(tok ? { Authorization: "Bearer " + tok } : {}) }, body: JSON.stringify({ sid, now: Date.now(), page: location.hash.slice(1), events }) }).catch(() => {}); } catch (e) { /* tracking never breaks the page */ }
   };
+  window.AGTTrack = (e, d) => track(e, d);
   const track = (e, d) => { q.push({ t: Date.now(), e, d: d == null ? "" : String(d) }); if (q.length >= 10) flush(); else if (!timer) timer = setTimeout(flush, 8000); };
   const ref = (() => { try { return document.referrer ? new URL(document.referrer).hostname : "direct"; } catch (e) { return "direct"; } })();
   track("session.start", `w${innerWidth}|${document.documentElement.dataset.theme || "light"}|${navigator.language || ""}|ref:${ref}`);

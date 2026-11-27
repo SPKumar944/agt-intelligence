@@ -106,15 +106,40 @@
     <button class="rp-go" id="rpShow">Show this location on the map</button>`;
   }
 
-  /* ---------- modal ---------- */
-  let modal = null, tab = "exec";
-  function paint() {
-    const top = cands()[0];
-    modal.querySelector(".rp-tabs").innerHTML = `<button data-t="exec" class="${tab === "exec" ? "on" : ""}">Executive report</button><button data-t="det" class="${tab === "det" ? "on" : ""}">Detailed report${top ? " · #1" : ""}</button>`;
-    modal.querySelector(".rp-body").innerHTML = tab === "exec" ? executive() : detailed();
-    modal.querySelector(".rp-body").scrollTop = 0;
-    const go = modal.querySelector("#rpShow"); if (go) go.onclick = () => { modal.classList.add("hidden"); selectCandidate(top.candidate_id, true); };
-    modal.querySelectorAll(".rp-tabs button").forEach((b) => b.onclick = () => { tab = b.dataset.t; paint(); });
+  /* ---------- viewer: the designed report pages, shown inside the dashboard (no file is offered) ---------- */
+  const PAGE_W = 1587;                                   // A3 landscape at 96 dpi: the width the report pages are designed for
+  let modal = null, cur = "exec", gen = 0;
+  const locs = () => cands().map((c) => ({ n: c.plan_rank || c.rank, c }));
+  const tabs = () => [{ k: "exec", l: "Executive report" }, ...locs().map(({ n, c }) => ({ k: String(n), l: `Location ${n}`, t: c.name }))];
+  async function load(kind) {
+    const url = AGT.url(`/api/report/${encodeURIComponent(BIZ)}/${encodeURIComponent(S.siteId)}/${kind === "exec" ? "exec" : "loc/" + kind}`), tok = AGT.token();
+    const r = await fetch(url, { headers: tok ? { Authorization: "Bearer " + tok } : {}, cache: "no-store" });
+    if (!r.ok) throw new Error("report " + r.status);
+    return r.text();
+  }
+  function fit(frame, box) {
+    const doc = frame.contentDocument; if (!doc || !doc.body) return;
+    frame.style.height = "200px"; const h = Math.max(200, doc.body.scrollHeight + 40);       // measure the pages themselves, not the frame
+    frame.style.height = h + "px";
+    const k = Math.min(1, (box.clientWidth - 2) / PAGE_W);
+    frame.style.transform = `scale(${k})`; box.style.height = Math.ceil(h * k) + "px";
+  }
+  async function paint() {
+    const my = ++gen, body = modal.querySelector(".rp-body"), list = tabs();
+    modal.querySelector(".rp-tabs").innerHTML = list.map((x) => `<button data-k="${x.k}" class="${x.k === cur ? "on" : ""}" ${x.t ? `title="${E(x.t)}"` : ""}>${E(x.l)}</button>`).join("");
+    modal.querySelectorAll(".rp-tabs button").forEach((b) => b.onclick = () => { cur = b.dataset.k; if (window.AGTTrack) window.AGTTrack("report.view", cur); paint(); });
+    const meta = cur === "exec" ? "All recommended locations" : (locs().find((x) => String(x.n) === cur) || { c: {} }).c.name || "";
+    body.innerHTML = `<div class="rp-vh"><b>${cur === "exec" ? "Executive report" : "Detailed report · location " + E(cur)}</b><span>${E(meta)}</span></div><div class="rp-vb"><div class="rp-load">Preparing the report…</div></div>`;
+    try {
+      const html = await load(cur); if (my !== gen) return;
+      const box = body.querySelector(".rp-vb"); box.innerHTML = "";
+      const fr = document.createElement("iframe"); fr.setAttribute("sandbox", "allow-same-origin"); fr.setAttribute("title", "Report"); fr.className = "rp-fr"; fr.style.width = PAGE_W + "px";
+      fr.onload = () => { fit(fr, box); try { new ResizeObserver(() => fit(fr, box)).observe(box); } catch (e) { addEventListener("resize", () => fit(fr, box)); } };
+      fr.srcdoc = html; box.appendChild(fr); body.scrollTop = 0;
+    } catch (e) {
+      if (my !== gen) return;
+      body.querySelector(".rp-vb").innerHTML = `<div class="rp-load">This report could not be loaded just now. Please try again in a moment.</div>`;
+    }
   }
   window.openReports = (which) => {
     if (!D) return;
@@ -126,8 +151,7 @@
       modal.addEventListener("click", (e) => { if (e.target === modal) modal.classList.add("hidden"); });
       document.addEventListener("keydown", (e) => { if (e.key === "Escape") modal.classList.add("hidden"); });
     }
-    if (which) tab = which;
-    try { paint(); } catch (e) { modal.querySelector(".rp-body").innerHTML = `<p class="rp-p">This report could not be built for this study.</p>`; }
-    modal.classList.remove("hidden");
+    cur = which && which !== "det" ? String(which) : "exec";
+    modal.classList.remove("hidden"); paint();
   };
 })();

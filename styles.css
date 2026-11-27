@@ -647,3 +647,15 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 @media (max-width: 760px) { .rp-kg { grid-template-columns: 1fr 1fr } .rp-two { grid-template-columns: 1fr } .rp-body { padding: 18px 16px 26px } .rp-b { grid-template-columns: 100px 1fr 40px } }
 @media print { body > * { display: none !important } }
 @media (max-width: 760px) { .rp-t th:nth-child(3), .rp-t td:nth-child(3) { display: none } .rp-t th, .rp-t td { padding: 8px 5px } }
+
+/* Report viewer: the designed pages, scaled to the window */
+.modal-card.rp { width: min(1180px, 96vw); height: 92vh; max-height: 92vh }
+.rp-tabs { overflow-x: auto; white-space: nowrap; scrollbar-width: none }
+.rp-tabs::-webkit-scrollbar { display: none }
+.rp-body { padding: 0 !important; background: #2c2c2e; display: flex; flex-direction: column }
+.rp-vh { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 18px; background: var(--surface); border-bottom: 1px solid var(--border); font-size: 12px; color: var(--text-3) }
+.rp-vh b { color: var(--text); font-size: 13px }
+.rp-vb { position: relative; width: 100%; flex: none; overflow: hidden }
+.rp-fr { border: 0; display: block; transform-origin: 0 0; background: #2c2c2e; height: 400px; pointer-events: none }
+.rp-load { padding: 60px 20px; text-align: center; color: #a1a1a6; font-size: 13px }
+.rp-tabs { flex: none } .rp-body { flex: 1 1 auto; min-height: 0; overflow-y: auto }
