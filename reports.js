@@ -109,7 +109,8 @@
   /* ---------- viewer: the designed report pages, shown inside the dashboard (no file is offered) ---------- */
   const PAGE_W = 1587;                                   // A3 landscape at 96 dpi: the width the report pages are designed for
   let modal = null, cur = "exec", gen = 0;
-  const locs = () => cands().map((c) => ({ n: c.plan_rank || c.rank, c }));
+  let demo = false;                                       // the public demo shows the executive report and location 1 only (the server enforces it too)
+  const locs = () => cands().map((c) => ({ n: c.plan_rank || c.rank, c })).filter((x) => !demo || x.n === 1);
   const tabs = () => [{ k: "exec", l: "Executive report" }, ...locs().map(({ n, c }) => ({ k: String(n), l: `Location ${n}`, t: c.name }))];
   async function load(kind) {
     const url = AGT.url(`/api/report/${encodeURIComponent(BIZ)}/${encodeURIComponent(S.siteId)}/${kind === "exec" ? "exec" : "loc/" + kind}`), tok = AGT.token();
@@ -152,6 +153,7 @@
       document.addEventListener("keydown", (e) => { if (e.key === "Escape") modal.classList.add("hidden"); });
     }
     cur = which && which !== "det" ? String(which) : "exec";
-    modal.classList.remove("hidden"); paint();
+    modal.classList.remove("hidden");
+    Promise.resolve(AGT.session()).then((s) => { demo = !!(s && s.name === "Public demo"); }, () => {}).then(() => { if (demo && cur !== "exec" && cur !== "1") cur = "exec"; paint(); });
   };
 })();
