@@ -680,3 +680,7 @@ body { font-size: 13px; letter-spacing: -.01em; -webkit-font-smoothing: antialia
 .mb-fest em { font-style: normal; font-weight: 700; text-align: right; } .mb-fest em.neg { color: #2b6cb0; } .mb-fest em.pos { color: #c2571a; }
 .mb-chk { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--text-2); margin-top: 12px; cursor: pointer; } .mb-chk input { margin: 0; }
 .mb-note { font-size: 10.5px; color: var(--text-3); line-height: 1.5; margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px; }
+.mb-row { grid-template-columns: 16px 1fr auto; font-size: 12.5px; } .mb-row .mb-km { display: none; } .mb-nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mb-fest { font-size: 12.5px; } .mb-d { color: var(--text-3); font-weight: 400; font-size: inherit; }
+.mb-bl { font-size: 11.5px; } .mb-sub { font-size: 12px; }
+.mb-det { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 9px; font-size: 12px; color: var(--text-2); } .mb-det summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; } .mb-det summary::after { content: "⌄"; color: var(--text-3); } .mb-det[open] summary::after { content: "⌃"; } .mb-det p { margin: 8px 0 0; line-height: 1.5; color: var(--text-3); }

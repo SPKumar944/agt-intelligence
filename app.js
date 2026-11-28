@@ -325,6 +325,8 @@ function shrunk(i, f) {
 
 /* ----------------------------------------------------------------- deck layers */
 function streetWidth(t) { return t >= 9 ? 5 : t >= 7 ? 3.8 : t >= 5 ? 2.8 : t >= 4 ? 1.9 : t >= 3 ? 1.2 : 0.8; }
+// Mobility panel open: show only the mobility layers and the site / search-area markers
+function withMobility(L) { if (window.AGTMobility) { const ml = AGTMobility.layers(); if (ml.length) return [...ml, ...L.filter((l) => /^(store|search-area|plan-other)/.test(l.id))]; } return L; }
 function layers() {
   const L = [], st = D.streets, hx = D.hexes, site = D.site, [clng, clat] = site.centre;
   const trig = `${S.day}-${S.hour}`;
@@ -439,15 +441,14 @@ function layers() {
     if (PLAN) L.push(new deck.TextLayer({ id: "plan-other", data: PLAN.picks.filter((p) => p.site_id !== S.siteId), getPosition: (d) => [d.lng, d.lat], getText: (d) => "#" + d.pick_rank,
       getSize: 12, getColor: [255, 255, 255, 255], background: true, getBackgroundColor: [110, 110, 115, 230], backgroundPadding: [4, 2], fontWeight: 700,
       fontFamily: "Inter, -apple-system, sans-serif", pickable: false }));
-    return L;
+    return withMobility(L);
   }
   L.push(new deck.IconLayer({ id: "store", data: [{ lng: clng, lat: clat }], getPosition: (d) => [d.lng, d.lat],
     getIcon: () => badge(prospective ? "crosshair" : "store", "#1d1d1f", { strong: true }), getSize: 42, sizeUnits: "pixels", pickable: true }));
   L.push(new deck.TextLayer({ id: "store-label", data: [site.centre], getPosition: (d) => d, getText: () => D.site.profile.store_name + (role === "alternatives" ? " · your site" : prospective ? " · prospective" : ""),
     getSize: 12.5, getColor: [15, 23, 42, 255], getPixelOffset: [0, -40], fontWeight: 700, fontFamily: "Inter, -apple-system, sans-serif",
     background: true, getBackgroundColor: [255, 255, 255, 235], backgroundPadding: [6, 3], getBorderColor: [29, 29, 31, 255], getBorderWidth: 1.2 }));
-  if (window.AGTMobility) { const ml = AGTMobility.layers(); if (ml.length) return [...ml, ...L.filter((l) => /^store/.test(l.id))]; }
-  return L;
+  return withMobility(L);
 }
 function redraw() { if (overlay && D) overlay.setProps({ layers: layers() }); updateActiveCount(); }
 
