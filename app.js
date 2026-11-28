@@ -446,6 +446,7 @@ function layers() {
   L.push(new deck.TextLayer({ id: "store-label", data: [site.centre], getPosition: (d) => d, getText: () => D.site.profile.store_name + (role === "alternatives" ? " · your site" : prospective ? " · prospective" : ""),
     getSize: 12.5, getColor: [15, 23, 42, 255], getPixelOffset: [0, -40], fontWeight: 700, fontFamily: "Inter, -apple-system, sans-serif",
     background: true, getBackgroundColor: [255, 255, 255, 235], backgroundPadding: [6, 3], getBorderColor: [29, 29, 31, 255], getBorderWidth: 1.2 }));
+  if (window.AGTMobility) { const ml = AGTMobility.layers(); if (ml.length) return [...ml, ...L.filter((l) => /^store/.test(l.id))]; }
   return L;
 }
 function redraw() { if (overlay && D) overlay.setProps({ layers: layers() }); updateActiveCount(); }
@@ -1243,6 +1244,7 @@ async function loadSite(id, isNewBusiness = false) {
   document.querySelector(".tl-marks").innerHTML = [[3, "Night quiet"], [8, "Morning transit"], [13, "Lunch rush"], [16, "Afternoon"],
     [pk[0], DEM().peak_label || "Evening peak"]].map(([h, l]) => `<span>${hh(h)} ${esc(l)}</span>`).join("");
   renderSite(); renderLayersPanel(); renderExpansion(); renderModelTab(); renderLegend(); renderMethod(); updateTime();
+  if (window.AGTMobility) await AGTMobility.load(base);
   map.jumpTo({ center: site.centre, zoom: 14.2 });
   $("loader").classList.add("hidden");
 }

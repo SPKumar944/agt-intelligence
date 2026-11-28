@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
-  <link href="styles.css?v=43" rel="stylesheet" />
+  <link href="styles.css?v=44" rel="stylesheet" />
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="https://unpkg.com/deck.gl@9.0.38/dist.min.js"></script>
   <script src="site/config.js?v=1"></script>
@@ -86,6 +86,7 @@
         <div class="tabs">
           <button class="tab active" data-tab="layersTab">Data layers <span class="pill" id="activeCount">0</span></button>
           <button class="tab" data-tab="expansionTab">Expansion</button>
+          <button class="tab" data-tab="mobilityTab" id="mobilityTabBtn" style="display:none">Mobility</button>
           <button class="tab" data-tab="modelTab" id="modelTabBtn" style="display:none">Model</button>
         </div>
         <button class="icon-btn" data-collapse="rightPanel" title="Collapse">›</button>
@@ -93,6 +94,7 @@
       <div class="panel-body">
         <div class="tab-pane active" id="layersTab"></div>
         <div class="tab-pane" id="expansionTab"></div>
+        <div class="tab-pane" id="mobilityTab"></div>
         <div class="tab-pane" id="modelTab"></div>
       </div>
     </aside>
@@ -105,6 +107,7 @@
       <button type="button" data-rail="lg:mesh" title="Demand mesh" aria-label="Demand mesh"><svg data-ic="hexagon"></svg></button>
       <button type="button" data-rail="lg:comp" title="Competition, anchors &amp; places" aria-label="Competition, anchors and places"><svg data-ic="signpost"></svg></button>
       <button type="button" data-rail="expansionTab" title="Expansion" aria-label="Expansion"><svg data-ic="target"></svg></button>
+      <button type="button" data-rail="mobilityTab" id="railMobility" title="Mobility" aria-label="Mobility" style="display:none"><svg data-ic="map-pin-route"></svg></button>
       <button type="button" data-rail="report" title="Reports" aria-label="Reports"><svg data-ic="book"></svg></button>
       <button type="button" data-rail="legend" title="Legend" aria-label="Legend"><svg data-ic="palette"></svg></button>
       <i class="rail-sep"></i>
@@ -173,7 +176,8 @@
   <div class="loader" id="loader"><div class="spinner"></div><div id="loaderText">Loading intelligence layers…</div></div>
   <script src="https://unpkg.com/supercluster@8.0.1/dist/supercluster.min.js"></script>
   <script src="icons.js?v=2"></script>
-  <script src="app.js?v=66"></script>
+  <script src="app.js?v=68"></script>
+<script src="mobility.js?v=4"></script>
   <script src="reports.js?v=4"></script>
   <script>
     (function () {   // light / dark (default light)
